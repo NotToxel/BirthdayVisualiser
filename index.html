@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Analytics V3</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --accent: #ec4899;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface-2: #f1f5f9;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --scrubber-h: 70px; /* Increased for labels */
+        }
+
+        body.dark {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-2: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column;
+            height: 100vh; overflow: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* --- Nav --- */
+        nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 1.5rem; height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0; z-index: 50;
+        }
+        .logo { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        
+        .tabs { display: flex; gap: 5px; background: var(--surface-2); padding: 4px; border-radius: 8px; }
+        .tab {
+            padding: 6px 16px; border-radius: 6px; cursor: pointer;
+            font-size: 0.9rem; font-weight: 500; color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--text); }
+        .tab.active { background: var(--surface); color: var(--primary); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+        .btn {
+            background: var(--primary); color: white; border: none;
+            padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer;
+            display: flex; align-items: center; gap: 6px; transition: 0.2s; position: relative;
+        }
+        .btn:hover { background: var(--primary-hover); }
+        .btn-icon { background: transparent; color: var(--text-muted); padding: 8px; font-size: 1.1rem; border:none; cursor: pointer; border-radius: 50%; }
+        .btn-icon:hover { color: var(--text); background: var(--surface-2); }
+
+        /* --- Filters --- */
+        #filter-bar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 1.5rem;
+            display: none; gap: 12px; align-items: center; flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--surface-2); padding: 4px 10px; border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .filter-group i { color: var(--text-muted); font-size: 0.9rem; }
+        
+        /* Dark Mode Reactive Inputs */
+        select, input {
+            background: transparent; border: none; outline: none; font-size: 0.9rem;
+            color: var(--text); /* Important for Dark Mode */
+        }
+        select option {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .count-badge { margin-left: auto; font-weight: 600; font-size: 0.9rem; color: var(--primary); }
+
+        /* --- Views --- */
+        .view { display: none; flex-grow: 1; height: 100%; flex-direction: column; overflow: hidden; }
+        .view.active { display: flex; }
+
+        /* View: Timeline */
+        #scrubber-container {
+            height: var(--scrubber-h); background: var(--surface);
+            border-bottom: 1px solid var(--border); position: relative;
+            cursor: pointer; flex-shrink: 0; user-select: none;
+        }
+        #scrubber-needle {
+            position: absolute; top: 15px; bottom: 15px; width: 2px; background: var(--accent);
+            pointer-events: none; transform: translateX(-50%);
+            /* Needle Cap */
+        }
+        #scrubber-needle::before {
+            content: ''; position: absolute; top: -6px; left: -4px;
+            width: 10px; height: 10px; background: var(--accent); border-radius: 50%;
+        }
+        #scrubber-date {
+            position: absolute; top: -5px; transform: translateX(-50%);
+            background: var(--accent); color: white; padding: 2px 8px;
+            border-radius: 12px; font-size: 11px; font-weight: 700;
+            pointer-events: none; opacity: 0; transition: opacity 0.2s; white-space: nowrap;
+        }
+        #scrubber-container:hover #scrubber-date, #scrubber-container.dragging #scrubber-date { opacity: 1; }
+        
+        .scrubber-label {
+            position: absolute; bottom: 2px; font-size: 10px; color: var(--text-muted); font-weight: 600; pointer-events: none;
+        }
+
+        #timeline-wrapper { flex-grow: 1; position: relative; background: var(--bg); }
+        
+        /* Contact Node (Timeline) - Box Removal */
+        .contact-node {
+            display: flex; flex-direction: column; align-items: center; cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: transparent !important; /* Force transparent */
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .contact-node:hover { transform: scale(1.4); z-index: 100 !important; }
+        .contact-node img {
+            width: 48px; height: 48px; border-radius: 50%; object-fit: cover;
+            border: 3px solid var(--surface); 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15); /* Shadow on circle only */
+            background: var(--surface-2);
+        }
+        
+        /* Remove default Vis.js selection box */
+        .vis-item { border-color: transparent !important; background: transparent !important; }
+        .vis-item.vis-selected { background: transparent !important; border-color: transparent !important; }
+
+        /* View: Stats */
+        #stats-content { padding: 2rem; overflow-y: auto; }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem; max-width: 1400px; margin: 0 auto;
+        }
+        .card {
+            background: var(--surface); border-radius: 16px; padding: 1.5rem;
+            border: 1px solid var(--border); box-shadow: var(--shadow);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .card h3 { margin: 0 0 1rem 0; font-size: 1rem; color: var(--text-muted); font-weight: 600; }
+        
+        /* Apple Watch Bubble Canvas */
+        .bubble-wrapper {
+            width: 100%; height: 350px; /* Fixed Frame */
+            background: var(--surface-2);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden; /* No scroll bars */
+        }
+        canvas#bubble-canvas {
+            width: 100%; height: 100%; display: block; cursor: crosshair;
+        }
+
+        /* Missing View */
+        .missing-grid {
+            padding: 2rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem; overflow-y: auto;
+        }
+        .missing-card {
+            background: var(--surface); padding: 1rem; border-radius: 12px;
+            border: 1px solid var(--border); display: flex; align-items: center; gap: 12px;
+        }
+        .badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .badge-red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .badge-yellow { background: rgba(245, 158, 11, 0.1); color: #d97706; }
+
+        /* Modal */
+        #modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+        }
+        .modal {
+            background: var(--surface); width: 400px; max-width: 90%; border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); animation: zoomIn 0.2s ease-out;
+            overflow: hidden; border: 1px solid var(--border);
+        }
+        @keyframes zoomIn { from{transform:scale(0.95);opacity:0} to{transform:scale(1);opacity:1} }
+        
+        .modal-header {
+            height: 100px; background: linear-gradient(135deg, var(--primary), var(--accent));
+            position: relative; margin-bottom: 50px;
+        }
+        .modal-avatar-lg {
+            width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--surface);
+            position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%);
+            background: var(--surface); object-fit: cover;
+        }
+        .modal-close {
+            position: absolute; top: 15px; right: 15px; color: white;
+            background: rgba(0,0,0,0.2); width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .modal-body { padding: 0 24px 24px 24px; text-align: center; }
+        .modal-name { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+        .modal-meta { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
+        .modal-details { text-align: left; background: var(--surface-2); padding: 16px; border-radius: 12px; }
+        .detail-row { display: flex; gap: 12px; margin-bottom: 10px; font-size: 0.95rem; align-items: flex-start;}
+        .detail-row i { color: var(--primary); width: 20px; margin-top: 3px; }
+        .tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+        .tag { background: var(--surface-2); border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; }
+
+        /* List Modal */
+        .list-modal-body { padding: 20px; max-height: 400px; overflow-y: auto; }
+        .list-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px;
+            border-bottom: 1px solid var(--border); cursor: pointer; color: var(--text);
+        }
+        .list-item:hover { background: var(--surface-2); }
+
+        #loading {
+            position: fixed; inset: 0; background: var(--surface); z-index: 3000;
+            display: none; align-items: center; justify-content: center; flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading">
+        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+        <h3 style="color: var(--text-muted);">Processing CSV...</h3>
+    </div>
+
+    <nav>
+        <div class="logo">
+            <i class="fa-solid fa-cake-candles" style="color: var(--accent);"></i>
+            <span>Birthday<span style="color:var(--primary)">History</span></span>
+        </div>
+        <div class="tabs">
+            <div class="tab active" onclick="setTab('timeline')">Timeline</div>
+            <div class="tab" onclick="setTab('stats')">Statistics</div>
+            <div class="tab" onclick="setTab('missing')">Missing Data</div>
+        </div>
+        <div style="display:flex; gap:10px">
+            <button class="btn-icon" onclick="toggleDark()" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
+            <button class="btn">
+                <i class="fa-solid fa-upload"></i> Upload
+                <input type="file" id="file-input" accept=".csv" style="position:absolute; inset:0; opacity:0; cursor:pointer;">
+            </button>
+        </div>
+    </nav>
+
+    <div id="filter-bar">
+        <div class="filter-group">
+            <i class="fa-solid fa-tag"></i>
+            <select id="f-tag"><option value="all">All Tags</option></select>
+        </div>
+        <div class="filter-group">
+            <i class="fa-regular fa-calendar"></i>
+            <select id="f-month">
+                <option value="all">All Months</option>
+                <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+                <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option>
+                <option value="7">Jul</option><option value="8">Aug</option><option value="9">Sep</option>
+                <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+            </select>
+        </div>
+        <div class="filter-group" style="flex-grow: 1; max-width: 300px;">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" id="f-name" placeholder="Search contacts...">
+        </div>
+        <div class="count-badge" id="count-display">0 Contacts</div>
+    </div>
+
+    <div id="timeline-view" class="view active">
+        <div id="scrubber-container">
+            <canvas id="scrubber-canvas"></canvas>
+            <div id="scrubber-needle"></div>
+            <div id="scrubber-date">1990</div>
+            <div id="lbl-start" class="scrubber-label" style="left: 10px;"></div>
+            <div id="lbl-end" class="scrubber-label" style="right: 10px;"></div>
+        </div>
+        <div id="timeline-wrapper">
+            <div id="timeline-vis" style="width:100%; height:100%;"></div>
+            <div id="empty-state" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-muted);">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 4rem; margin-bottom: 1rem; opacity:0.3;"></i>
+                <h2>Upload Google Contacts CSV</h2>
+            </div>
+        </div>
+    </div>
+
+    <div id="stats-view" class="view">
+        <div id="stats-content">
+            <div class="stats-grid">
+                <div class="card" style="grid-column: span 2;">
+                    <h3>Contact Cloud (Interactive)</h3>
+                    <div class="bubble-wrapper">
+                        <canvas id="bubble-canvas"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Chinese Zodiac</h3>
+                    <canvas id="chart-zodiac"></canvas>
+                </div>
+                
+                <div class="card">
+                    <h3>Birthdays by Month</h3>
+                    <canvas id="chart-months"></canvas>
+                </div>
+                
+                <div class="card">
+                    <h3>Decades</h3>
+                    <canvas id="chart-decades"></canvas>
+                </div>
+                
+                <div class="card">
+                    <h3>Top Tags</h3>
+                    <canvas id="chart-tags"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="missing-view" class="view">
+        <div class="missing-grid" id="missing-grid"></div>
+    </div>
+
+    <div id="modal-backdrop">
+        <div class="modal" id="contact-modal" style="display:none;">
+            <div class="modal-header">
+                <div class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></div>
+                <img id="m-img" class="modal-avatar-lg" src="">
+            </div>
+            <div class="modal-body">
+                <div class="modal-name" id="m-name">Name</div>
+                <div class="modal-meta" id="m-meta">Date</div>
+                <div class="tag-cloud" id="m-tags"></div>
+                <br>
+                <div class="modal-details" id="m-details"></div>
+            </div>
+        </div>
+
+        <div class="modal" id="list-modal" style="display:none; width: 350px;">
+             <div style="padding: 15px; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                 <h3 style="margin:0; color:var(--text);" id="list-title">Group</h3>
+                 <i class="fa-solid fa-xmark" onclick="closeModal()" style="cursor:pointer; color:var(--text);"></i>
+             </div>
+             <div class="list-modal-body" id="list-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- Globals ---
+        let allContacts = [], filteredContacts = [], missingContacts = [];
+        let timeline = null, chartInstances = {};
+        const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        const ANIMALS = ["Monkey","Rooster","Dog","Pig","Rat","Ox","Tiger","Rabbit","Dragon","Snake","Horse","Goat"];
+
+        // --- Init ---
+        document.getElementById('file-input').addEventListener('change', processFile);
+        ['f-tag','f-month','f-name'].forEach(id => document.getElementById(id).addEventListener(id==='f-name'?'input':'change', applyFilters));
+        
+        // --- Core ---
+        function setTab(t) {
+            document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+            document.getElementById(`${t}-view`).classList.add('active');
+            document.querySelector(`.tab[onclick="setTab('${t}')"]`).classList.add('active');
+            
+            if(t==='timeline' && timeline) { timeline.redraw(); drawScrubber(); }
+            if(t==='stats') { startBubbleLoop(); } else { stopBubbleLoop(); }
+        }
+
+        function toggleDark() {
+            document.body.classList.toggle('dark');
+            drawScrubber();
+            Object.values(chartInstances).forEach(c => c.update());
+        }
+
+        // --- CSV Parsing ---
+        function processFile(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            document.getElementById('loading').style.display = 'flex';
+            setTimeout(() => {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const parsed = parseCSV(evt.target.result);
+                    allContacts = parsed.valid; missingContacts = parsed.invalid;
+                    filteredContacts = allContacts;
+                    populateFilterDropdowns();
+                    
+                    initTimeline();
+                    renderMissing();
+                    applyFilters(); 
+                    
+                    document.getElementById('empty-state').style.display = 'none';
+                    document.getElementById('filter-bar').style.display = 'flex';
+                    document.getElementById('loading').style.display = 'none';
+                };
+                reader.readAsText(file);
+            }, 100);
+        }
+
+        function parseCSV(text) {
+            const rows=[]; let r=[], c="", q=false;
+            text = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+            for(let i=0;i<text.length;i++){
+                let ch=text[i];
+                if(ch==='"'){if(q&&text[i+1]==='"'){c+='"';i++}else{q=!q}}
+                else if(ch===','&&!q){r.push(c);c=""}
+                else if(ch==='\n'&&!q){r.push(c);rows.push(r);r=[];c=""}
+                else{c+=ch}
+            }
+            if(c)r.push(c); if(r.length)rows.push(r);
+
+            if(rows.length<2) return {valid:[], invalid:[]};
+            const h = rows[0].map(x=>x.trim().toLowerCase());
+            const idx = (k) => h.findIndex(x => k.some(key => x.includes(key)));
+
+            const iF=idx(['first']), iM=idx(['middle']), iL=idx(['last']), iN=idx(['name','display']), iB=idx(['birthday']), iT=idx(['group','label']), iP=idx(['photo']), iPhone=idx(['phone 1 - value']), iEmail=idx(['e-mail 1']);
+            
+            const v=[], inv=[];
+            for(let i=1; i<rows.length; i++){
+                const row=rows[i]; if(row.length<2)continue;
+                let name = iF>-1 ? [row[iF],row[iM],row[iL]].filter(Boolean).join(" ") : (iN>-1?row[iN]:"");
+                name=name.trim()||"Unnamed";
+                
+                let y=0,m=0,d=0, hasYear=false, raw=iB>-1?row[iB]:"";
+                if(raw){
+                    raw=raw.replace(/ --/g,"").replace(/--/g,"").trim();
+                    const p=raw.split('-');
+                    if(p.length===3){y=+p[0];m=+p[1];d=+p[2];hasYear=true;}
+                    else if(p.length===2){m=+p[0];d=+p[1];}
+                }
+                
+                let tags=[];
+                if(iT>-1 && row[iT]) tags=row[iT].split(' ::: ').map(t=>t.replace(/\* /g,'').trim()).filter(t=>t&&t.toLowerCase()!=='mycontacts'&&t.toLowerCase()!=='starred');
+
+                const contact = {
+                    id:i, name, y, m, d, hasYear, tags,
+                    photo: iP>-1?row[iP]:"", phone: iPhone>-1?row[iPhone]:"", email: iEmail>-1?row[iEmail]:"",
+                    zodiac: hasYear?ANIMALS[y%12]:"Unknown"
+                };
+                if(m&&d)v.push(contact); else inv.push(contact);
+            }
+            return {valid:v, invalid:inv};
+        }
+
+        // --- Timeline ---
+        function initTimeline() {
+            if(timeline) timeline.destroy();
+            const container = document.getElementById('timeline-vis');
+            timeline = new vis.Timeline(container, new vis.DataSet([]), {
+                height: '100%', orientation: 'top', zoomMin: 1000*60*60*24*30, zoomMax: 1000*60*60*24*365*10,
+                showCurrentTime: false, verticalScroll: true, zoomKey: 'ctrlKey',
+                template: (item) => {
+                    const src = item.photo&&item.photo.startsWith('http') ? item.photo : `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random&color=fff`;
+                    return `<div class="contact-node"><img src="${src}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}'"></div>`;
+                }
+            });
+            timeline.on('select', (p)=>{ if(p.items.length) { const c=filteredContacts.find(x=>x.id==p.items[0]); if(c)showModal(c); timeline.setSelection([],{fireEvent:false}); }});
+            timeline.on('rangechange', () => {}); // Hook if needed
+        }
+
+        function updateTimelineData() {
+            const items = filteredContacts.map(c => ({
+                id: c.id, start: `${c.hasYear?c.y:2000}-${String(c.m).padStart(2,'0')}-${String(c.d).padStart(2,'0')}`,
+                name: c.name, photo: c.photo,
+                title: `<div style="text-align:center"><b>${c.name}</b><br>${MONTHS_SHORT[c.m-1]} ${c.d}</div>`
+            }));
+            timeline.setItems(items);
+            if(items.length) timeline.fit();
+            drawScrubber();
+        }
+
+        // --- Scrubber V2 ---
+        const PAD = 40; // Hard padding
+        function drawScrubber() {
+            const canvas = document.getElementById('scrubber-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio||1;
+            canvas.width = rect.width*dpr; canvas.height = rect.height*dpr;
+            ctx.scale(dpr,dpr);
+            
+            const isDark = document.body.classList.contains('dark');
+            ctx.clearRect(0,0,rect.width,rect.height);
+
+            const years = filteredContacts.filter(c=>c.hasYear).map(c=>c.y);
+            if(!years.length) return;
+            const minY = Math.min(...years), maxY = Math.max(...years);
+            const range = maxY - minY;
+            const drawW = rect.width - (PAD * 2);
+
+            // Labels
+            document.getElementById('lbl-start').innerText = minY;
+            document.getElementById('lbl-end').innerText = maxY;
+
+            // Density
+            const counts={}; years.forEach(y=>counts[y]=(counts[y]||0)+1);
+            const maxC = Math.max(...Object.values(counts));
+            
+            ctx.fillStyle = isDark ? '#3b82f6' : '#6366f1';
+            for(let y=minY; y<=maxY; y++){
+                if(!counts[y]) continue;
+                const pct = (y - minY) / range;
+                const x = PAD + (pct * drawW);
+                const h = (counts[y]/maxC) * (rect.height*0.6);
+                const yPos = (rect.height - h)/2;
+                ctx.fillRect(x, yPos, 2, h);
+            }
+            canvas.dataset.minY = minY; canvas.dataset.maxY = maxY;
+        }
+
+        function setupScrubberEvents() {
+            const con = document.getElementById('scrubber-container');
+            const needle = document.getElementById('scrubber-needle');
+            const dateLbl = document.getElementById('scrubber-date');
+            let dragging = false;
+
+            const move = (cx) => {
+                const rect = con.getBoundingClientRect();
+                const min = +document.getElementById('scrubber-canvas').dataset.minY;
+                const max = +document.getElementById('scrubber-canvas').dataset.maxY;
+                if(!min) return;
+
+                // Clamp logic
+                let px = cx - rect.left;
+                if(px < PAD) px = PAD;
+                if(px > rect.width - PAD) px = rect.width - PAD;
+
+                needle.style.left = px + 'px';
+                dateLbl.style.left = px + 'px';
+                
+                const pct = (px - PAD) / (rect.width - (PAD*2));
+                const year = min + (pct * (max - min));
+                const target = new Date(year, 6, 1);
+                dateLbl.innerText = Math.round(year);
+                if(timeline) timeline.moveTo(target, {animation:false});
+            };
+
+            con.addEventListener('mousedown', e => { dragging=true; con.classList.add('dragging'); move(e.clientX); });
+            document.addEventListener('mousemove', e => { if(dragging) { e.preventDefault(); move(e.clientX); }});
+            document.addEventListener('mouseup', () => { dragging=false; con.classList.remove('dragging'); });
+        }
+        setupScrubberEvents();
+
+        // --- Bubble Cloud (Apple Watch Style) ---
+        let bubbleCanvas, bCtx, bubbles = [], animationId;
+        let mouse = { x: -1000, y: -1000 };
+
+        function initBubbleCloud() {
+            bubbleCanvas = document.getElementById('bubble-canvas');
+            bCtx = bubbleCanvas.getContext('2d');
+            
+            // Resize
+            const rect = bubbleCanvas.parentElement.getBoundingClientRect();
+            bubbleCanvas.width = rect.width;
+            bubbleCanvas.height = rect.height;
+
+            // Generate Bubbles
+            const count = filteredContacts.length;
+            if(count === 0) { bubbles = []; return; }
+            
+            // Calc Layout (Hexagonal Packing)
+            const area = bubbleCanvas.width * bubbleCanvas.height;
+            const baseRadius = Math.sqrt((area * 0.6) / (count * Math.PI)); // 60% fill
+            
+            bubbles = filteredContacts.map((c, i) => {
+                const img = new Image();
+                img.src = c.photo && c.photo.startsWith('http') ? c.photo : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random`;
+                return {
+                    x: 0, y: 0, 
+                    baseR: Math.max(10, Math.min(baseRadius, 40)), // Clamp size
+                    r: 0, 
+                    img: img,
+                    data: c
+                };
+            });
+
+            // Grid Position
+            const cols = Math.ceil(Math.sqrt(count * (bubbleCanvas.width/bubbleCanvas.height)));
+            const rows = Math.ceil(count / cols);
+            const gap = bubbles[0].baseR * 2.2;
+            const startX = (bubbleCanvas.width - (cols * gap)) / 2 + gap/2;
+            const startY = (bubbleCanvas.height - (rows * gap)) / 2 + gap/2;
+
+            bubbles.forEach((b, i) => {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const offset = (row % 2) * (gap / 2);
+                b.x = startX + (col * gap) + offset;
+                b.y = startY + (row * gap);
+                b.r = b.baseR;
+            });
+            
+            // Listeners
+            bubbleCanvas.addEventListener('mousemove', e => {
+                const r = bubbleCanvas.getBoundingClientRect();
+                mouse.x = e.clientX - r.left;
+                mouse.y = e.clientY - r.top;
+            });
+            bubbleCanvas.addEventListener('mouseleave', () => { mouse.x = -999; });
+            bubbleCanvas.addEventListener('click', () => {
+                // Find clicked
+                // Sort by Scale desc to click top one
+                const sorted = [...bubbles].sort((a,b) => b.scale - a.scale);
+                for(let b of sorted) {
+                    const dx = mouse.x - b.x;
+                    const dy = mouse.y - b.y;
+                    if(Math.sqrt(dx*dx + dy*dy) < b.r * b.scale) {
+                        showModal(b.data);
+                        break;
+                    }
+                }
+            });
+        }
+
+        function startBubbleLoop() {
+            if(!bubbleCanvas) initBubbleCloud();
+            if(!animationId) loopBubbles();
+        }
+        function stopBubbleLoop() {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+
+        function loopBubbles() {
+            bCtx.clearRect(0,0, bubbleCanvas.width, bubbleCanvas.height);
+            
+            // Sort by scale so bigger ones draw on top
+            bubbles.forEach(b => {
+                const dx = mouse.x - b.x;
+                const dy = mouse.y - b.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                // Magnification Logic
+                const maxDist = 100;
+                const maxScale = 2.5;
+                if(dist < maxDist) {
+                    b.scale = 1 + (maxScale - 1) * (1 - dist/maxDist);
+                } else {
+                    b.scale = 1;
+                }
+            });
+
+            const renderOrder = [...bubbles].sort((a,b) => a.scale - b.scale);
+
+            renderOrder.forEach(b => {
+                const size = b.r * b.scale;
+                bCtx.save();
+                bCtx.beginPath();
+                bCtx.arc(b.x, b.y, size, 0, Math.PI*2);
+                bCtx.closePath();
+                bCtx.clip();
+                try { bCtx.drawImage(b.img, b.x - size, b.y - size, size*2, size*2); } catch(e){}
+                
+                // Border
+                bCtx.strokeStyle = document.body.classList.contains('dark') ? '#1e293b' : '#fff';
+                bCtx.lineWidth = 2;
+                bCtx.stroke();
+                bCtx.restore();
+            });
+
+            animationId = requestAnimationFrame(loopBubbles);
+        }
+
+
+        // --- Filtering/Stats Update ---
+        function populateFilterDropdowns() {
+            const tags = new Set();
+            allContacts.forEach(c => c.tags.forEach(t => tags.add(t)));
+            const sel = document.getElementById('f-tag');
+            sel.innerHTML = '<option value="all">All Tags</option>';
+            Array.from(tags).sort().forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t; opt.innerText = t;
+                sel.appendChild(opt);
+            });
+        }
+
+        function applyFilters() {
+            const tag = document.getElementById('f-tag').value;
+            const month = document.getElementById('f-month').value;
+            const name = document.getElementById('f-name').value.toLowerCase();
+            filteredContacts = allContacts.filter(c => {
+                if(tag!=='all' && !c.tags.includes(tag)) return false;
+                if(month!=='all' && c.m!=month) return false;
+                if(name && !c.name.toLowerCase().includes(name)) return false;
+                return true;
+            });
+            document.getElementById('count-display').innerText = filteredContacts.length + " Contacts";
+            updateTimelineData();
+            updateStats();
+        }
+        
+        function updateStats() {
+            // Re-init bubbles if visible
+            if(document.getElementById('stats-view').classList.contains('active')) {
+                initBubbleCloud();
+            }
+
+            // Charts
+            const getC = (fn) => { const d={}; filteredContacts.forEach(c=>{const k=fn(c); if(k!==undefined&&k!==false) d[k]=(d[k]||0)+1}); return d; };
+            updateChart('chart-months', 'bar', MONTHS_SHORT, Object.values(getC(c=>c.m-1)), "Months");
+            updateChart('chart-zodiac', 'doughnut', ANIMALS, Object.values(getC(c=>c.hasYear?c.y%12:false)), "Animals");
+            
+            const dec = getC(c=>c.hasYear ? Math.floor(c.y/10)*10+'s' : false);
+            updateChart('chart-decades', 'line', Object.keys(dec).sort(), Object.values(dec), "Decades");
+            
+            const tags = {}; filteredContacts.forEach(c=>c.tags.forEach(t=>tags[t]=(tags[t]||0)+1));
+            const topT = Object.entries(tags).sort((a,b)=>b[1]-a[1]).slice(0,10);
+            updateChart('chart-tags', 'bar', topT.map(x=>x[0]), topT.map(x=>x[1]), "Tags");
+        }
+
+        function updateChart(id, type, labels, data, title) {
+            const ctx = document.getElementById(id).getContext('2d');
+            if(chartInstances[id]) chartInstances[id].destroy();
+            const colors = ['#6366f1','#ec4899','#10b981','#f59e0b','#3b82f6'];
+            
+            let finalLabels = labels;
+            if(type==='line' || id==='chart-tags') { finalLabels = labels; } // Dynamic
+
+            chartInstances[id] = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: finalLabels,
+                    datasets: [{
+                        label: title, data: data,
+                        backgroundColor: type==='doughnut'?colors:'#6366f1', borderColor: '#6366f1', borderWidth: 1
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    plugins: { legend: {display: type==='doughnut'} },
+                    onClick: (e, els) => { if(els.length){ showListModal(finalLabels[els[0].index], title); } }
+                }
+            });
+        }
+
+        // --- Missing Data ---
+        function renderMissing() {
+            const g = document.getElementById('missing-grid'); g.innerHTML = '';
+            const mkCard = (c, txt, col) => `
+                <div class="missing-card">
+                    <img src="${c.photo||'https://ui-avatars.com/api/?name='+c.name}" style="width:40px;height:40px;border-radius:50%">
+                    <div><div style="font-weight:600">${c.name}</div><span class="badge badge-${col}">${txt}</span></div>
+                </div>`;
+            missingContacts.forEach(c => g.innerHTML += mkCard(c, "No Birthday", "red"));
+            allContacts.filter(c=>!c.hasYear).forEach(c => g.innerHTML += mkCard(c, "Missing Year", "yellow"));
+        }
+
+        // --- Modals ---
+        function showModal(c) {
+            document.getElementById('m-name').innerText = c.name;
+            document.getElementById('m-meta').innerText = `${c.m}/${c.d}/${c.hasYear?c.y:'????'} • ${c.zodiac}`;
+            document.getElementById('m-img').src = c.photo || `https://ui-avatars.com/api/?name=${c.name}`;
+            document.getElementById('m-tags').innerHTML = c.tags.map(t=>`<span class="tag">${t}</span>`).join('');
+            document.getElementById('m-details').innerHTML = `
+                ${c.email ? `<div class="detail-row"><i class="fa-solid fa-envelope"></i> ${c.email}</div>` : ''}
+                ${c.phone ? `<div class="detail-row"><i class="fa-solid fa-phone"></i> ${c.phone}</div>` : ''}
+                <div class="detail-row"><i class="fa-solid fa-star"></i> ${c.hasYear ? 'Age: ' + (new Date().getFullYear() - c.y) : 'Age Unknown'}</div>
+            `;
+            document.getElementById('contact-modal').style.display='block';
+            document.getElementById('list-modal').style.display='none';
+            document.getElementById('modal-backdrop').style.display='flex';
+        }
+        function showListModal(crit, cat) {
+            const b = document.getElementById('list-body'); b.innerHTML='';
+            document.getElementById('list-title').innerText = `${cat}: ${crit}`;
+            const matches = filteredContacts.filter(c => {
+                if(cat==='Months') return MONTHS_SHORT[c.m-1]===crit;
+                if(cat==='Animals') return c.zodiac===crit;
+                if(cat==='Decades') return (Math.floor(c.y/10)*10)+'s'===crit;
+                if(cat==='Tags') return c.tags.includes(crit);
+                return false;
+            });
+            matches.forEach(c => {
+                const d=document.createElement('div'); d.className='list-item';
+                d.innerHTML=`<img src="${c.photo||'https://ui-avatars.com/api/?name='+c.name}" style="width:30px;height:30px;border-radius:50%"><span>${c.name}</span>`;
+                d.onclick=()=>showModal(c); b.appendChild(d);
+            });
+            document.getElementById('contact-modal').style.display='none';
+            document.getElementById('list-modal').style.display='block';
+            document.getElementById('modal-backdrop').style.display='flex';
+        }
+        function closeModal() { document.getElementById('modal-backdrop').style.display='none'; }
+        document.getElementById('modal-backdrop').addEventListener('click', e=>{if(e.target===document.getElementById('modal-backdrop'))closeModal()});
+
+    </script>
+</body>
+</html>
