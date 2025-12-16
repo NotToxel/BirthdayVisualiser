@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birthday Analytics V4</title>
+    <title>BirthdayVisualiser</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
@@ -15,8 +15,8 @@
     <style>
         :root {
             --primary: #6366f1;
-            --primary-bg: rgba(99, 102, 241, 0.1);
-            --accent: #ec4899;
+            --primary-rgb: 99, 102, 241;
+            --accent: #f43f5e;
             --bg: #f8fafc;
             --surface: #ffffff;
             --surface-2: #f1f5f9;
@@ -24,7 +24,7 @@
             --text-muted: #64748b;
             --border: #e2e8f0;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --scrubber-h: 70px;
+            --scrubber-h: 80px;
         }
 
         body.dark {
@@ -34,8 +34,7 @@
             --text: #f8fafc;
             --text-muted: #94a3b8;
             --border: #334155;
-            --primary-bg: rgba(99, 102, 241, 0.2);
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
         }
 
         body {
@@ -48,10 +47,37 @@
             transition: background 0.3s, color 0.3s;
         }
 
-        /* --- Custom Scrollbar --- */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; opacity: 0.5; }
+        /* --- Landing Screen --- */
+        #landing-screen {
+            position: fixed; inset: 0; z-index: 5000;
+            background: var(--bg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+        #landing-screen.hidden { opacity: 0; pointer-events: none; }
+        
+        .landing-content { text-align: center; animation: fadeUp 0.8s ease-out; }
+        .hero-icon { font-size: 5rem; color: var(--accent); margin-bottom: 1rem; filter: drop-shadow(0 10px 10px rgba(244, 63, 94, 0.3)); }
+        .hero-title { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; background: linear-gradient(135deg, var(--text) 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-desc { color: var(--text-muted); margin-bottom: 2rem; font-size: 1.1rem; max-width: 400px; margin-left: auto; margin-right: auto; }
+        
+        .upload-zone {
+            position: relative;
+            background: var(--primary); color: white;
+            padding: 16px 32px; border-radius: 50px;
+            font-size: 1.1rem; font-weight: 600;
+            cursor: pointer; box-shadow: 0 10px 25px rgba(var(--primary-rgb), 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden; display: inline-flex; align-items: center; gap: 10px;
+        }
+        .upload-zone:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(var(--primary-rgb), 0.5); }
+        .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- App UI (Hidden Initially) --- */
+        #app-container { display: none; flex-direction: column; height: 100%; opacity: 0; transition: opacity 0.5s; }
+        #app-container.visible { opacity: 1; }
 
         /* --- Nav --- */
         nav {
@@ -59,77 +85,72 @@
             padding: 0 1.5rem; height: 60px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: space-between; z-index: 50;
         }
-        .logo { font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .logo { font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; cursor: pointer; }
         
-        .tabs { display: flex; gap: 5px; background: var(--surface-2); padding: 4px; border-radius: 10px; }
+        .tabs { display: flex; gap: 5px; background: var(--surface-2); padding: 4px; border-radius: 12px; }
         .tab {
-            padding: 6px 16px; border-radius: 8px; cursor: pointer;
-            font-size: 0.9rem; font-weight: 500; color: var(--text-muted); transition: 0.2s;
+            padding: 8px 16px; border-radius: 8px; cursor: pointer;
+            font-size: 0.9rem; font-weight: 600; color: var(--text-muted); transition: 0.2s;
         }
         .tab:hover { color: var(--text); }
-        .tab.active { background: var(--surface); color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .tab.active { background: var(--surface); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        .btn {
-            background: var(--primary); color: white; border: none;
-            padding: 8px 16px; border-radius: 8px; font-weight: 500; cursor: pointer;
-            display: flex; align-items: center; gap: 8px; transition: 0.2s; position: relative;
-        }
-        .btn:hover { background: #4f46e5; }
-        .btn-icon { background: transparent; color: var(--text-muted); padding: 8px; font-size: 1.1rem; border:none; cursor: pointer; border-radius: 50%; }
+        .btn-icon { background: transparent; color: var(--text-muted); padding: 8px; font-size: 1.2rem; border:none; cursor: pointer; border-radius: 50%; transition: 0.2s; }
         .btn-icon:hover { color: var(--text); background: var(--surface-2); }
 
-        /* --- Custom Filter UI --- */
+        /* --- Filter Bar --- */
         #filter-bar {
             background: var(--surface); border-bottom: 1px solid var(--border);
-            padding: 12px 1.5rem; display: none; gap: 12px; align-items: center; z-index: 40;
+            padding: 12px 1.5rem; display: flex; gap: 12px; align-items: center; z-index: 40;
         }
 
-        /* Filter Dropdowns */
+        /* Modern Dropdown */
         .filter-dropdown { position: relative; }
         .filter-btn {
             background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
-            padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem;
-            display: flex; align-items: center; gap: 8px; min-width: 140px; justify-content: space-between;
+            padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 500;
+            display: flex; align-items: center; gap: 8px; min-width: 150px; justify-content: space-between;
+            transition: border-color 0.2s;
         }
         .filter-btn:hover { border-color: var(--primary); }
         .filter-menu {
-            position: absolute; top: 110%; left: 0; background: var(--surface);
+            position: absolute; top: 120%; left: 0; background: var(--surface);
             border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);
             width: 280px; padding: 10px; display: none; z-index: 100; max-height: 400px; overflow-y: auto;
         }
-        .filter-menu.open { display: block; }
-        
-        /* Search inside dropdown */
+        .filter-menu.open { display: block; animation: dropIn 0.1s ease-out; }
+        @keyframes dropIn { from{opacity:0; transform:translateY(-5px)} to{opacity:1; transform:translateY(0)} }
+
         .menu-search {
-            width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px;
-            background: var(--bg); color: var(--text); margin-bottom: 8px; box-sizing: border-box;
+            width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px;
+            background: var(--bg); color: var(--text); margin-bottom: 8px; box-sizing: border-box; outline: none;
         }
 
-        /* Checkbox Items */
+        /* Checkbox Item */
         .check-item {
             display: flex; align-items: center; gap: 10px; padding: 8px;
-            border-radius: 6px; cursor: pointer; transition: 0.1s;
+            border-radius: 6px; cursor: pointer; transition: 0.1s; user-select: none;
         }
         .check-item:hover { background: var(--surface-2); }
-        .check-item input { accent-color: var(--primary); transform: scale(1.2); }
+        .check-item input { pointer-events: none; accent-color: var(--primary); width: 16px; height: 16px; }
         .check-item span { flex-grow: 1; font-size: 0.9rem; }
-        .check-count { color: var(--text-muted); font-size: 0.8rem; }
 
         /* Month Grid */
-        .month-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+        .month-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
         .month-tog {
-            padding: 6px; text-align: center; border-radius: 6px; border: 1px solid var(--border);
-            cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: 0.1s;
+            padding: 8px 4px; text-align: center; border-radius: 6px; border: 1px solid var(--border);
+            cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.1s; color: var(--text-muted);
         }
-        .month-tog:hover { background: var(--surface-2); }
+        .month-tog:hover { background: var(--surface-2); color: var(--text); }
         .month-tog.selected { background: var(--primary); color: white; border-color: var(--primary); }
 
         /* Name Search */
         .search-wrapper {
-            background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
-            padding: 6px 12px; display: flex; align-items: center; gap: 8px; flex-grow: 1; max-width: 300px;
+            background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+            padding: 8px 14px; display: flex; align-items: center; gap: 8px; flex-grow: 1; max-width: 400px;
         }
         .search-wrapper input { background: transparent; border: none; outline: none; color: var(--text); width: 100%; font-size: 0.9rem; }
+        .count-badge { margin-left: auto; font-weight: 700; font-size: 0.9rem; color: var(--primary); }
 
         /* --- Views --- */
         .view { display: none; flex-grow: 1; height: 100%; flex-direction: column; overflow: hidden; }
@@ -140,45 +161,42 @@
             height: var(--scrubber-h); background: var(--surface);
             border-bottom: 1px solid var(--border); position: relative;
             cursor: pointer; flex-shrink: 0; user-select: none;
-            /* Padding for Scrubber handled in JS drawing */
         }
         #scrubber-needle {
-            position: absolute; top: 15px; bottom: 15px; width: 2px; background: var(--accent);
-            pointer-events: none; transform: translateX(-50%);
+            position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent);
+            pointer-events: none; transform: translateX(-50%); z-index: 10;
         }
         #scrubber-needle::before {
-            content: ''; position: absolute; top: -6px; left: -4px; width: 10px; height: 10px;
+            content: ''; position: absolute; top: 0; left: -4px; width: 10px; height: 10px;
             background: var(--accent); border-radius: 50%;
         }
         #scrubber-date {
-            position: absolute; top: -5px; transform: translateX(-50%);
+            position: absolute; top: 10px; transform: translateX(-50%);
             background: var(--accent); color: white; padding: 2px 8px;
             border-radius: 12px; font-size: 11px; font-weight: 700;
-            pointer-events: none; opacity: 0; transition: opacity 0.2s; white-space: nowrap;
+            pointer-events: none; opacity: 0; transition: opacity 0.2s; white-space: nowrap; z-index: 11;
         }
         #scrubber-container:hover #scrubber-date, #scrubber-container.dragging #scrubber-date { opacity: 1; }
-        .scrubber-label {
-            position: absolute; bottom: 4px; font-size: 10px; color: var(--text-muted); font-weight: 700; pointer-events: none;
+        
+        .scrubber-year-label {
+            position: absolute; bottom: 5px; font-size: 11px; font-weight: 700; color: var(--text-muted); pointer-events: none;
         }
 
-        #timeline-wrapper { flex-grow: 1; position: relative; background: var(--bg); overflow: hidden; padding: 0; }
-        
+        #timeline-wrapper { flex-grow: 1; position: relative; background: var(--bg); overflow: hidden; }
         .contact-node {
             display: flex; flex-direction: column; align-items: center; cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: transparent !important; border: none !important; box-shadow: none !important;
         }
         .contact-node:hover { transform: scale(1.4); z-index: 999 !important; }
         .contact-node img {
             width: 48px; height: 48px; border-radius: 50%; object-fit: cover;
-            border: 3px solid var(--surface); 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            background: var(--surface-2);
+            border: 3px solid var(--surface); box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: var(--surface-2);
         }
-
         .vis-item { border-color: transparent !important; background: transparent !important; }
         .vis-item.vis-selected { background: transparent !important; }
 
-        /* Stats View */
+        /* Stats */
         #stats-content { padding: 2rem; overflow-y: auto; background: var(--bg); }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; max-width: 1400px; margin: 0 auto; }
         .card {
@@ -186,183 +204,172 @@
             border: 1px solid var(--border); box-shadow: var(--shadow);
             display: flex; flex-direction: column;
         }
-        
-        /* Bubble Canvas */
-        .bubble-wrapper {
-            width: 100%; height: 400px; background: var(--surface-2); border-radius: 12px;
-            position: relative; overflow: hidden;
-        }
-        canvas#bubble-canvas { width: 100%; height: 100%; display: block; cursor: default; }
+        .bubble-wrapper { width: 100%; height: 400px; background: var(--surface-2); border-radius: 12px; position: relative; overflow: hidden; }
+        canvas#bubble-canvas { width: 100%; height: 100%; display: block; }
 
-        /* Missing Data View */
+        /* Missing Data */
+        #missing-layout { display: flex; height: 100%; }
         #missing-sidebar {
-            width: 300px; background: var(--surface); border-right: 1px solid var(--border);
-            padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;
+            width: 320px; background: var(--surface); border-right: 1px solid var(--border);
+            padding: 24px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0;
         }
-        #missing-main { flex-grow: 1; overflow-y: auto; padding: 20px; background: var(--bg); }
-        .missing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        #missing-main { flex-grow: 1; overflow-y: auto; padding: 24px; background: var(--bg); }
+        .missing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
         .missing-card {
             background: var(--surface); padding: 12px; border-radius: 12px;
-            border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s;
+            border: 1px solid var(--border); display: flex; align-items: center; gap: 12px;
+            cursor: pointer; transition: 0.2s;
         }
-        .missing-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--primary); }
-        .badge-red { background: rgba(239, 68, 68, 0.1); color: #ef4444; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:700;}
-        .badge-yellow { background: rgba(245, 158, 11, 0.1); color: #d97706; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:700;}
+        .missing-card:hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: var(--shadow); }
+        .badge { padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .badge-red { background: rgba(244, 63, 94, 0.1); color: var(--accent); }
+        .badge-yellow { background: rgba(245, 158, 11, 0.1); color: #d97706; }
 
         /* Modal */
         #modal-backdrop {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-            z-index: 2000; display: none; align-items: center; justify-content: center;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+            z-index: 6000; display: none; align-items: center; justify-content: center;
         }
         .modal {
-            background: var(--surface); width: 400px; max-width: 90%; border-radius: 20px;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); animation: zoomIn 0.2s ease-out;
-            overflow: hidden; border: 1px solid var(--border);
+            background: var(--surface); width: 420px; max-width: 90%; border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: zoomIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden; border: 1px solid var(--border); position: relative;
         }
-        @keyframes zoomIn { from{transform:scale(0.95);opacity:0} to{transform:scale(1);opacity:1} }
+        @keyframes zoomIn { from{transform:scale(0.9);opacity:0} to{transform:scale(1);opacity:1} }
         
-        .modal-header {
-            height: 100px; background: linear-gradient(135deg, var(--primary), var(--accent));
-            position: relative; margin-bottom: 50px;
-        }
+        .modal-header { height: 110px; background: linear-gradient(135deg, var(--primary), var(--accent)); position: relative; margin-bottom: 60px; }
         .modal-avatar-lg {
-            width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--surface);
-            position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%);
-            background: var(--surface); object-fit: cover;
+            width: 110px; height: 110px; border-radius: 50%; border: 5px solid var(--surface);
+            position: absolute; bottom: -55px; left: 50%; transform: translateX(-50%);
+            background: var(--surface); object-fit: cover; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .modal-close {
-            position: absolute; top: 15px; right: 15px; color: white;
-            background: rgba(0,0,0,0.2); width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            position: absolute; top: 16px; right: 16px; color: white;
+            background: rgba(0,0,0,0.2); width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;
         }
-        .modal-body { padding: 0 24px 24px 24px; text-align: center; }
-        .modal-name { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
-        .modal-meta { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
-        .modal-details { text-align: left; background: var(--surface-2); padding: 16px; border-radius: 12px; }
-        .detail-row { display: flex; gap: 12px; margin-bottom: 10px; font-size: 0.95rem; align-items: flex-start;}
-        .detail-row i { color: var(--primary); width: 20px; margin-top: 3px; }
-        .tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
-        .tag { background: var(--surface-2); border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; }
+        .modal-close:hover { background: rgba(0,0,0,0.4); }
+        .modal-body { padding: 0 32px 32px 32px; text-align: center; }
+        .modal-name { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; color: var(--text); }
+        .modal-meta { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 24px; font-weight: 500; }
         
-        #loading { position: fixed; inset: 0; background: var(--surface); z-index: 3000; display: none; align-items: center; justify-content: center; flex-direction: column; }
+        .modal-details { text-align: left; background: var(--surface-2); padding: 20px; border-radius: 16px; margin-top: 20px; }
+        .detail-row { display: flex; gap: 12px; margin-bottom: 12px; font-size: 0.95rem; align-items: center; color: var(--text); }
+        .detail-row:last-child { margin-bottom: 0; }
+        .detail-row i { color: var(--primary); width: 20px; text-align: center; }
+        .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .tag { background: var(--surface-2); border: 1px solid var(--border); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+
+        #loading { position: fixed; inset: 0; background: var(--bg); z-index: 7000; display: none; align-items: center; justify-content: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
+    <div id="landing-screen">
+        <div class="landing-content">
+            <i class="fa-solid fa-cake-candles hero-icon"></i>
+            <div class="hero-title">BirthdayVisualiser</div>
+            <div class="hero-desc">Interactive timeline, physics statistics, and density analysis for your Google Contacts.</div>
+            <label class="upload-zone">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Upload CSV
+                <input type="file" id="landing-upload" accept=".csv">
+            </label>
+            <p style="margin-top:20px; font-size:0.8rem; color:var(--text-muted)">Your data stays in your browser.</p>
+        </div>
+    </div>
+
     <div id="loading">
         <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
-        <h3 style="color: var(--text-muted);">Processing...</h3>
+        <h3 style="color: var(--text-muted);">Parsing Contacts...</h3>
     </div>
 
-    <nav>
-        <div class="logo">
-            <i class="fa-solid fa-cake-candles" style="color: var(--accent);"></i>
-            <span>Birthday<span style="color:var(--primary)">History</span></span>
-        </div>
-        <div class="tabs">
-            <div class="tab active" onclick="setTab('timeline')">Timeline</div>
-            <div class="tab" onclick="setTab('stats')">Statistics</div>
-            <div class="tab" onclick="setTab('missing')">Missing Data</div>
-        </div>
-        <div style="display:flex; gap:10px">
-            <button class="btn-icon" onclick="toggleDark()" title="Dark Mode"><i class="fa-solid fa-moon"></i></button>
-            <button class="btn">
-                <i class="fa-solid fa-upload"></i> Upload CSV
-                <input type="file" id="file-input" accept=".csv" style="position:absolute; inset:0; opacity:0; cursor:pointer;">
-            </button>
-        </div>
-    </nav>
-
-    <div id="filter-bar">
-        
-        <div class="filter-dropdown" id="dd-tag">
-            <div class="filter-btn" onclick="toggleDropdown('dd-tag')">
-                <span><i class="fa-solid fa-tag"></i> Tags</span> <i class="fa-solid fa-chevron-down"></i>
+    <div id="app-container">
+        <nav>
+            <div class="logo" onclick="location.reload()">
+                <i class="fa-solid fa-cake-candles" style="color: var(--accent);"></i>
+                <span>Birthday<span style="color:var(--primary)">Visualiser</span></span>
             </div>
-            <div class="filter-menu">
-                <input type="text" class="menu-search" placeholder="Filter tags..." onkeyup="filterMenu(this)">
-                <div id="tag-list"></div>
+            <div class="tabs">
+                <div class="tab active" onclick="setTab('timeline')">Timeline</div>
+                <div class="tab" onclick="setTab('stats')">Statistics</div>
+                <div class="tab" onclick="setTab('missing')">Missing Data</div>
             </div>
-        </div>
-
-        <div class="filter-dropdown" id="dd-month">
-            <div class="filter-btn" onclick="toggleDropdown('dd-month')">
-                <span><i class="fa-regular fa-calendar"></i> Months</span> <i class="fa-solid fa-chevron-down"></i>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-icon" onclick="toggleDark()" title="Dark Mode"><i class="fa-solid fa-moon"></i></button>
             </div>
-            <div class="filter-menu" style="width: 300px;">
-                <div class="month-grid" id="month-grid"></div>
-                <div style="text-align:right; margin-top:10px; font-size:0.8rem; color:var(--text-muted); cursor:pointer;" onclick="clearMonths()">Clear All</div>
+        </nav>
+
+        <div id="filter-bar">
+            <div class="filter-dropdown" id="dd-tag">
+                <div class="filter-btn" onclick="toggleDropdown('dd-tag')">
+                    <span><i class="fa-solid fa-tag"></i> Tags</span> <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="filter-menu">
+                    <input type="text" class="menu-search" placeholder="Filter tags..." onkeyup="filterMenu(this)">
+                    <div id="tag-list"></div>
+                </div>
             </div>
+            <div class="filter-dropdown" id="dd-month">
+                <div class="filter-btn" onclick="toggleDropdown('dd-month')">
+                    <span><i class="fa-regular fa-calendar"></i> Months</span> <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="filter-menu" style="width: 300px;">
+                    <div class="month-grid" id="month-grid"></div>
+                    <div style="text-align:right; margin-top:10px; font-size:0.8rem; color:var(--text-muted); cursor:pointer;" onclick="clearMonths()">Clear Selection</div>
+                </div>
+            </div>
+            <div class="search-wrapper">
+                <i class="fa-solid fa-search" style="color:var(--text-muted)"></i>
+                <input type="text" id="name-search" placeholder="Search by name...">
+            </div>
+            <div class="count-badge" id="count-display">0</div>
         </div>
 
-        <div class="search-wrapper">
-            <i class="fa-solid fa-search" style="color:var(--text-muted)"></i>
-            <input type="text" id="name-search" placeholder="Search by name...">
-        </div>
-
-        <div class="count-badge" id="count-display">0 Contacts</div>
-    </div>
-
-    <div id="timeline-view" class="view active">
-        <div id="scrubber-container">
-            <canvas id="scrubber-canvas"></canvas>
-            <div id="scrubber-needle"></div>
-            <div id="scrubber-date">1990</div>
-            <div id="lbl-start" class="scrubber-label" style="left: 10px;"></div>
-            <div id="lbl-end" class="scrubber-label" style="right: 10px;"></div>
-        </div>
-        <div id="timeline-wrapper">
-            <div id="timeline-vis" style="width:100%; height:100%;"></div>
-            <div id="empty-state" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-muted);">
-                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 4rem; margin-bottom: 1rem; opacity:0.3;"></i>
-                <h2>Upload Google Contacts CSV</h2>
+        <div id="timeline-view" class="view active">
+            <div id="scrubber-container">
+                <canvas id="scrubber-canvas"></canvas>
+                <div id="scrubber-needle"></div>
+                <div id="scrubber-date">1990</div>
+                <div id="lbl-start" class="scrubber-year-label" style="left: 40px;"></div>
+                <div id="lbl-end" class="scrubber-year-label" style="right: 40px;"></div>
+            </div>
+            <div id="timeline-wrapper">
+                <div id="timeline-vis" style="width:100%; height:100%;"></div>
             </div>
         </div>
-    </div>
 
-    <div id="stats-view" class="view">
-        <div id="stats-content">
-            <div class="stats-grid">
-                <div class="card" style="grid-column: span 2;">
-                    <h3>Contact Cloud</h3>
-                    <div class="bubble-wrapper">
-                        <canvas id="bubble-canvas"></canvas>
+        <div id="stats-view" class="view">
+            <div id="stats-content">
+                <div class="stats-grid">
+                    <div class="card" style="grid-column: span 2;">
+                        <h3>Interactive Contact Cloud</h3>
+                        <div class="bubble-wrapper"><canvas id="bubble-canvas"></canvas></div>
+                    </div>
+                    <div class="card"><h3>Chinese Zodiac</h3><canvas id="chart-zodiac"></canvas></div>
+                    <div class="card"><h3>Birthdays by Month</h3><canvas id="chart-months"></canvas></div>
+                    <div class="card"><h3>Decades</h3><canvas id="chart-decades"></canvas></div>
+                    <div class="card"><h3>Top Tags</h3><canvas id="chart-tags"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="missing-view" class="view">
+            <div id="missing-layout">
+                <div id="missing-sidebar">
+                    <h3>Audit Filters</h3>
+                    <p style="font-size:0.9rem; color:var(--text-muted);">Filter contacts with missing data.</p>
+                    <div class="filter-dropdown" id="dd-missing-tag">
+                         <div class="filter-btn" onclick="toggleDropdown('dd-missing-tag')">
+                            <span id="missing-tag-label">All Tags</span> <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="filter-menu" style="position:static; display:none; width:100%; box-shadow:none; border:1px solid var(--border); margin-top:5px;" id="missing-menu-inner">
+                            <div id="missing-tag-list"></div>
+                        </div>
                     </div>
                 </div>
-                <div class="card">
-                    <h3>Chinese Zodiac</h3>
-                    <canvas id="chart-zodiac"></canvas>
+                <div id="missing-main">
+                    <div class="missing-grid" id="missing-grid"></div>
                 </div>
-                <div class="card">
-                    <h3>Birthdays by Month</h3>
-                    <canvas id="chart-months"></canvas>
-                </div>
-                <div class="card">
-                    <h3>Decades</h3>
-                    <canvas id="chart-decades"></canvas>
-                </div>
-                <div class="card">
-                    <h3>Top Tags</h3>
-                    <canvas id="chart-tags"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="missing-view" class="view">
-        <div style="display:flex; height:100%;">
-            <div id="missing-sidebar">
-                <h3>Missing Data Filters</h3>
-                <p style="font-size:0.9rem; color:var(--text-muted);">These filters only affect this tab.</p>
-                <div class="filter-dropdown" style="width:100%">
-                    <div style="margin-bottom:5px; font-weight:600; font-size:0.9rem;">Filter by Tag:</div>
-                    <select id="missing-tag-select" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
-                        <option value="all">All Tags</option>
-                    </select>
-                </div>
-            </div>
-            <div id="missing-main">
-                <div class="missing-grid" id="missing-grid"></div>
             </div>
         </div>
     </div>
@@ -374,10 +381,9 @@
                 <img id="m-img" class="modal-avatar-lg" src="">
             </div>
             <div class="modal-body">
-                <div class="modal-name" id="m-name">Name</div>
-                <div class="modal-meta" id="m-meta">Date</div>
+                <div class="modal-name" id="m-name"></div>
+                <div class="modal-meta" id="m-meta"></div>
                 <div class="tag-cloud" id="m-tags"></div>
-                <br>
                 <div class="modal-details" id="m-details"></div>
             </div>
         </div>
@@ -388,27 +394,29 @@
         let allContacts = [], filteredContacts = [], missingContacts = [], yearlessContacts = [];
         let timeline = null, chartInstances = {};
         let activeTags = new Set(), activeMonths = new Set();
-        let scrubberPad = 40; // Hard padding for scrubber
-        
+        let missingTagFilter = 'all';
+        const SC_PAD = 40; // Scrubber Padding
         const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
         const ANIMALS = ["Monkey","Rooster","Dog","Pig","Rat","Ox","Tiger","Rabbit","Dragon","Snake","Horse","Goat"];
 
-        // --- Init ---
-        document.getElementById('file-input').addEventListener('change', processFile);
+        // --- Event Listeners ---
+        document.getElementById('landing-upload').addEventListener('change', processFile);
         document.getElementById('name-search').addEventListener('input', applyFilters);
-        document.getElementById('missing-tag-select').addEventListener('change', renderMissing);
-        
-        // --- Core ---
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('.filter-dropdown')) document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('open'));
+        });
+
+        // --- UI Logic ---
         function setTab(t) {
             document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
             document.getElementById(`${t}-view`).classList.add('active');
             document.querySelector(`.tab[onclick="setTab('${t}')"]`).classList.add('active');
             
-            // Toggle global filter bar visibility
+            // Manage Global Filter Bar
             const fb = document.getElementById('filter-bar');
-            if(t==='missing') fb.style.display = 'none';
-            else if(allContacts.length) fb.style.display = 'flex';
+            if(t==='missing' || t==='landing') fb.style.display = 'none';
+            else fb.style.display = 'flex';
 
             if(t==='timeline' && timeline) { timeline.redraw(); drawScrubber(); }
             if(t==='stats') startBubbleLoop(); else stopBubbleLoop();
@@ -420,103 +428,92 @@
             Object.values(chartInstances).forEach(c => c.update());
         }
 
-        // --- Custom Filter UI Logic ---
         function toggleDropdown(id) {
-            document.querySelectorAll('.filter-menu').forEach(m => {
-                if(m.parentElement.id !== id) m.classList.remove('open');
-            });
-            document.querySelector(`#${id} .filter-menu`).classList.toggle('open');
-        }
-        
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', (e) => {
-            if(!e.target.closest('.filter-dropdown')) {
-                document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('open'));
+            if(id === 'dd-missing-tag') {
+                const m = document.getElementById('missing-menu-inner');
+                m.style.display = m.style.display==='block' ? 'none' : 'block';
+            } else {
+                document.querySelectorAll('.filter-menu').forEach(m => { if(m.parentElement.id!==id) m.classList.remove('open'); });
+                document.querySelector(`#${id} .filter-menu`).classList.toggle('open');
             }
-        });
+        }
 
-        function buildTagFilter(tags) {
-            const list = document.getElementById('tag-list');
-            list.innerHTML = '';
+        // --- Filter Builders ---
+        function buildFilters(tags) {
+            // Main Tags
+            const list = document.getElementById('tag-list'); list.innerHTML = '';
             tags.forEach(t => {
-                const div = document.createElement('div');
-                div.className = 'check-item';
-                div.innerHTML = `<input type="checkbox" value="${t}" onchange="toggleTag(this, '${t}')"><span>${t}</span>`;
+                const div = document.createElement('div'); div.className = 'check-item';
+                div.innerHTML = `<input type="checkbox" id="chk-${t}"><span>${t}</span>`;
+                div.onclick = (e) => { 
+                    const cb = div.querySelector('input'); cb.checked = !cb.checked;
+                    if(cb.checked) activeTags.add(t); else activeTags.delete(t);
+                    applyFilters(); 
+                };
                 list.appendChild(div);
             });
-            
-            // Build Missing Filter Dropdown too
-            const sel = document.getElementById('missing-tag-select');
-            sel.innerHTML = '<option value="all">All Tags</option>';
+
+            // Month Grid
+            const mg = document.getElementById('month-grid'); mg.innerHTML = '';
+            MONTHS_SHORT.forEach((m,i) => {
+                const d = document.createElement('div'); d.className='month-tog'; d.innerText=m;
+                d.onclick = () => {
+                    d.classList.toggle('selected');
+                    const idx = i+1;
+                    if(activeMonths.has(idx)) activeMonths.delete(idx); else activeMonths.add(idx);
+                    applyFilters();
+                };
+                mg.appendChild(d);
+            });
+
+            // Missing Tab Tags (Checkboxes style inside sidebar)
+            const mList = document.getElementById('missing-tag-list'); mList.innerHTML = '';
+            const allOpt = document.createElement('div'); allOpt.className = 'check-item';
+            allOpt.innerHTML = `<span>All Tags</span>`; 
+            allOpt.onclick = () => { missingTagFilter='all'; document.getElementById('missing-tag-label').innerText='All Tags'; renderMissing(); document.getElementById('missing-menu-inner').style.display='none'; };
+            mList.appendChild(allOpt);
+
             tags.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t; opt.innerText = t;
-                sel.appendChild(opt);
+                const d = document.createElement('div'); d.className = 'check-item';
+                d.innerHTML = `<span>${t}</span>`;
+                d.onclick = () => { missingTagFilter=t; document.getElementById('missing-tag-label').innerText=t; renderMissing(); document.getElementById('missing-menu-inner').style.display='none'; };
+                mList.appendChild(d);
             });
-        }
-
-        function buildMonthFilter() {
-            const grid = document.getElementById('month-grid');
-            grid.innerHTML = '';
-            MONTHS_SHORT.forEach((m, i) => {
-                const div = document.createElement('div');
-                div.className = 'month-tog';
-                div.innerText = m;
-                div.onclick = () => toggleMonth(div, i+1);
-                grid.appendChild(div);
-            });
-        }
-
-        function toggleTag(cb, tag) {
-            if(cb.checked) activeTags.add(tag); else activeTags.delete(tag);
-            applyFilters();
-        }
-        function toggleMonth(el, idx) {
-            el.classList.toggle('selected');
-            if(activeMonths.has(idx)) activeMonths.delete(idx); else activeMonths.add(idx);
-            applyFilters();
         }
         function clearMonths() {
-            activeMonths.clear();
-            document.querySelectorAll('.month-tog').forEach(el=>el.classList.remove('selected'));
-            applyFilters();
+            activeMonths.clear(); document.querySelectorAll('.month-tog').forEach(e=>e.classList.remove('selected')); applyFilters();
         }
-        function filterMenu(input) {
-            const val = input.value.toLowerCase();
-            const items = input.nextElementSibling.children;
-            Array.from(items).forEach(div => {
-                const txt = div.innerText.toLowerCase();
-                div.style.display = txt.includes(val) ? 'flex' : 'none';
-            });
+        function filterMenu(inp) {
+            const v = inp.value.toLowerCase();
+            Array.from(inp.nextElementSibling.children).forEach(el => el.style.display = el.innerText.toLowerCase().includes(v) ? 'flex' : 'none');
         }
 
-        // --- Data Processing ---
+        // --- Data Parser ---
         function processFile(e) {
             const file = e.target.files[0];
             if(!file) return;
-            document.getElementById('loading').style.display='flex';
-            setTimeout(()=>{
-                const reader=new FileReader();
-                reader.onload=(evt)=>{
+            document.getElementById('landing-screen').classList.add('hidden');
+            document.getElementById('loading').style.display = 'flex';
+            setTimeout(() => {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
                     const parsed = parseCSV(evt.target.result);
-                    allContacts=parsed.valid; missingContacts=parsed.inv; yearlessContacts=parsed.yl;
-                    
-                    // Setup UI
-                    const tags = new Set(); allContacts.forEach(c=>c.tags.forEach(t=>tags.add(t)));
-                    buildTagFilter(Array.from(tags).sort());
-                    buildMonthFilter();
-                    
+                    allContacts = parsed.valid; missingContacts = parsed.inv; yearlessContacts = parsed.yl;
                     filteredContacts = allContacts;
+
+                    const tags = new Set(); allContacts.forEach(c=>c.tags.forEach(t=>tags.add(t)));
+                    buildFilters(Array.from(tags).sort());
+
                     initTimeline();
                     renderMissing();
                     applyFilters();
 
-                    document.getElementById('empty-state').style.display='none';
-                    document.getElementById('filter-bar').style.display='flex';
-                    document.getElementById('loading').style.display='none';
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('app-container').style.display = 'flex';
+                    setTimeout(() => document.getElementById('app-container').classList.add('visible'), 50);
                 };
                 reader.readAsText(file);
-            }, 100);
+            }, 500);
         }
 
         function parseCSV(text) {
@@ -533,16 +530,20 @@
 
             if(rows.length<2) return {valid:[],inv:[],yl:[]};
             const h=rows[0].map(x=>x.trim().toLowerCase());
-            const idx=(k)=>h.findIndex(x=>k.some(key=>x.includes(key)));
             
-            const iF=idx(['first']), iL=idx(['last']), iN=idx(['name']), iB=idx(['birthday']), iT=idx(['group','label']), iP=idx(['photo']), iE=idx(['e-mail 1']);
-            const v=[], inv=[], yl=[];
+            // Strict Header Matching for Email/Phone based on snippet
+            const idx=(str)=>h.findIndex(x => x === str || x.includes(str));
+            const iF=idx('first name'), iL=idx('last name'), iN=idx('name'), iB=idx('birthday');
+            const iT=idx('labels'), iP=idx('photo');
+            const iE = h.indexOf('e-mail 1 - value'); // Strict
+            const iPhone = h.indexOf('phone 1 - value'); // Strict
 
+            const v=[], inv=[], yl=[];
             for(let i=1;i<rows.length;i++){
                 const row=rows[i]; if(row.length<2)continue;
                 let name = iF>-1 ? [row[iF],row[iL]].filter(Boolean).join(" ") : (iN>-1?row[iN]:"");
                 name=name.trim()||"Unnamed";
-                
+
                 let y=0,m=0,d=0, hasYear=false, raw=iB>-1?row[iB]:"";
                 if(raw){
                     raw=raw.replace(/ --/g,"").replace(/--/g,"").trim();
@@ -555,7 +556,10 @@
                 if(iT>-1 && row[iT]) tags=row[iT].split(' ::: ').map(t=>t.replace(/\* /g,'').trim()).filter(t=>t&&!['mycontacts','starred'].includes(t.toLowerCase()));
 
                 const cObj = {
-                    id:i, name, y, m, d, hasYear, tags, photo: iP>-1?row[iP]:"", email: iE>-1?row[iE]:"",
+                    id:i, name, y, m, d, hasYear, tags,
+                    photo: iP>-1?row[iP]:"", 
+                    email: iE>-1?row[iE]:"", 
+                    phone: iPhone>-1?row[iPhone]:"",
                     zodiac: hasYear?ANIMALS[y%12]:"Unknown"
                 };
 
@@ -567,42 +571,39 @@
 
         function applyFilters() {
             const search = document.getElementById('name-search').value.toLowerCase();
-            
             filteredContacts = allContacts.filter(c => {
-                if(activeTags.size > 0) {
-                    const hasTag = c.tags.some(t => activeTags.has(t));
-                    if(!hasTag) return false;
-                }
-                if(activeMonths.size > 0 && !activeMonths.has(c.m)) return false;
+                if(activeTags.size>0 && !c.tags.some(t=>activeTags.has(t))) return false;
+                if(activeMonths.size>0 && !activeMonths.has(c.m)) return false;
                 if(search && !c.name.toLowerCase().includes(search)) return false;
                 return true;
             });
-            
-            document.getElementById('count-display').innerText = filteredContacts.length + " Contacts";
+            document.getElementById('count-display').innerText = filteredContacts.length;
             updateTimelineData();
             updateStats();
         }
 
-        // --- Timeline ---
+        // --- Timeline Logic ---
         function initTimeline() {
             if(timeline) timeline.destroy();
-            const container = document.getElementById('timeline-vis');
-            timeline = new vis.Timeline(container, new vis.DataSet([]), {
-                height: '100%', orientation: 'top', zoomMin: 1000*60*60*24*30, zoomMax: 1000*60*60*24*365*10,
-                showCurrentTime: false, verticalScroll: true, zoomKey: 'ctrlKey',
+            timeline = new vis.Timeline(document.getElementById('timeline-vis'), new vis.DataSet([]), {
+                height: '100%', orientation: 'top', 
+                zoomMin: 1000*60*60*24*30, zoomMax: 1000*60*60*24*365*10,
+                showCurrentTime: false, verticalScroll: true, zoomKey: 'ctrlKey', stack: true,
+                stackSubgroups: false,
                 template: (item) => {
                     const src = item.photo&&item.photo.startsWith('http') ? item.photo : `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random&color=fff`;
                     return `<div class="contact-node"><img src="${src}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}'"></div>`;
                 }
             });
-            timeline.on('select', (p)=>{ if(p.items.length) { const c=filteredContacts.find(x=>x.id==p.items[0]); if(c)showModal(c); timeline.setSelection([],{fireEvent:false}); }});
+            timeline.on('select', (p)=>{ if(p.items.length){ const c=filteredContacts.find(x=>x.id==p.items[0]); if(c)showModal(c); timeline.setSelection([],{fireEvent:false}); }});
+            timeline.on('rangechange', () => { /* Sync logic if needed */ });
         }
 
         function updateTimelineData() {
             const items = filteredContacts.map(c => ({
                 id: c.id, start: `${c.hasYear?c.y:2000}-${String(c.m).padStart(2,'0')}-${String(c.d).padStart(2,'0')}`,
                 name: c.name, photo: c.photo,
-                title: `${c.name} (${MONTHS_SHORT[c.m-1]} ${c.d})`
+                title: `${c.name} • ${MONTHS_SHORT[c.m-1]} ${c.d}`
             }));
             timeline.setItems(items);
             if(items.length) timeline.fit();
@@ -619,66 +620,76 @@
             canvas.width = rect.width*dpr; canvas.height = rect.height*dpr;
             ctx.scale(dpr,dpr);
             
-            const isDark = document.body.classList.contains('dark');
             ctx.clearRect(0,0,rect.width,rect.height);
+            const isDark = document.body.classList.contains('dark');
 
             const years = filteredContacts.filter(c=>c.hasYear).map(c=>c.y);
             if(!years.length) return;
-            const minY = Math.min(...years), maxY = Math.max(...years);
-            const range = maxY - minY || 1; // Avoid divide by zero
-            const drawW = rect.width - (scrubberPad * 2);
-
+            
+            const minY = Math.min(...years);
+            const maxY = Math.max(...years);
+            const range = maxY - minY || 1;
+            
+            // Scrubber Draw Area
+            const drawW = rect.width - (SC_PAD * 2);
+            
             document.getElementById('lbl-start').innerText = minY;
             document.getElementById('lbl-end').innerText = maxY;
-            document.getElementById('lbl-start').style.left = (scrubberPad - 10) + 'px';
-            document.getElementById('lbl-end').style.right = (scrubberPad - 10) + 'px';
 
             const counts={}; years.forEach(y=>counts[y]=(counts[y]||0)+1);
             const maxC = Math.max(...Object.values(counts));
             
             ctx.fillStyle = isDark ? '#6366f1' : '#6366f1';
+            
+            // Draw Histogram
             for(let y=minY; y<=maxY; y++){
                 if(!counts[y]) continue;
+                // Calculate Exact X position
                 const pct = (y - minY) / range;
-                const x = scrubberPad + (pct * drawW);
-                const h = (counts[y]/maxC) * (rect.height*0.5); // Max 50% height
+                const x = SC_PAD + (pct * drawW);
+                
+                // Height
+                const h = (counts[y]/maxC) * (rect.height*0.5); 
                 const yPos = (rect.height - h)/2;
-                ctx.fillRect(Math.floor(x), yPos, 2, h);
+                
+                // Draw bar slightly wider (3px) for visibility
+                ctx.fillRect(Math.floor(x), yPos, 3, h);
             }
+            
             canvas.dataset.minY = minY; canvas.dataset.maxY = maxY;
         }
-        
+
         // Scrubber Interaction
         const sCon = document.getElementById('scrubber-container');
         const sNeedle = document.getElementById('scrubber-needle');
         const sDate = document.getElementById('scrubber-date');
         let sDragging = false;
 
-        function updateScrubberPos(cx) {
+        function updateScrubber(cx) {
             const rect = sCon.getBoundingClientRect();
             const min = +document.getElementById('scrubber-canvas').dataset.minY;
             const max = +document.getElementById('scrubber-canvas').dataset.maxY;
             if(!min) return;
 
             let px = cx - rect.left;
-            if(px < scrubberPad) px = scrubberPad;
-            if(px > rect.width - scrubberPad) px = rect.width - scrubberPad;
-            
+            if(px < SC_PAD) px = SC_PAD;
+            if(px > rect.width - SC_PAD) px = rect.width - SC_PAD;
+
             sNeedle.style.left = px + 'px';
             sDate.style.left = px + 'px';
-            
-            const pct = (px - scrubberPad) / (rect.width - (scrubberPad*2));
+
+            const pct = (px - SC_PAD) / (rect.width - (SC_PAD*2));
             const year = min + (pct * (max - min));
             sDate.innerText = Math.round(year);
             
             if(timeline) timeline.moveTo(new Date(year, 6, 1), {animation: false});
         }
-        sCon.addEventListener('mousedown', e => { sDragging=true; sCon.classList.add('dragging'); updateScrubberPos(e.clientX); });
-        document.addEventListener('mousemove', e => { if(sDragging){ e.preventDefault(); updateScrubberPos(e.clientX); }});
-        document.addEventListener('mouseup', () => { sDragging=false; sCon.classList.remove('dragging'); });
+        sCon.addEventListener('mousedown', e => { sDragging=true; updateScrubber(e.clientX); });
+        document.addEventListener('mousemove', e => { if(sDragging){ e.preventDefault(); updateScrubber(e.clientX); }});
+        document.addEventListener('mouseup', () => sDragging=false);
 
         // --- Bubble Cloud (Subtle Physics) ---
-        let bubbleCanvas, bCtx, bubbles = [], animationId;
+        let bubbleCanvas, bCtx, bubbles=[], animationId;
         let mouse = {x:-999, y:-999};
 
         function startBubbleLoop() {
@@ -687,23 +698,23 @@
             const rect = bubbleCanvas.parentElement.getBoundingClientRect();
             bubbleCanvas.width = rect.width; bubbleCanvas.height = rect.height;
             
-            // init bubbles
             const count = filteredContacts.length;
-            if(!count) { bubbles=[]; return; }
+            if(!count){bubbles=[];return;}
             const area = bubbleCanvas.width * bubbleCanvas.height;
-            const baseR = Math.min(Math.sqrt((area * 0.6) / (count * Math.PI)), 35); // Max 35px radius
+            const baseR = Math.min(Math.sqrt((area*0.5)/(count*Math.PI)), 30); // Max 30px
             
-            bubbles = filteredContacts.map(c => {
-                const img = new Image();
-                img.src = c.photo && c.photo.startsWith('http') ? c.photo : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
-                return { x:0, y:0, r: baseR, img, data:c };
-            });
+            bubbles = filteredContacts.map(c => ({
+                x:0, y:0, r:baseR, 
+                img: new Image(), data:c,
+                src: c.photo && c.photo.startsWith('http') ? c.photo : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`
+            }));
+            bubbles.forEach(b => b.img.src = b.src);
 
-            // Grid Layout
+            // Honeycomb Layout
             const cols = Math.ceil(Math.sqrt(count * (bubbleCanvas.width/bubbleCanvas.height)));
-            const rows = Math.ceil(count/cols);
             const gap = baseR * 2.1;
             const startX = (bubbleCanvas.width - (cols*gap))/2 + gap/2;
+            const rows = Math.ceil(count/cols);
             const startY = (bubbleCanvas.height - (rows*gap))/2 + gap/2;
 
             bubbles.forEach((b,i) => {
@@ -714,28 +725,23 @@
 
             if(!animationId) loopBubbles();
             
-            bubbleCanvas.onmousemove = e => { 
-                const r = bubbleCanvas.getBoundingClientRect();
-                mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
-            };
-            bubbleCanvas.onmouseleave = () => { mouse.x = -999; };
+            bubbleCanvas.onmousemove = e => { const r=bubbleCanvas.getBoundingClientRect(); mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top; };
+            bubbleCanvas.onmouseleave = () => mouse.x=-999;
             bubbleCanvas.onclick = () => {
-                const clicked = bubbles.find(b => {
-                    const dist = Math.sqrt((mouse.x-b.x)**2 + (mouse.y-b.y)**2);
-                    return dist < b.r * b.scale;
-                });
-                if(clicked) showModal(clicked.data);
+                // Find top-most (largest scale) bubble under mouse
+                const hit = bubbles.filter(b => Math.sqrt((mouse.x-b.x)**2 + (mouse.y-b.y)**2) < b.r*b.scale)
+                                   .sort((a,b)=>b.scale-a.scale)[0];
+                if(hit) showModal(hit.data);
             };
         }
-        function stopBubbleLoop() { cancelAnimationFrame(animationId); animationId = null; }
+        function stopBubbleLoop() { cancelAnimationFrame(animationId); animationId=null; }
 
         function loopBubbles() {
             bCtx.clearRect(0,0,bubbleCanvas.width, bubbleCanvas.height);
             bubbles.forEach(b => {
-                const dx = mouse.x - b.x; const dy = mouse.y - b.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                // Subtle effect: Max 1.5x scale, range 80px
-                b.scale = dist < 80 ? 1 + (0.5 * (1 - dist/80)) : 1;
+                const dist = Math.sqrt((mouse.x-b.x)**2 + (mouse.y-b.y)**2);
+                // Subtle Magnification: Max 1.4x, Range 80px
+                b.scale = dist < 80 ? 1 + (0.4 * (1 - dist/80)) : 1;
             });
             // Draw sorted by scale
             [...bubbles].sort((a,b)=>a.scale-b.scale).forEach(b => {
@@ -744,7 +750,7 @@
                 bCtx.beginPath(); bCtx.arc(b.x, b.y, s, 0, Math.PI*2); bCtx.closePath(); bCtx.clip();
                 try { bCtx.drawImage(b.img, b.x-s, b.y-s, s*2, s*2); } catch(e){}
                 bCtx.strokeStyle = document.body.classList.contains('dark') ? '#334155' : '#fff';
-                bCtx.lineWidth = 2; bCtx.stroke();
+                bCtx.lineWidth = 1.5; bCtx.stroke();
                 bCtx.restore();
             });
             animationId = requestAnimationFrame(loopBubbles);
@@ -755,62 +761,56 @@
             if(document.getElementById('stats-view').classList.contains('active')) startBubbleLoop();
             
             const getC=(f)=>{ const d={}; filteredContacts.forEach(c=>{ const k=f(c); if(k) d[k]=(d[k]||0)+1; }); return d; };
-            const mData = getC(c=>MONTHS_SHORT[c.m-1]);
-            const zData = getC(c=>c.hasYear?c.zodiac:null);
-            const dData = getC(c=>c.hasYear?Math.floor(c.y/10)*10+'s':null);
+            const mD=getC(c=>MONTHS_SHORT[c.m-1]), zD=getC(c=>c.hasYear?c.zodiac:null), dD=getC(c=>c.hasYear?Math.floor(c.y/10)*10+'s':null);
             
-            // Sort tags logic
-            const allTags = getC(c=>c.tags[0]); // Simple top tag per person for chart or loop all
-            // Re-calc tags fully
-            const tags = {}; filteredContacts.forEach(c=>c.tags.forEach(t=>tags[t]=(tags[t]||0)+1));
-            const topT = Object.entries(tags).sort((a,b)=>b[1]-a[1]).slice(0,10);
+            const tC={}; filteredContacts.forEach(c=>c.tags.forEach(t=>tC[t]=(tC[t]||0)+1));
+            const topT = Object.entries(tC).sort((a,b)=>b[1]-a[1]).slice(0,10);
 
-            updateChart('chart-months', 'bar', MONTHS_SHORT, MONTHS_SHORT.map(m=>mData[m]||0), 'Months');
-            updateChart('chart-zodiac', 'doughnut', ANIMALS, ANIMALS.map(a=>zData[a]||0), 'Zodiac');
-            updateChart('chart-decades', 'line', Object.keys(dData).sort(), Object.values(dData), 'Decades');
-            updateChart('chart-tags', 'bar', topT.map(x=>x[0]), topT.map(x=>x[1]), 'Tags');
+            upChart('chart-months','bar',MONTHS_SHORT,MONTHS_SHORT.map(m=>mD[m]||0),'Months');
+            upChart('chart-zodiac','doughnut',ANIMALS,ANIMALS.map(a=>zD[a]||0),'Zodiac');
+            upChart('chart-decades','line',Object.keys(dD).sort(),Object.values(dD),'Decades');
+            upChart('chart-tags','bar',topT.map(x=>x[0]),topT.map(x=>x[1]),'Tags');
         }
 
-        function updateChart(id, type, labels, data, title) {
-            const ctx = document.getElementById(id).getContext('2d');
+        function upChart(id,type,labels,data,label) {
+            const ctx=document.getElementById(id).getContext('2d');
             if(chartInstances[id]) chartInstances[id].destroy();
             chartInstances[id] = new Chart(ctx, {
-                type: type,
-                data: { labels: labels, datasets: [{ label: title, data: data, backgroundColor: type==='doughnut'?['#6366f1','#ec4899','#10b981','#f59e0b','#3b82f6']: '#6366f1', borderColor: '#6366f1', borderWidth: 1 }] },
-                options: { responsive: true, plugins: { legend: {display: type==='doughnut'} } }
+                type:type, data:{labels:labels,datasets:[{label:label,data:data,backgroundColor:type==='doughnut'?['#6366f1','#ec4899','#10b981','#f59e0b','#3b82f6']:'#6366f1',borderColor:'#6366f1',borderWidth:1}]},
+                options:{responsive:true,plugins:{legend:{display:type==='doughnut'}}}
             });
         }
 
         function renderMissing() {
-            const tag = document.getElementById('missing-tag-select').value;
-            const grid = document.getElementById('missing-grid');
-            grid.innerHTML = '';
+            const tag = missingTagFilter;
+            const grid = document.getElementById('missing-grid'); grid.innerHTML = '';
             
-            const list = [...missingContacts, ...yearlessContacts].filter(c => {
-                if(tag !== 'all' && !c.tags.includes(tag)) return false;
-                return true;
-            });
-
+            const list = [...missingContacts, ...yearlessContacts].filter(c => tag==='all' || c.tags.includes(tag));
+            
             list.forEach(c => {
-                const type = c.hasYear ? "Missing Year" : "No Birthday"; // Logic fix: Yearless are in 'yearlessContacts', missingContacts have NO date
-                const badge = missingContacts.includes(c) ? 'badge-red' : 'badge-yellow';
-                const label = missingContacts.includes(c) ? 'No Birthday' : 'Missing Year';
-                
-                const d = document.createElement('div');
-                d.className = 'missing-card';
-                d.innerHTML = `<img src="${c.photo||'https://ui-avatars.com/api/?name='+c.name}" style="width:40px;height:40px;border-radius:50%"><div><div style="font-weight:600">${c.name}</div><span class="${badge}">${label}</span></div>`;
-                d.onclick = () => showModal(c);
-                grid.appendChild(d);
+                const lbl = missingContacts.includes(c) ? 'No Birthday' : 'Missing Year';
+                const cls = missingContacts.includes(c) ? 'badge-red' : 'badge-yellow';
+                const div = document.createElement('div'); div.className='missing-card';
+                div.innerHTML = `<img src="${c.photo||'https://ui-avatars.com/api/?name='+c.name}" style="width:40px;height:40px;border-radius:50%"><div><div style="font-weight:600">${c.name}</div><span class="badge ${cls}">${lbl}</span></div>`;
+                div.onclick = () => showModal(c);
+                grid.appendChild(div);
             });
         }
 
         // --- Modal ---
         function showModal(c) {
             document.getElementById('m-name').innerText = c.name;
-            document.getElementById('m-meta').innerText = `${c.m}/${c.d}/${c.hasYear?c.y:'????'} • ${c.zodiac}`;
+            document.getElementById('m-meta').innerText = `${c.m}/${c.d}/${c.hasYear?c.y:'????'}`;
             document.getElementById('m-img').src = c.photo || `https://ui-avatars.com/api/?name=${c.name}`;
             document.getElementById('m-tags').innerHTML = c.tags.map(t=>`<span class="tag">${t}</span>`).join('');
-            document.getElementById('m-details').innerHTML = `${c.email ? `<div class="detail-row"><i class="fa-solid fa-envelope"></i> ${c.email}</div>` : ''}`;
+            
+            let html = '';
+            if(c.email) html += `<div class="detail-row"><i class="fa-solid fa-envelope"></i> ${c.email}</div>`;
+            if(c.phone) html += `<div class="detail-row"><i class="fa-solid fa-phone"></i> ${c.phone}</div>`;
+            if(c.hasYear) html += `<div class="detail-row"><i class="fa-solid fa-star"></i> Age: ${new Date().getFullYear()-c.y}</div>`;
+            if(html === '') html = '<div style="color:var(--text-muted)">No additional details found.</div>';
+            
+            document.getElementById('m-details').innerHTML = html;
             document.getElementById('modal-backdrop').style.display='flex';
             document.getElementById('contact-modal').style.display='block';
         }
