@@ -383,14 +383,25 @@
         function setTab(t) {
             document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
-            document.getElementById(`${t}-view`).classList.add('active');
+            // Map tab names to view IDs
+            const viewIdMap = {
+                'timeline': 'timeline-view',
+                'stats': 'stats-view',
+                'same': 'same-bday-view',
+                'missing': 'missing-view'
+            };
+            const viewId = viewIdMap[t] || `${t}-view`;
+            const viewEl = document.getElementById(viewId);
+            if (viewEl) {
+                viewEl.classList.add('active');
+            }
             document.querySelector(`.tab[onclick="setTab('${t}')"]`).classList.add('active');
             const fb = document.getElementById('filter-bar');
             fb.style.display = (t==='timeline'||t==='stats'||t==='same')?'flex':'none';
 
             if(t==='timeline'&&timeline) { setTimeout(()=>{timeline.redraw(); timeline.stackItems(); drawScrubber()}, 50); }
             if(t==='stats') { startBubbleLoop(); drawHeatmap(); } else { stopBubbleLoop(); }
-            if(t==='same') renderSame();
+            if(t==='same') { setTimeout(() => renderSame(), 50); }
         }
 
         function toggleDark() { 
@@ -585,17 +596,51 @@
 
         // --- Same Birthday ---
         function renderSame() {
-            const g = document.getElementById('same-grid'); g.innerHTML='';
+            const g = document.getElementById('same-grid');
+            if (!g) return;
+            g.innerHTML = '';
+            
+            // Use filteredContacts, fallback to allContacts if filteredContacts is empty/undefined
+            const contacts = (filteredContacts && filteredContacts.length > 0) ? filteredContacts : (allContacts || []);
+            
+            if (!contacts || contacts.length === 0) {
+                g.innerHTML = '<div style="color:var(--text-muted); padding:2rem; text-align:center;">No contacts loaded.</div>';
+                return;
+            }
+            
             const grp = {};
-            filteredContacts.forEach(c => { const k = `${String(c.m).padStart(2,'0')}-${String(c.d).padStart(2,'0')}`; if(!grp[k])grp[k]=[]; grp[k].push(c); });
-            const keys = Object.keys(grp).filter(k=>grp[k].length>1).sort();
-            if(!keys.length) { g.innerHTML='<div style="color:var(--text-muted)">No pairs found.</div>'; return; }
+            // Group contacts by month-day, only include contacts with valid month and day
+            contacts.forEach(c => {
+                if (c && c.m && c.d && c.m >= 1 && c.m <= 12 && c.d >= 1 && c.d <= 31) {
+                    const k = `${String(c.m).padStart(2,'0')}-${String(c.d).padStart(2,'0')}`;
+                    if (!grp[k]) grp[k] = [];
+                    grp[k].push(c);
+                }
+            });
+            
+            // Filter to only groups with 2+ contacts and sort by date (month, then day)
+            const keys = Object.keys(grp).filter(k => grp[k].length > 1).sort((a, b) => {
+                const [ma, da] = a.split('-').map(Number);
+                const [mb, db] = b.split('-').map(Number);
+                return ma !== mb ? ma - mb : da - db;
+            });
+            
+            if (!keys.length) {
+                g.innerHTML = '<div style="color:var(--text-muted); padding:2rem; text-align:center;">No contacts share the same birthday.</div>';
+                return;
+            }
+            
             keys.forEach(k => {
                 const [m, d] = k.split('-').map(Number);
-                const div = document.createElement('div'); div.className='same-card';
-                let h = `<div class="same-header">${MONTHS[m-1]} ${d} (${grp[k].length})</div>`;
-                grp[k].forEach(c => { h += `<div class="same-row" onclick="showModal(allContacts[${c.id}])"><img src="${c.photo||'https://ui-avatars.com/api/?name='+c.name}" style="width:30px;height:30px;border-radius:50%"><span>${c.name} (${c.hasYear?c.y:'?'})</span></div>`; });
-                div.innerHTML=h; g.appendChild(div);
+                const div = document.createElement('div');
+                div.className = 'same-card';
+                let h = `<div class="same-header">${MONTHS[m-1]} ${d} (${grp[k].length} contacts)</div>`;
+                // Sort contacts within each group by name for consistency
+                grp[k].sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
+                    h += `<div class="same-row" onclick="showModal(allContacts[${c.id}])"><img src="${c.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}'"><span>${c.name}${c.hasYear ? ` (${c.y})` : ''}</span></div>`;
+                });
+                div.innerHTML = h;
+                g.appendChild(div);
             });
         }
 
