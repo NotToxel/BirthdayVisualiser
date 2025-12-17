@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BirthdayVisualiser V29</title>
+    <title>BirthdayVisualiser V32</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
@@ -74,12 +74,11 @@
         .filter-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; }
         .filter-menu { position: absolute; top: 120%; left: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); width: 280px; padding: 10px; display: none; z-index: 100; max-height: 400px; overflow-y: auto; }
         .filter-menu.open { display: block; }
+        
         .check-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 6px; cursor: pointer; user-select: none; justify-content: space-between; }
         .check-item:hover { background: var(--surface-2); }
-        .check-item.disabled { opacity: 0.4; pointer-events: none; color: var(--text-muted); }
+        .check-item.disabled { opacity: 0.4; pointer-events: none; }
         .check-item input { pointer-events: none; accent-color: var(--primary); width: 16px; height: 16px; }
-        .check-item small { font-weight: 600; color: var(--text-muted); }
-        
         .month-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
         .month-tog { padding: 8px 4px; text-align: center; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); display:flex; flex-direction:column; justify-content:center; }
         .month-tog:hover { background: var(--surface-2); }
@@ -87,34 +86,22 @@
         .month-tog.disabled { opacity: 0.3; pointer-events: none; }
         .month-tog small { font-size: 0.7rem; color: var(--text-muted); margin-top:2px; }
         .month-tog.selected small { color: rgba(255,255,255,0.8); }
-
         .active-filters { display: flex; gap: 8px; flex-wrap: wrap; flex-grow: 1; margin-left: 10px; }
         .filter-chip { background: var(--primary-bg); color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; }
         .search-wrap { position: relative; margin-left: auto; }
         .search-wrap input { padding: 8px 12px 8px 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; width: 180px; font-size: 0.9rem; }
         .search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem; }
 
-        /* Timeline & Custom Scrubber */
+        /* Views */
         .view { display: none; flex-grow: 1; height: 100%; flex-direction: column; overflow: hidden; }
         .view.active { display: flex; }
 
-        #scrubber-container {
-            height: var(--scrubber-h); background: var(--surface);
-            border-bottom: 1px solid var(--border); position: relative;
-            cursor: pointer; flex-shrink: 0; user-select: none;
-        }
-        canvas#scrubber-canvas { width: 100%; height: 100%; display: block; }
-        #scrubber-needle {
-            position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent);
-            pointer-events: none; transform: translateX(-50%); z-index: 10; display: none; /* Hidden until loaded */
-        }
-        #scrubber-date {
-            position: absolute; top: 5px; transform: translateX(-50%);
-            background: var(--accent); color: white; padding: 2px 8px;
-            border-radius: 12px; font-size: 11px; font-weight: 700;
-            pointer-events: none; opacity: 0; transition: opacity 0.2s; white-space: nowrap; z-index: 11;
-        }
+        /* Timeline & Scrubber (Custom Canvas V29) */
+        #scrubber-container { height: var(--scrubber-h); background: var(--surface); border-bottom: 1px solid var(--border); position: relative; cursor: pointer; flex-shrink: 0; user-select: none; overflow: hidden; }
+        #scrubber-needle { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); pointer-events: none; transform: translateX(-50%); z-index: 10; display:none;}
+        #scrubber-date { position: absolute; top: 5px; transform: translateX(-50%); background: var(--accent); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; pointer-events: none; opacity: 0; transition: opacity 0.2s; white-space: nowrap; z-index: 11; }
         #scrubber-container:hover #scrubber-date, #scrubber-container.dragging #scrubber-date { opacity: 1; }
+        .scrubber-label { position: absolute; bottom: 5px; font-size: 10px; color: var(--text-muted); font-weight: 600; pointer-events: none; }
 
         #timeline-wrapper { flex-grow: 1; position: relative; background: var(--bg); }
         .contact-node { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; transform: translateZ(0); }
@@ -127,24 +114,30 @@
         #stats-content { padding: 2rem; overflow-y: auto; background: var(--bg); }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; max-width: 1400px; margin: 0 auto; }
         .card { background: var(--surface); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); box-shadow: var(--shadow); display: flex; flex-direction: column; min-height: 350px; }
+        .card-cloud { grid-column: span 2; grid-row: span 2; height: 750px !important; }
+        .card-heatmap { grid-column: span 2; height: 400px !important; }
         .bubble-wrapper { width: 100%; height: 100%; flex-grow: 1; background: var(--surface-2); border-radius: 12px; position: relative; overflow: hidden; }
         canvas { display: block; }
 
-        /* Missing & Same */
-        #same-bday-view, #missing-view { padding: 0; }
-        #same-grid, #missing-grid { padding: 2rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; overflow-y: auto; height: 100%; }
-        .same-card, .missing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow); transition: transform 0.2s; }
-        .same-card:hover, .missing-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+        /* Same Birthday */
+        #same-bday-view { padding: 2rem; overflow-y: auto; background: var(--bg); }
+        .same-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .same-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow); transition: transform 0.2s; }
+        .same-card:hover { transform: translateY(-3px); border-color: var(--primary); }
         .same-header { font-weight: 800; font-size: 1.1rem; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .same-row { display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 8px; cursor: pointer; transition: 0.1s; }
         .same-row:hover { background: var(--surface-2); }
-        .missing-card { display: flex; align-items: center; gap: 10px; padding: 10px; }
-        .badge-red { background: rgba(244, 63, 94, 0.1); color: var(--accent); padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; }
-        .badge-yellow { background: rgba(245, 158, 11, 0.1); color: #d97706; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; }
 
+        /* Missing Data */
         #missing-layout { display: flex; height: 100%; }
         #missing-sidebar { width: 280px; background: var(--surface); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; }
         #missing-main { flex-grow: 1; overflow-y: auto; padding: 20px; background: var(--bg); }
+        .missing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .missing-card { background: var(--surface); padding: 10px; border-radius: 10px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.2s; }
+        .missing-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow); }
+        .badge { padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .badge-red { background: rgba(244, 63, 94, 0.1); color: var(--accent); }
+        .badge-yellow { background: rgba(245, 158, 11, 0.1); color: #d97706; }
 
         /* Overlays */
         #hover-card { position: fixed; z-index: 9999; background: var(--surface); padding: 10px 14px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid var(--border); pointer-events: none; display: none; min-width: 120px; text-align: center; }
@@ -173,7 +166,7 @@
     <div id="landing-screen">
         <i class="fa-solid fa-cake-candles" style="font-size: 4rem; color: var(--accent); margin-bottom: 20px;"></i>
         <h1 style="margin:0 0 10px 0; font-size:2.5rem;">BirthdayVisualiser</h1>
-        <p style="color:var(--text-muted); margin-bottom: 30px;">Timeline & Statistics V26</p>
+        <p style="color:var(--text-muted); margin-bottom: 30px;">Timeline, Stats & Analysis V32</p>
         <label class="upload-zone">
             <i class="fa-solid fa-cloud-arrow-up"></i> Upload CSV
             <input type="file" id="upload-input" accept=".csv">
@@ -235,6 +228,8 @@
                 <canvas id="scrubber-canvas"></canvas>
                 <div id="scrubber-needle"></div>
                 <div id="scrubber-date"></div>
+                <div id="lbl-start" class="scrubber-label" style="left: 10px;"></div>
+                <div id="lbl-end" class="scrubber-label" style="right: 10px;"></div>
             </div>
             <div id="timeline-wrapper">
                 <div id="timeline-vis" style="width:100%; height:100%;"></div>
@@ -244,18 +239,18 @@
         <div id="stats-view" class="view">
             <div id="stats-content">
                 <div class="stats-grid">
-                    <div class="card" style="grid-column: span 2;">
+                    <div class="card card-cloud">
                         <h3>Contact Cloud</h3>
                         <div class="bubble-wrapper"><canvas id="bubble-canvas"></canvas></div>
+                    </div>
+                    <div class="card card-heatmap">
+                        <h3>Density Heatmap</h3>
+                        <div class="bubble-wrapper" style="height:350px"><canvas id="heatmap-canvas"></canvas></div>
                     </div>
                     <div class="card"><h3>Birth Year</h3><canvas id="chart-years"></canvas></div>
                     <div class="card"><h3>Birth Month</h3><canvas id="chart-months"></canvas></div>
                     <div class="card"><h3>Season</h3><canvas id="chart-season"></canvas></div>
                     <div class="card"><h3>Day of Week</h3><canvas id="chart-weekday"></canvas></div>
-                    <div class="card" style="grid-column: span 2;">
-                        <h3>Density Heatmap</h3>
-                        <div class="bubble-wrapper" style="height:350px"><canvas id="heatmap-canvas"></canvas></div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -276,7 +271,6 @@
                             <div id="missing-tag-list"></div>
                         </div>
                     </div>
-                    <div id="missing-active-badges" class="active-filters" style="margin-top:10px;"></div>
                 </div>
                 <div id="missing-main"><div class="missing-grid" id="missing-grid"></div></div>
             </div>
@@ -286,7 +280,7 @@
     <div id="hover-card"><div class="hc-name" id="hc-name"></div><div class="hc-date" id="hc-date"></div></div>
 
     <div id="modal-backdrop">
-        <div class="modal" id="contact-modal">
+        <div class="modal" id="contact-modal" style="display:none">
             <div class="modal-header">
                 <div class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></div>
                 <img id="m-img" class="modal-avatar" src="">
@@ -298,7 +292,7 @@
                 <div class="detail-box" id="m-details"></div>
             </div>
         </div>
-        <div class="modal" id="list-modal" style="display:none;">
+        <div class="modal" id="list-modal" style="display:none">
             <div class="list-header">
                 <span id="list-title">List</span>
                 <i class="fa-solid fa-xmark" onclick="closeModal()" style="cursor:pointer"></i>
@@ -347,10 +341,7 @@
                 if(kFirst && r[kFirst]) name = [r[kFirst], r[kMid], r[kLast]].filter(Boolean).join(" ").trim();
                 else if(r[kName]) name = r[kName].trim();
 
-                // Regex clean
-                let photo = r[kPhoto]||""; 
-                if(photo.includes(':::')) photo=photo.split(':::')[0].trim();
-                
+                let photo = r[kPhoto]||""; if(photo.includes(':::')) photo=photo.split(':::')[0].trim();
                 let tags = []; if(r[kLabel]) tags = r[kLabel].split(' ::: ').map(t=>t.replace(/\* /g,'').trim()).filter(t=>t && !['mycontacts','starred'].includes(t.toLowerCase()));
 
                 let y=0, m=0, d=0, hasYear=false;
@@ -395,7 +386,7 @@
             if (viewEl) {
                 viewEl.classList.add('active');
             }
-            document.querySelector(`.tab[onclick="setTab('${t}')"]`).classList.add('active');
+			document.querySelector(`.tab[onclick="setTab('${t}')"]`).classList.add('active');
             const fb = document.getElementById('filter-bar');
             fb.style.display = (t==='timeline'||t==='stats'||t==='same')?'flex':'none';
 
@@ -524,59 +515,76 @@
                 name: c.name, photo: c.photo
             }));
             timeline.setItems(items);
-            if(items.length) setTimeout(() => timeline.fit(), 100);
+            if(items.length) {
+                // Ensure initial fit happens after layout settle
+                setTimeout(() => timeline.fit(), 100); 
+            }
             drawScrubber();
         }
 
-        // --- Scrubber (Custom Canvas) ---
+        // --- Scrubber V5 (Canvas V29) ---
         function drawScrubber() {
             const cvs = document.getElementById('scrubber-canvas'); if(!cvs) return;
-            const ctx = cvs.getContext('2d'); const r = cvs.getBoundingClientRect();
-            const dpr = window.devicePixelRatio||1; cvs.width=r.width*dpr; cvs.height=r.height*dpr; ctx.scale(dpr,dpr);
-            ctx.clearRect(0,0,r.width,r.height);
+            // Force re-calculation of width for dynamic resizing
+            const rect = document.getElementById('scrubber-container').getBoundingClientRect();
+            if(rect.width === 0) return; // Hidden
+
+            const ctx = cvs.getContext('2d');
+            const dpr = window.devicePixelRatio||1; 
+            cvs.width = rect.width * dpr; 
+            cvs.height = rect.height * dpr; 
+            ctx.scale(dpr,dpr);
+            ctx.clearRect(0,0,rect.width,rect.height);
+            
             const isDark = document.body.classList.contains('dark');
 
             const years = filteredContacts.filter(c=>c.hasYear).map(c=>c.y);
-            // Draw baseline even if empty
-            if(!years.length && filteredContacts.length) {
-                // If only month/day contacts, we can't draw year histogram.
-                ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-                ctx.fillText("No birth years in current filter", r.width/2, r.height/2);
+            if(!years.length) {
+                document.getElementById('scrubber-needle').style.display = 'none';
                 return;
-            } else if (!filteredContacts.length) return;
+            } else {
+                document.getElementById('scrubber-needle').style.display = 'block';
+            }
 
             const minY = Math.min(...years), maxY = Math.max(...years);
             const range = (maxY-minY)||1;
-            const drawW = r.width - (SC_PAD*2);
+            const drawW = rect.width - (SC_PAD*2);
 
-            document.getElementById('scrubber-needle').style.display = 'block';
+            document.getElementById('lbl-start').innerText=minY; document.getElementById('lbl-end').innerText=maxY;
 
             const counts = {}; years.forEach(y=>counts[y]=(counts[y]||0)+1);
             const maxC = Math.max(...Object.values(counts), 1);
 
             ctx.fillStyle = isDark ? '#6366f1' : '#6366f1';
-            ctx.textAlign = "center"; ctx.font = "10px sans-serif";
-
             for(let y=minY; y<=maxY; y++) {
                 const pct = (y-minY)/range;
                 const x = SC_PAD + (pct*drawW);
                 const count = counts[y] || 0;
-                const h = (count / maxC) * (r.height * 0.5);
+                
+                // Height based on density
+                const h = (count / maxC) * (rect.height * 0.5);
+                // Ensure nice thick bars for visibility
                 const w = Math.max(3, (drawW/(range+1))-1);
                 
                 ctx.globalAlpha = count>0 ? 1 : 0.2;
-                ctx.fillRect(Math.floor(x - w/2), (r.height-20)-Math.max(h,2), w, Math.max(h,2));
+                // Draw bar from bottom up
+                ctx.fillRect(Math.floor(x - w/2), (rect.height-20)-Math.max(h,2), w, Math.max(h,2));
                 ctx.globalAlpha = 1;
 
+                // Ticks for decades
                 if(y===minY || y===maxY || (range>20 && y%10===0) || (range<=20 && range>5 && y%5===0)) {
                     ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-                    ctx.fillText(y, x, r.height - 8);
+                    ctx.textAlign = "center"; ctx.font = "10px sans-serif";
+                    ctx.fillText(y, x, rect.height - 8);
                     ctx.fillStyle = isDark ? '#6366f1' : '#6366f1';
                 }
             }
             cvs.dataset.min=minY; cvs.dataset.max=maxY;
         }
         
+        // Resize Observer for Scrubber
+        new ResizeObserver(() => drawScrubber()).observe(document.getElementById('scrubber-container'));
+
         const sCon=document.getElementById('scrubber-container'), sN=document.getElementById('scrubber-needle'), sD=document.getElementById('scrubber-date');
         let sDrag=false;
         function moveScrubber(cx) {
@@ -643,16 +651,21 @@
                 g.appendChild(div);
             });
         }
+        // V32 Fix: Lookup by ID
+        window.showModalById = (id) => {
+            const c = allContacts.find(x => x.id === id);
+            if(c) showModal(c);
+        };
 
-        // --- Bubble Cloud (Static Grid - V25) ---
+        // --- Bubble Cloud (Static Grid - V25 Logic) ---
         let bubbleCanvas, bCtx, bubbles=[], animId, mouse={x:-999,y:-999};
         function startBubbleLoop() {
             bubbleCanvas=document.getElementById('bubble-canvas'); bCtx=bubbleCanvas.getContext('2d');
             const r=bubbleCanvas.parentElement.getBoundingClientRect(); bubbleCanvas.width=r.width; bubbleCanvas.height=r.height;
             const count = filteredContacts.length; if(!count){bubbles=[];return;}
-            const area = bubbleCanvas.width*bubbleCanvas.height;
+            const area = bubbleCanvas.width * bubbleCanvas.height;
             let pxPerItem = area / count;
-            let baseR = Math.sqrt(pxPerItem / Math.PI) * 0.7; // 70% packing
+            let baseR = Math.sqrt(pxPerItem / Math.PI) * 0.7; 
             baseR = Math.min(Math.max(baseR, 15), 60);
 
             const cols = Math.ceil(Math.sqrt(count * (bubbleCanvas.width / bubbleCanvas.height)));
@@ -687,10 +700,7 @@
         function stopBubbleLoop(){cancelAnimationFrame(animId);animId=null;}
         function loopBubbles(){
             bCtx.clearRect(0,0,bubbleCanvas.width,bubbleCanvas.height);
-            bubbles.forEach(b=>{ 
-                const d=Math.sqrt((mouse.x-b.x)**2+(mouse.y-b.y)**2); 
-                b.scale = d < 80 ? 1 + (0.5 * (1 - d/80)) : 1;
-            });
+            bubbles.forEach(b=>{ const d=Math.sqrt((mouse.x-b.x)**2+(mouse.y-b.y)**2); b.scale=d<80?1+(0.5*(1-d/80)):1; });
             [...bubbles].sort((a,b)=>a.scale-b.scale).forEach(b=>{ 
                 const s=b.r*b.scale; bCtx.save(); bCtx.beginPath(); bCtx.arc(b.x,b.y,s,0,Math.PI*2); bCtx.closePath(); bCtx.clip(); 
                 try{bCtx.drawImage(b.img,b.x-s,b.y-s,s*2,s*2)}catch(e){} 
@@ -733,6 +743,7 @@
                 }
             };
         }
+        new ResizeObserver(() => { if(document.getElementById('stats-view').classList.contains('active')) { drawHeatmap(); startBubbleLoop(); } }).observe(document.getElementById('stats-content'));
 
         // --- Stats ---
         function updateStats() {
