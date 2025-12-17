@@ -506,6 +506,9 @@
             timeline.on('itemover', p => { const c=filteredContacts.find(x=>x.id==p.item); if(c){ const h=document.getElementById('hover-card'); h.style.display='block'; h.style.left=p.event.clientX+15+'px'; h.style.top=p.event.clientY+15+'px'; document.getElementById('hc-name').innerText=c.name; document.getElementById('hc-date').innerText=`${MONTHS[c.m-1]} ${c.d}, ${c.hasYear?c.y:''}`; } });
             timeline.on('itemout', () => document.getElementById('hover-card').style.display='none');
             timeline.on('select', p=>{ if(p.items.length){ const c=filteredContacts.find(x=>x.id==p.items[0]); if(c)showModal(c); timeline.setSelection([],{fireEvent:false}); }});
+            // Update scrubber needle when timeline moves
+            timeline.on('rangechange', () => updateScrubberFromTimeline());
+            timeline.on('rangechanged', () => updateScrubberFromTimeline());
         }
 
         function updateTimelineData() {
@@ -522,7 +525,7 @@
             drawScrubber();
         }
 
-        // --- Scrubber V5 (Canvas V29) ---
+        // --- Scrubber V5 (Canvas V29) - Month-by-month frequency bars across timeline ---
         function drawScrubber() {
             const cvs = document.getElementById('scrubber-canvas'); if(!cvs) return;
             // Force re-calculation of width for dynamic resizing
@@ -538,9 +541,12 @@
             
             const isDark = document.body.classList.contains('dark');
 
+            // Get year range for timeline navigation
             const years = filteredContacts.filter(c=>c.hasYear).map(c=>c.y);
             if(!years.length) {
                 document.getElementById('scrubber-needle').style.display = 'none';
+                document.getElementById('lbl-start').innerText='';
+                document.getElementById('lbl-end').innerText='';
                 return;
             } else {
                 document.getElementById('scrubber-needle').style.display = 'block';
@@ -550,36 +556,68 @@
             const range = (maxY-minY)||1;
             const drawW = rect.width - (SC_PAD*2);
 
-            document.getElementById('lbl-start').innerText=minY; document.getElementById('lbl-end').innerText=maxY;
+            // Year labels for timeline navigation
+            document.getElementById('lbl-start').innerText=minY; 
+            document.getElementById('lbl-end').innerText=maxY;
 
-            const counts = {}; years.forEach(y=>counts[y]=(counts[y]||0)+1);
-            const maxC = Math.max(...Object.values(counts), 1);
+            // Count frequencies by month-year combination
+            const monthYearCounts = {};
+            filteredContacts.forEach(c => {
+                if(c.hasYear && c.m >= 1 && c.m <= 12) {
+                    const key = `${c.y}-${c.m}`;
+                    monthYearCounts[key] = (monthYearCounts[key] || 0) + 1;
+                }
+            });
+            const maxC = Math.max(...Object.values(monthYearCounts), 1);
+
+            // Calculate total months across the range
+            const totalMonths = (maxY - minY + 1) * 12;
+            const monthWidth = drawW / totalMonths;
+            // Set minimum bar width to prevent overcrowding (2px minimum)
+            const minBarWidth = 2;
+            const actualBarWidth = Math.max(monthWidth * 0.95, minBarWidth);
 
             ctx.fillStyle = isDark ? '#6366f1' : '#6366f1';
-            for(let y=minY; y<=maxY; y++) {
-                const pct = (y-minY)/range;
-                const x = SC_PAD + (pct*drawW);
-                const count = counts[y] || 0;
-                
-                // Height based on density
-                const h = (count / maxC) * (rect.height * 0.5);
-                // Ensure nice thick bars for visibility
-                const w = Math.max(3, (drawW/(range+1))-1);
-                
-                ctx.globalAlpha = count>0 ? 1 : 0.2;
-                // Draw bar from bottom up
-                ctx.fillRect(Math.floor(x - w/2), (rect.height-20)-Math.max(h,2), w, Math.max(h,2));
-                ctx.globalAlpha = 1;
+            ctx.textAlign = "center"; 
+            ctx.font = "9px sans-serif";
+            
+            // Draw bars for each month-year combination
+            let monthIndex = 0;
+            for(let y = minY; y <= maxY; y++) {
+                for(let m = 1; m <= 12; m++) {
+                    const key = `${y}-${m}`;
+                    const count = monthYearCounts[key] || 0;
+                    const x = SC_PAD + (monthIndex * monthWidth) + (monthWidth / 2);
+                    
+                    // Only draw bars if they have data, or if spacing allows
+                    if(count > 0 || monthWidth >= minBarWidth) {
+                        // Height based on frequency
+                        const h = (count / maxC) * (rect.height * 0.5);
+                        
+                        ctx.globalAlpha = count > 0 ? 1 : 0.1;
+                        // Draw bar from bottom up
+                        ctx.fillRect(Math.floor(x - actualBarWidth/2), (rect.height-20)-Math.max(h,2), actualBarWidth, Math.max(h,2));
+                        ctx.globalAlpha = 1;
+                    }
 
-                // Ticks for decades
-                if(y===minY || y===maxY || (range>20 && y%10===0) || (range<=20 && range>5 && y%5===0)) {
-                    ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-                    ctx.textAlign = "center"; ctx.font = "10px sans-serif";
-                    ctx.fillText(y, x, rect.height - 8);
-                    ctx.fillStyle = isDark ? '#6366f1' : '#6366f1';
+                    // Show month labels less frequently to avoid crowding
+                    // Only show labels if there's enough space (every 12 months = yearly) or at year start
+                    const labelInterval = monthWidth < 20 ? 12 : 6;
+                    if(m === 1 || (monthWidth >= 20 && (m === 1 || m === 7))) {
+                        ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+                        const label = m === 1 ? `${MONTHS[m-1]} ${y}` : MONTHS[m-1];
+                        ctx.fillText(label, x, rect.height - 6);
+                        ctx.fillStyle = isDark ? '#6366f1' : '#6366f1';
+                    }
+                    
+                    monthIndex++;
                 }
             }
-            cvs.dataset.min=minY; cvs.dataset.max=maxY;
+            
+            // Store year range and total months for scrubber navigation
+            cvs.dataset.min=minY; 
+            cvs.dataset.max=maxY;
+            cvs.dataset.totalMonths=totalMonths;
         }
         
         // Resize Observer for Scrubber
@@ -587,20 +625,72 @@
 
         const sCon=document.getElementById('scrubber-container'), sN=document.getElementById('scrubber-needle'), sD=document.getElementById('scrubber-date');
         let sDrag=false;
+        
+        // Update scrubber needle position based on timeline's current view
+        let updatingFromTimeline = false;
+        function updateScrubberFromTimeline() {
+            if(!timeline || sDrag || updatingFromTimeline) return; // Don't update if user is dragging scrubber
+            updatingFromTimeline = true;
+            const cvs = document.getElementById('scrubber-canvas');
+            if(!cvs) { updatingFromTimeline = false; return; }
+            
+            const min=+cvs.dataset.min;
+            const max=+cvs.dataset.max;
+            const totalMonths=+cvs.dataset.totalMonths;
+            if(!min || !totalMonths) { updatingFromTimeline = false; return; }
+            
+            // Get timeline's visible range center
+            const range = timeline.getWindow();
+            if(!range || !range.start || !range.end) { updatingFromTimeline = false; return; }
+            
+            const centerDate = new Date((range.start.getTime() + range.end.getTime()) / 2);
+            const centerYear = centerDate.getFullYear();
+            const centerMonth = centerDate.getMonth() + 1; // 1-12
+            
+            // Calculate position on scrubber
+            const monthsFromStart = ((centerYear - min) * 12) + (centerMonth - 1);
+            const r = sCon.getBoundingClientRect();
+            const drawW = r.width - (SC_PAD*2);
+            const pct = monthsFromStart / totalMonths;
+            const px = SC_PAD + (pct * drawW);
+            
+            // Update needle position
+            sN.style.left = px + 'px';
+            sD.style.left = px + 'px';
+            sD.innerText = `${MONTHS[centerMonth - 1]} ${centerYear}`;
+            updatingFromTimeline = false;
+        }
+        
         function moveScrubber(cx) {
             const r=sCon.getBoundingClientRect();
             const min=+document.getElementById('scrubber-canvas').dataset.min;
             const max=+document.getElementById('scrubber-canvas').dataset.max;
-            if(!min) return;
+            const totalMonths=+document.getElementById('scrubber-canvas').dataset.totalMonths;
+            if(!min || !totalMonths) return;
             let px = Math.max(SC_PAD, Math.min(cx-r.left, r.width-SC_PAD));
             sN.style.left=px+'px'; sD.style.left=px+'px';
-            const yr = min + ((px-SC_PAD)/(r.width-(SC_PAD*2)))*(max-min);
-            sD.innerText=Math.round(yr);
-            if(timeline) timeline.moveTo(new Date(yr, 6, 1), {animation:false});
+            
+            // Calculate which month-year based on position
+            const drawW = r.width - (SC_PAD*2);
+            const pct = (px - SC_PAD) / drawW;
+            const monthIndex = Math.floor(pct * totalMonths);
+            
+            // Convert month index to year and month
+            const yearsFromStart = Math.floor(monthIndex / 12);
+            const monthInYear = (monthIndex % 12);
+            const year = min + yearsFromStart;
+            const month = monthInYear; // 0-11 for Date constructor
+            
+            // Format display: "Jan 2024" or just month if same year as previous
+            const monthName = MONTHS[month];
+            sD.innerText = `${monthName} ${year}`;
+            
+            // Move timeline to the 15th day of the selected month-year
+            if(timeline) timeline.moveTo(new Date(year, month, 15), {animation:false});
         }
         sCon.onmousedown=e=>{sDrag=true;moveScrubber(e.clientX)};
         document.onmousemove=e=>{if(sDrag){e.preventDefault();moveScrubber(e.clientX)}};
-        document.onmouseup=()=>sDrag=false;
+        document.onmouseup=()=>{sDrag=false;};
 
         // --- Same Birthday ---
         function renderSame() {
