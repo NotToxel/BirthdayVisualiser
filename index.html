@@ -112,12 +112,34 @@
 
         /* Stats */
         #stats-content { padding: 2rem; overflow-y: auto; background: var(--bg); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; max-width: 1400px; margin: 0 auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; max-width: 96%; margin: 0 auto; }
         .card { background: var(--surface); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); box-shadow: var(--shadow); display: flex; flex-direction: column; min-height: 350px; }
         .card-cloud { grid-column: span 2; grid-row: span 2; height: 750px !important; }
         .card-heatmap { grid-column: span 2; height: 400px !important; }
         .bubble-wrapper { width: 100%; height: 100%; flex-grow: 1; background: var(--surface-2); border-radius: 12px; position: relative; overflow: hidden; }
         canvas { display: block; }
+        #bubble-canvas, #heatmap-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Statistics Sub-tabs */
+        .sub-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 8px; max-width: 96%; margin-left: auto; margin-right: auto; }
+        .sub-tab { padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: var(--text-muted); transition: 0.2s; }
+        .sub-tab:hover { color: var(--text); background: var(--surface-2); }
+        .sub-tab.active { color: var(--primary); background: var(--primary-bg); }
+        
+        .sub-view { display: none; }
+        .sub-view.active { display: block; }
+        
+        /* KPI Highlights */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; max-width: 96%; margin-left: auto; margin-right: auto; }
+        .kpi-card { background: var(--surface); border-radius: 12px; padding: 1.25rem; border: 1px solid var(--border); box-shadow: var(--shadow); display: flex; align-items: center; gap: 15px; }
+        .kpi-card i { font-size: 1.8rem; color: var(--primary); background: var(--primary-bg); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+        .kpi-info { display: flex; flex-direction: column; }
+        .kpi-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; }
+        .kpi-val { font-size: 1.2rem; font-weight: 800; color: var(--text); }
 
         /* Same Birthday */
         #same-bday-view { padding: 2rem; overflow-y: auto; background: var(--bg); }
@@ -238,19 +260,73 @@
 
         <div id="stats-view" class="view">
             <div id="stats-content">
-                <div class="stats-grid">
-                    <div class="card card-cloud">
+                <!-- Sub-tabs for Statistics -->
+                <div class="sub-tabs">
+                    <div class="sub-tab active" onclick="setSubTab('overview')">Overview & Demographics</div>
+                    <div class="sub-tab" onclick="setSubTab('temporal')">Temporal Patterns</div>
+                    <div class="sub-tab" onclick="setSubTab('cloud')">Visual Cloud</div>
+                </div>
+                
+                <!-- Overview & Demographics Tab -->
+                <div id="sub-view-overview" class="sub-view active">
+                    <!-- KPI Cards Grid -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <i class="fa-solid fa-calculator"></i>
+                            <div class="kpi-info">
+                                <span class="kpi-label">Average Age</span>
+                                <span class="kpi-val" id="kpi-avg-age">--</span>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <i class="fa-solid fa-calendar-day"></i>
+                            <div class="kpi-info">
+                                <span class="kpi-label">Most Common Day</span>
+                                <span class="kpi-val" id="kpi-common-day">--</span>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <i class="fa-solid fa-star-and-crescent"></i>
+                            <div class="kpi-info">
+                                <span class="kpi-label">Common Zodiac</span>
+                                <span class="kpi-val" id="kpi-common-zodiac">--</span>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <i class="fa-solid fa-bell"></i>
+                            <div class="kpi-info">
+                                <span class="kpi-label">Next 30 Days</span>
+                                <span class="kpi-val" id="kpi-upcoming">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="card"><h3>Birth Year</h3><canvas id="chart-years"></canvas></div>
+                        <div class="card"><h3>Generations</h3><canvas id="chart-generations"></canvas></div>
+                        <div class="card" style="grid-column: span 2;"><h3>Zodiac Sign Distribution</h3><canvas id="chart-zodiac"></canvas></div>
+                    </div>
+                </div>
+                
+                <!-- Temporal Patterns Tab -->
+                <div id="sub-view-temporal" class="sub-view">
+                    <div class="stats-grid">
+                        <div class="card card-heatmap" style="grid-column: span 2;">
+                            <h3>Density Heatmap</h3>
+                            <div class="bubble-wrapper" style="height:350px"><canvas id="heatmap-canvas"></canvas></div>
+                        </div>
+                        <div class="card"><h3>Birth Month</h3><canvas id="chart-months"></canvas></div>
+                        <div class="card"><h3>Season</h3><canvas id="chart-season"></canvas></div>
+                        <div class="card"><h3>Day of Week</h3><canvas id="chart-weekday"></canvas></div>
+                    </div>
+                </div>
+                
+                <!-- Visual Cloud Tab -->
+                <div id="sub-view-cloud" class="sub-view">
+                    <div class="card card-cloud" style="width: 100%; box-sizing: border-box;">
                         <h3>Contact Cloud</h3>
                         <div class="bubble-wrapper"><canvas id="bubble-canvas"></canvas></div>
                     </div>
-                    <div class="card card-heatmap">
-                        <h3>Density Heatmap</h3>
-                        <div class="bubble-wrapper" style="height:350px"><canvas id="heatmap-canvas"></canvas></div>
-                    </div>
-                    <div class="card"><h3>Birth Year</h3><canvas id="chart-years"></canvas></div>
-                    <div class="card"><h3>Birth Month</h3><canvas id="chart-months"></canvas></div>
-                    <div class="card"><h3>Season</h3><canvas id="chart-season"></canvas></div>
-                    <div class="card"><h3>Day of Week</h3><canvas id="chart-weekday"></canvas></div>
                 </div>
             </div>
         </div>
@@ -283,7 +359,7 @@
         <div class="modal" id="contact-modal" style="display:none">
             <div class="modal-header">
                 <div class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></div>
-                <img id="m-img" class="modal-avatar" src="">
+                <img id="m-img" class="modal-avatar" src="" referrerpolicy="no-referrer" onerror="if(!this.src.includes('ui-avatars.com')) this.src='https://ui-avatars.com/api/?name='+encodeURIComponent(document.getElementById('m-name').innerText);">
             </div>
             <div class="modal-body">
                 <div style="font-size:1.5rem; font-weight:800;" id="m-name"></div>
@@ -327,32 +403,105 @@
             Papa.parse(file, { header: true, skipEmptyLines: true, complete: (res) => processData(res.data) });
         }
 
+        function detectDateFormat(rows, kBday) {
+            if (!kBday) return 'MD';
+            let isDM = false;
+            let isMD = false;
+            for (const r of rows) {
+                if (!r[kBday]) continue;
+                let raw = r[kBday].replace(/ --/g,"").replace(/--/g,"").trim();
+                const delim = raw.includes('/') ? '/' : '-';
+                const p = raw.split(delim).map(x => parseInt(x.trim(), 10)).filter(x => !isNaN(x));
+                if (p.length === 3) {
+                    if (p[0] > 31) continue; // YYYY-MM-DD
+                    const first = p[0];
+                    const second = p[1];
+                    if (first > 12 && first <= 31) isDM = true;
+                    if (second > 12 && second <= 31) isMD = true;
+                } else if (p.length === 2) {
+                    const first = p[0];
+                    const second = p[1];
+                    if (first > 12 && first <= 31) isDM = true;
+                    if (second > 12 && second <= 31) isMD = true;
+                }
+            }
+            if (isDM && !isMD) return 'DM';
+            return 'MD'; // default to Month/Day if ambiguous or US
+        }
+
         function processData(rows) {
             const v=[], inv=[], yl=[];
             const headers = Object.keys(rows[0]||{});
             const find = (k) => headers.find(h => h.toLowerCase().includes(k));
             
-            const kName = find('name')||find('given'); const kBday = find('birthday'); const kPhoto = find('photo');
-            const kLabel = find('label')||find('group'); const kEmail = find('e-mail 1 - value'); const kPhone = find('phone 1 - value');
-            const kFirst = find('first name'); const kMid = find('middle name'); const kLast = find('last name');
+            const kName = find('name');
+            const kBday = find('birthday')||find('bday')||find('birth date')||find('date of birth')||find('dob')||find('birth');
+            const kPhoto = find('photo')||find('avatar')||find('picture')||find('image');
+            const kLabel = find('label')||find('group')||find('category');
+            const kEmail = find('e-mail 1 - value')||find('email')||find('e-mail');
+            const kPhone = find('phone 1 - value')||find('phone')||find('telephone')||find('tel');
+            
+            const kFirst = find('first name')||find('given name');
+            const kMid = find('middle name')||find('additional name');
+            const kLast = find('last name')||find('family name')||find('surname');
+
+            const dateFormat = detectDateFormat(rows, kBday);
 
             rows.forEach((r,i) => {
                 let name = "Unnamed";
-                if(kFirst && r[kFirst]) name = [r[kFirst], r[kMid], r[kLast]].filter(Boolean).join(" ").trim();
-                else if(r[kName]) name = r[kName].trim();
+                if((kFirst && r[kFirst]) || (kLast && r[kLast])) {
+                    name = [r[kFirst], r[kMid], r[kLast]].filter(Boolean).join(" ").trim();
+                } else if(kName && r[kName]) {
+                    name = r[kName].trim();
+                } else {
+                    const anyNameCol = headers.find(h => h.toLowerCase().includes('name') && r[h]);
+                    if (anyNameCol) name = r[anyNameCol].trim();
+                }
 
                 let photo = r[kPhoto]||""; if(photo.includes(':::')) photo=photo.split(':::')[0].trim();
                 let tags = []; if(r[kLabel]) tags = r[kLabel].split(' ::: ').map(t=>t.replace(/\* /g,'').trim()).filter(t=>t && !['mycontacts','starred'].includes(t.toLowerCase()));
 
                 let y=0, m=0, d=0, hasYear=false;
-                if(r[kBday]) {
+                if(kBday && r[kBday]) {
                     let raw = r[kBday].replace(/ --/g,"").replace(/--/g,"").trim();
-                    const p = raw.split('-');
-                    if(p.length===3){ y=+p[0]; m=+p[1]; d=+p[2]; hasYear=true; } else if(p.length===2){ m=+p[0]; d=+p[1]; }
+                    const delim = raw.includes('/') ? '/' : '-';
+                    const p = raw.split(delim).map(x => parseInt(x.trim(), 10));
+                    
+                    if (p.length === 3) {
+                        if (p[0] > 31) {
+                            y = p[0];
+                            m = p[1];
+                            d = p[2];
+                            hasYear = true;
+                        } else {
+                            y = p[2];
+                            hasYear = true;
+                            if (dateFormat === 'DM') {
+                                d = p[0];
+                                m = p[1];
+                            } else {
+                                m = p[0];
+                                d = p[1];
+                            }
+                        }
+                    } else if (p.length === 2) {
+                        if (dateFormat === 'DM') {
+                            d = p[0];
+                            m = p[1];
+                        } else {
+                            m = p[0];
+                            d = p[1];
+                        }
+                    }
                 }
 
                 const c = { id:i, name, y, m, d, hasYear, tags, photo, email:r[kEmail]||"", phone:r[kPhone]||"" };
-                if(m&&d) { v.push(c); if(!hasYear) yl.push(c); } else inv.push(c);
+                if(!isNaN(m) && !isNaN(d) && m >= 1 && m <= 12 && d >= 1 && d <= 31) { 
+                    v.push(c); 
+                    if(!hasYear) yl.push(c); 
+                } else {
+                    inv.push(c);
+                }
             });
 
             allContacts=v; missingContacts=inv; yearlessContacts=yl; filteredContacts=v;
@@ -362,13 +511,66 @@
         function initUI() {
             const tags = new Set(); allContacts.forEach(c=>c.tags.forEach(t=>tags.add(t)));
             buildFilters(Array.from(tags).sort());
-            initTimeline();
-            updateTimelineData();
-            renderMissing();
-            applyFilters();
             document.getElementById('loading').style.display='none';
             document.getElementById('app-container').style.display='flex';
-            setTimeout(()=>document.getElementById('app-container').classList.add('visible'), 50);
+            // Timeline must init after the app container is visible — vis.js reads zero width otherwise.
+            requestAnimationFrame(() => {
+                initTimeline();
+                renderMissing();
+                applyFilters();
+                setTimeout(() => layoutTimeline(true), 400);
+                setTimeout(() => document.getElementById('app-container').classList.add('visible'), 50);
+            });
+        }
+
+        let activeSubTab = 'overview';
+        function setSubTab(tab) {
+            activeSubTab = tab;
+            document.querySelectorAll('.sub-tab').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('.sub-view').forEach(e => e.classList.remove('active'));
+            
+            const el = document.querySelector(`.sub-tab[onclick="setSubTab('${tab}')"]`);
+            if (el) el.classList.add('active');
+            
+            const view = document.getElementById(`sub-view-${tab}`);
+            if (view) view.classList.add('active');
+            
+            if (tab === 'cloud') {
+                startBubbleLoop();
+            } else {
+                stopBubbleLoop();
+            }
+            if (tab === 'temporal') {
+                drawHeatmap();
+            }
+        }
+
+        function getZodiacSign(m, d) {
+            const dates = [20, 19, 21, 20, 21, 21, 23, 23, 23, 23, 22, 22];
+            const signs = ["Capricorn", "Aquarius", "Pisces", "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn"];
+            return d < dates[m - 1] ? signs[m - 1] : signs[m];
+        }
+
+        function getGeneration(y) {
+            if (y >= 2013) return "Gen Alpha";
+            if (y >= 1997) return "Gen Z";
+            if (y >= 1981) return "Millennials";
+            if (y >= 1965) return "Gen X";
+            if (y >= 1946) return "Boomers";
+            return "Silent Gen";
+        }
+
+        function daysUntilBirthday(m, d) {
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            let bday = new Date(currentYear, m - 1, d);
+            today.setHours(0,0,0,0);
+            bday.setHours(0,0,0,0);
+            if (bday < today) {
+                bday.setFullYear(currentYear + 1);
+            }
+            const diffTime = bday - today;
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         }
 
         function setTab(t) {
@@ -390,15 +592,16 @@
             const fb = document.getElementById('filter-bar');
             fb.style.display = (t==='timeline'||t==='stats'||t==='same')?'flex':'none';
 
-            if(t==='timeline'&&timeline) { setTimeout(()=>{timeline.redraw(); timeline.stackItems(); drawScrubber()}, 50); }
-            if(t==='stats') { startBubbleLoop(); drawHeatmap(); } else { stopBubbleLoop(); }
+            if(t==='timeline'&&timeline) { setTimeout(() => scheduleLayoutTimeline(), 50); }
+            if(t==='stats') { setSubTab(activeSubTab); } else { stopBubbleLoop(); }
             if(t==='same') { setTimeout(() => renderSame(), 50); }
         }
 
         function toggleDark() { 
-            document.body.classList.toggle('dark'); 
-            localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
-            drawHeatmap(); drawScrubber(); Object.values(chartInstances).forEach(c=>c.update());
+             document.body.classList.toggle('dark'); 
+             localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+             drawHeatmap(); drawScrubber(); Object.values(chartInstances).forEach(c=>c.update());
+             if (typeof drawBubbles === 'function' && typeof bubbles !== 'undefined' && bubbles.length) drawBubbles();
         }
         function newAnalysis() { if(confirm("Start new?")) location.reload(); }
         function toggleDropdown(id) {
@@ -500,7 +703,8 @@
                 height: '100%', orientation: 'top', stack: true,
                 zoomMin: 1000*60*60*24*30, zoomMax: 1000*60*60*24*365*10,
                 showCurrentTime: false, verticalScroll: true, zoomKey: 'ctrlKey', margin:{item:15},
-                template: (item) => `<div class="contact-node"><img src="${item.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(item.name)}" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}'"></div>`
+                autoResize: true,
+                template: (item) => `<div class="contact-node"><img width="48" height="48" src="${item.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(item.name)}" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}'"></div>`
             });
             
             timeline.on('itemover', p => { const c=filteredContacts.find(x=>x.id==p.item); if(c){ const h=document.getElementById('hover-card'); h.style.display='block'; h.style.left=p.event.clientX+15+'px'; h.style.top=p.event.clientY+15+'px'; document.getElementById('hc-name').innerText=c.name; document.getElementById('hc-date').innerText=`${MONTHS[c.m-1]} ${c.d}, ${c.hasYear?c.y:''}`; } });
@@ -508,21 +712,69 @@
             timeline.on('select', p=>{ if(p.items.length){ const c=filteredContacts.find(x=>x.id==p.items[0]); if(c)showModal(c); timeline.setSelection([],{fireEvent:false}); }});
             // Update scrubber needle when timeline moves
             timeline.on('rangechange', () => updateScrubberFromTimeline());
-            timeline.on('rangechanged', () => updateScrubberFromTimeline());
+            timeline.on('rangechanged', () => {
+                updateScrubberFromTimeline();
+                scheduleRepositionAll();
+            });
+        }
+
+        function scheduleRepositionAll() {
+            if (repositionTimer) clearTimeout(repositionTimer);
+            repositionTimer = setTimeout(() => {
+                repositionTimer = null;
+                repositionAllTimelineItems();
+            }, 16);
+        }
+
+        let layoutTimelineTimer = null;
+        let repositionTimer = null;
+        function repositionAllTimelineItems() {
+            if (!timeline?.itemSet?.items) return;
+            Object.values(timeline.itemSet.items).forEach(item => {
+                if (typeof item.repositionX === 'function') item.repositionX();
+                if (typeof item.repositionY === 'function') item.repositionY();
+            });
+        }
+
+        function layoutTimeline(fit = false, attempt = 0) {
+            if (!timeline) return;
+            const el = document.getElementById('timeline-vis');
+            if (!el || el.offsetWidth === 0 || el.offsetHeight === 0) {
+                requestAnimationFrame(() => layoutTimeline(fit, attempt));
+                return;
+            }
+            if (fit) timeline.fit();
+            timeline.redraw();
+            const itemObjs = timeline.itemSet?.items ? Object.values(timeline.itemSet.items) : [];
+            const ready = itemObjs.length > 0 && itemObjs.some(item => item.displayed);
+            if (!ready && attempt < 15) {
+                setTimeout(() => layoutTimeline(fit, attempt + 1), 100);
+                return;
+            }
+            if (!ready || itemObjs.length === 0) return;
+            repositionAllTimelineItems();
+            requestAnimationFrame(() => repositionAllTimelineItems());
+            drawScrubber();
+        }
+
+        function scheduleLayoutTimeline(fit = false) {
+            if (layoutTimelineTimer) clearTimeout(layoutTimelineTimer);
+            layoutTimelineTimer = setTimeout(() => {
+                layoutTimelineTimer = null;
+                layoutTimeline(fit);
+            }, 250);
         }
 
         function updateTimelineData() {
+            if (!timeline) return;
             const items = filteredContacts.map(c => ({
-                id: c.id, 
+                id: c.id,
                 start: `${c.hasYear?c.y:2000}-${String(c.m).padStart(2,'0')}-${String(c.d).padStart(2,'0')}`,
                 name: c.name, photo: c.photo
             }));
             timeline.setItems(items);
-            if(items.length) {
-                // Ensure initial fit happens after layout settle
-                setTimeout(() => timeline.fit(), 100); 
-            }
-            drawScrubber();
+            timeline.redraw();
+            scheduleLayoutTimeline(items.length > 0);
         }
 
         // --- Scrubber V5 (Canvas V29) - Month-by-month frequency bars across timeline ---
@@ -622,6 +874,8 @@
         
         // Resize Observer for Scrubber
         new ResizeObserver(() => drawScrubber()).observe(document.getElementById('scrubber-container'));
+        // Recalculate timeline item positions when the timeline area is resized
+        new ResizeObserver(() => { if (timeline) scheduleLayoutTimeline(); }).observe(document.getElementById('timeline-wrapper'));
 
         const sCon=document.getElementById('scrubber-container'), sN=document.getElementById('scrubber-needle'), sD=document.getElementById('scrubber-date');
         let sDrag=false;
@@ -735,7 +989,7 @@
                 let h = `<div class="same-header">${MONTHS[m-1]} ${d} (${grp[k].length} contacts)</div>`;
                 // Sort contacts within each group by name for consistency
                 grp[k].sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
-                    h += `<div class="same-row" onclick="showModal(allContacts[${c.id}])"><img src="${c.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}'"><span>${c.name}${c.hasYear ? ` (${c.y})` : ''}</span></div>`;
+                    h += `<div class="same-row" onclick="showModalById(${c.id})"><img src="${c.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${c.name.replace(/'/g, "\\'")}')'"><span>${c.name}${c.hasYear ? ` (${c.y})` : ''}</span></div>`;
                 });
                 div.innerHTML = h;
                 g.appendChild(div);
@@ -747,62 +1001,231 @@
             if(c) showModal(c);
         };
 
-        // --- Bubble Cloud (Static Grid - V25 Logic) ---
+        // --- Bubble Cloud (Physics Force-Directed Layout with Sleep/Wake on Interaction) ---
         let bubbleCanvas, bCtx, bubbles=[], animId, mouse={x:-999,y:-999};
+        let activeFrames = 0;
+
         function startBubbleLoop() {
             bubbleCanvas=document.getElementById('bubble-canvas'); bCtx=bubbleCanvas.getContext('2d');
-            const r=bubbleCanvas.parentElement.getBoundingClientRect(); bubbleCanvas.width=r.width; bubbleCanvas.height=r.height;
-            const count = filteredContacts.length; if(!count){bubbles=[];return;}
-            const area = bubbleCanvas.width * bubbleCanvas.height;
+            const r=bubbleCanvas.parentElement.getBoundingClientRect();
+            if(r.width === 0) return; // parent has zero dimensions (hidden)
+            
+            const dpr = window.devicePixelRatio || 1;
+            bubbleCanvas.width = r.width * dpr;
+            bubbleCanvas.height = r.height * dpr;
+            bCtx.scale(dpr, dpr);
+
+            const count = filteredContacts.length; if(!count){bubbles=[]; bCtx.clearRect(0,0,r.width,r.height); return;}
+            
+            // Calculate dynamic base radius to occupy ~75% of container area
+            const area = r.width * r.height;
             let pxPerItem = area / count;
-            let baseR = Math.sqrt(pxPerItem / Math.PI) * 0.7; 
-            baseR = Math.min(Math.max(baseR, 15), 60);
+            let baseR = Math.sqrt(pxPerItem / Math.PI) * 0.85;
+            baseR = Math.min(Math.max(baseR, 20), 80);
 
-            const cols = Math.ceil(Math.sqrt(count * (bubbleCanvas.width / bubbleCanvas.height)));
-            const gap = baseR * 2.2;
-            const rows = Math.ceil(count / cols);
-            const totalW = cols * gap; const totalH = rows * gap;
-            
-            // Check overflow & Scale down if needed
-            let scaleFactor = 1;
-            if(totalW > bubbleCanvas.width || totalH > bubbleCanvas.height) {
-                scaleFactor = Math.min(bubbleCanvas.width/totalW, bubbleCanvas.height/totalH) * 0.9;
-                baseR *= scaleFactor;
+            // Re-use existing bubble positions to avoid reset jumps when resizing or toggling theme
+            const existingMap = new Map(bubbles.map(b => [b.data.id, b]));
+
+            bubbles = filteredContacts.map(c => {
+                const existing = existingMap.get(c.id);
+                if (existing) {
+                    existing.r = baseR;
+                    return existing;
+                }
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * 50;
+                return {
+                    x: r.width / 2 + Math.cos(angle) * dist,
+                    y: r.height / 2 + Math.sin(angle) * dist,
+                    vx: 0,
+                    vy: 0,
+                    r: baseR,
+                    scale: 1,
+                    img: (() => {
+                        const img = new Image();
+                        img.src = c.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
+                        return img;
+                    })(),
+                    data: c
+                };
+            });
+
+            // Synchronously pre-pack the bubbles so they are stationary and perfectly arranged initially
+            const tempMouse = { x: mouse.x, y: mouse.y };
+            mouse.x = -999; mouse.y = -999;
+            for (let i = 0; i < 300; i++) {
+                updatePhysics();
             }
+            bubbles.forEach(b => { b.vx = 0; b.vy = 0; b.scale = 1.0; });
+            mouse.x = tempMouse.x; mouse.y = tempMouse.y;
 
-            const finalGap = baseR * 2.2;
-            const sx = (bubbleCanvas.width - (cols*finalGap))/2 + finalGap/2;
-            const sy = (bubbleCanvas.height - (rows*finalGap))/2 + finalGap/2;
+            // Draw once and then sleep
+            activeFrames = 1;
+            drawBubbles();
 
-            bubbles=filteredContacts.map(c=>({ x:0, y:0, r:baseR, img:new Image(), data:c, src:c.photo||`https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}` }));
-            bubbles.forEach(b=>b.img.src=b.src);
+            if(!animId) loopBubbles();
             
-            bubbles.forEach((b,i)=>{ 
-                const c=i%cols; const r=Math.floor(i/cols); 
-                b.x = sx + (c*finalGap) + ((r%2)*(finalGap/2)); 
-                b.y = sy + (r*(finalGap*0.85)); 
+            bubbleCanvas.onmousemove = e => {
+                const rc = bubbleCanvas.getBoundingClientRect();
+                mouse.x = e.clientX - rc.left;
+                mouse.y = e.clientY - rc.top;
+                activeFrames = Math.max(activeFrames, 30); // Wake up!
+            };
+            bubbleCanvas.onmouseleave = () => {
+                mouse.x = -999;
+                mouse.y = -999;
+                activeFrames = Math.max(activeFrames, 30); // Wake up to return to normal
+            };
+            bubbleCanvas.onclick = () => {
+                const hit = bubbles.filter(b => Math.sqrt((mouse.x - b.x)**2 + (mouse.y - b.y)**2) < b.r * b.scale)
+                                   .sort((a, b) => b.scale - a.scale)[0];
+                if (hit) showModal(hit.data);
+            };
+        }
+
+        function stopBubbleLoop(){cancelAnimationFrame(animId);animId=null;}
+        
+        function updatePhysics() {
+            const width = bubbleCanvas.width / (window.devicePixelRatio || 1);
+            const height = bubbleCanvas.height / (window.devicePixelRatio || 1);
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            const gravity = 0.005; // Gentle centering gravity to prevent squeezing
+            const damping = 0.55;  // Strong velocity damping for rapid stabilization
+            
+            // 1. Center force (gravity) & Hover expansion
+            bubbles.forEach(b => {
+                b.vx += (centerX - b.x) * gravity;
+                b.vy += (centerY - b.y) * gravity;
+                
+                const distToMouse = Math.sqrt((mouse.x - b.x)**2 + (mouse.y - b.y)**2);
+                const targetScale = distToMouse < b.r * 1.5 ? 1.6 : 1.0;
+                b.scale += (targetScale - b.scale) * 0.15;
+            });
+            
+            // 2. Collision resolution (position-only corrections for absolute stability)
+            const iterations = 4;
+            for (let it = 0; it < iterations; it++) {
+                for (let i = 0; i < bubbles.length; i++) {
+                    const b1 = bubbles[i];
+                    const r1 = b1.r * b1.scale;
+                    for (let j = i + 1; j < bubbles.length; j++) {
+                        const b2 = bubbles[j];
+                        const r2 = b2.r * b2.scale;
+                        const dx = b2.x - b1.x;
+                        const dy = b2.y - b1.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy) || 0.001;
+                        const minDist = r1 + r2 + 4; // 4px padding between bubbles
+                        if (dist < minDist) {
+                            const overlap = minDist - dist;
+                            const nx = dx / dist;
+                            const ny = dy / dist;
+                            b1.x -= nx * overlap * 0.5;
+                            b1.y -= ny * overlap * 0.5;
+                            b2.x += nx * overlap * 0.5;
+                            b2.y += ny * overlap * 0.5;
+                        }
+                    }
+                }
+            }
+            
+            // 3. Movement update and boundaries
+            bubbles.forEach(b => {
+                b.x += b.vx;
+                b.y += b.vy;
+                b.vx *= damping;
+                b.vy *= damping;
+                
+                const r_curr = b.r * b.scale;
+                if (b.x < r_curr) { b.x = r_curr; b.vx *= -0.5; }
+                if (b.x > width - r_curr) { b.x = width - r_curr; b.vx *= -0.5; }
+                if (b.y < r_curr) { b.y = r_curr; b.vy *= -0.5; }
+                if (b.y > height - r_curr) { b.y = height - r_curr; b.vy *= -0.5; }
             });
 
-            if(!animId)loopBubbles();
-            bubbleCanvas.onmousemove=e=>{const rc=bubbleCanvas.getBoundingClientRect();mouse.x=e.clientX-rc.left;mouse.y=e.clientY-rc.top};
-            bubbleCanvas.onclick=()=>{ const hit=bubbles.filter(b=>Math.sqrt((mouse.x-b.x)**2+(mouse.y-b.y)**2)<b.r*b.scale).sort((a,b)=>b.scale-a.scale)[0]; if(hit)showModal(hit.data); };
-        }
-        function stopBubbleLoop(){cancelAnimationFrame(animId);animId=null;}
-        function loopBubbles(){
-            bCtx.clearRect(0,0,bubbleCanvas.width,bubbleCanvas.height);
-            bubbles.forEach(b=>{ const d=Math.sqrt((mouse.x-b.x)**2+(mouse.y-b.y)**2); b.scale=d<80?1+(0.5*(1-d/80)):1; });
-            [...bubbles].sort((a,b)=>a.scale-b.scale).forEach(b=>{ 
-                const s=b.r*b.scale; bCtx.save(); bCtx.beginPath(); bCtx.arc(b.x,b.y,s,0,Math.PI*2); bCtx.closePath(); bCtx.clip(); 
-                try{bCtx.drawImage(b.img,b.x-s,b.y-s,s*2,s*2)}catch(e){} 
-                bCtx.strokeStyle = document.body.classList.contains('dark') ? '#334155' : '#e2e8f0'; bCtx.lineWidth = 1; bCtx.stroke(); bCtx.restore(); 
+            // Keep loop active if scales are still transitioning or bubbles have velocity
+            let needsUpdate = false;
+            bubbles.forEach(b => {
+                const distToMouse = Math.sqrt((mouse.x - b.x)**2 + (mouse.y - b.y)**2);
+                const targetScale = distToMouse < b.r * 1.5 ? 1.6 : 1.0;
+                if (Math.abs(targetScale - b.scale) > 0.005) {
+                    needsUpdate = true;
+                }
+                if (Math.abs(b.vx) > 0.01 || Math.abs(b.vy) > 0.01) {
+                    needsUpdate = true;
+                }
             });
-            animId=requestAnimationFrame(loopBubbles);
+            if (needsUpdate) {
+                activeFrames = Math.max(activeFrames, 5);
+            }
+        }
+
+        function drawBubbles() {
+            if (!bubbleCanvas || !bCtx) return;
+            const width = bubbleCanvas.width / (window.devicePixelRatio || 1);
+            const height = bubbleCanvas.height / (window.devicePixelRatio || 1);
+            bCtx.clearRect(0, 0, width, height);
+            
+            const isDark = document.body.classList.contains('dark');
+            const themeBorder = isDark ? '#334155' : '#e2e8f0';
+            
+            [...bubbles].sort((a, b) => a.scale - b.scale).forEach(b => {
+                const s = b.r * b.scale;
+                bCtx.save();
+                bCtx.beginPath();
+                bCtx.arc(b.x, b.y, s, 0, Math.PI*2);
+                bCtx.closePath();
+                bCtx.clip();
+                
+                try {
+                    if (b.img.complete && b.img.naturalWidth !== 0) {
+                        bCtx.drawImage(b.img, b.x-s, b.y-s, s*2, s*2);
+                    } else {
+                        bCtx.fillStyle = '#6366f1';
+                        bCtx.fillRect(b.x-s, b.y-s, s*2, s*2);
+                        bCtx.fillStyle = '#ffffff';
+                        bCtx.font = `bold ${Math.max(11, Math.round(s * 0.45))}px Inter, sans-serif`;
+                        bCtx.textAlign = 'center';
+                        bCtx.textBaseline = 'middle';
+                        
+                        const names = b.data.name.split(' ').filter(Boolean);
+                        let initials = '';
+                        if (names.length >= 2) {
+                            initials = (names[0][0] + names[names.length-1][0]).toUpperCase();
+                        } else if (names.length === 1) {
+                            initials = names[0].substring(0, 2).toUpperCase();
+                        } else {
+                            initials = '??';
+                        }
+                        bCtx.fillText(initials, b.x, b.y);
+                    }
+                } catch(e) {
+                    bCtx.fillStyle = '#6366f1';
+                    bCtx.fillRect(b.x-s, b.y-s, s*2, s*2);
+                }
+                
+                bCtx.strokeStyle = themeBorder;
+                bCtx.lineWidth = Math.max(1.5, Math.round(s * 0.04));
+                bCtx.stroke();
+                bCtx.restore();
+            });
+        }
+
+        function loopBubbles() {
+            if (!bubbleCanvas || !bCtx) return;
+            if (activeFrames > 0) {
+                updatePhysics();
+                activeFrames--;
+                drawBubbles();
+            }
+            animId = requestAnimationFrame(loopBubbles);
         }
 
         // --- Heatmap ---
         function drawHeatmap() {
             const cvs=document.getElementById('heatmap-canvas'); if(!filteredContacts.length||!cvs)return;
-            const ctx=cvs.getContext('2d'); const r=cvs.getBoundingClientRect();
+            const ctx=cvs.getContext('2d'); const r=cvs.parentElement.getBoundingClientRect();
             const dpr=window.devicePixelRatio||1; cvs.width=r.width*dpr; cvs.height=r.height*dpr; ctx.scale(dpr,dpr);
             const years = filteredContacts.filter(c=>c.hasYear).map(c=>c.y);
             if(!years.length)return;
@@ -833,45 +1256,163 @@
                 }
             };
         }
-        new ResizeObserver(() => { if(document.getElementById('stats-view').classList.contains('active')) { drawHeatmap(); startBubbleLoop(); } }).observe(document.getElementById('stats-content'));
+        new ResizeObserver(() => {
+            if(document.getElementById('stats-view').classList.contains('active')) {
+                if (activeSubTab === 'temporal') drawHeatmap();
+                if (activeSubTab === 'cloud') startBubbleLoop();
+            }
+        }).observe(document.getElementById('stats-content'));
 
         // --- Stats ---
         function updateStats() {
-            if(document.getElementById('stats-view').classList.contains('active')) { startBubbleLoop(); drawHeatmap(); }
+            if(document.getElementById('stats-view').classList.contains('active')) {
+                if (activeSubTab === 'cloud') startBubbleLoop();
+                if (activeSubTab === 'temporal') drawHeatmap();
+            }
             const get=(f)=>{const d={};filteredContacts.forEach(c=>{const k=f(c);if(k)d[k]=(d[k]||0)+1});return d};
-            const mD=get(c=>MONTHS[c.m-1]), yD=get(c=>c.hasYear?c.y:null), sD=get(c=>((c.m>=3&&c.m<=5)?'Spring':(c.m>=6&&c.m<=8)?'Summer':(c.m>=9&&c.m<=11)?'Autumn':'Winter'));
-            const wD=get(c=>c.hasYear?['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(c.y,c.m-1,c.d).getDay()]:null);
-            upChart('chart-months','bar',MONTHS,MONTHS.map(m=>mD[m]||0),'Months');
+            
+            // 1. Calculate and update KPI Cards
+            const agedContacts = filteredContacts.filter(c => c.hasYear);
+            let avgAge = "N/A";
+            if (agedContacts.length > 0) {
+                const sumAge = agedContacts.reduce((sum, c) => sum + (new Date().getFullYear() - c.y), 0);
+                avgAge = Math.round(sumAge / agedContacts.length) + " yrs";
+            }
+            
+            const dayCounts = {};
+            filteredContacts.forEach(c => {
+                const k = `${c.m}-${c.d}`;
+                dayCounts[k] = (dayCounts[k] || 0) + 1;
+            });
+            let maxDay = "";
+            let maxDayCount = 0;
+            Object.entries(dayCounts).forEach(([k, count]) => {
+                if (count > maxDayCount) {
+                    maxDay = k;
+                    maxDayCount = count;
+                }
+            });
+            let kpiCommonDay = "N/A";
+            if (maxDayCount > 0) {
+                const [m, d] = maxDay.split('-').map(Number);
+                kpiCommonDay = `${MONTHS[m-1]} ${d}`;
+            }
+
+            const zodiacCounts = {};
+            filteredContacts.forEach(c => {
+                const z = getZodiacSign(c.m, c.d);
+                zodiacCounts[z] = (zodiacCounts[z] || 0) + 1;
+            });
+            let maxZodiac = "N/A";
+            let maxZodiacCount = 0;
+            Object.entries(zodiacCounts).forEach(([z, count]) => {
+                if (count > maxZodiacCount) {
+                    maxZodiac = z;
+                    maxZodiacCount = count;
+                }
+            });
+
+            const upcomingCount = filteredContacts.filter(c => daysUntilBirthday(c.m, c.d) <= 30).length;
+
+            document.getElementById('kpi-avg-age').innerText = avgAge;
+            document.getElementById('kpi-common-day').innerText = kpiCommonDay;
+            document.getElementById('kpi-common-zodiac').innerText = maxZodiac;
+            document.getElementById('kpi-upcoming').innerText = upcomingCount;
+
+            // 2. Render Demographics & Overview Charts
+            const yD=get(c=>c.hasYear?c.y:null);
             upChart('chart-years','bar',Object.keys(yD).sort(),Object.values(yD),'Years');
+
+            const genD = get(c => c.hasYear ? getGeneration(c.y) : null);
+            const genLabels = ["Boomers", "Gen X", "Millennials", "Gen Z", "Gen Alpha", "Silent Gen"].filter(g => genD[g] !== undefined);
+            const genData = genLabels.map(g => genD[g] || 0);
+            upChart('chart-generations', 'doughnut', genLabels, genData, 'Generations');
+
+            const zodiacLabels = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
+            const zodD = get(c => getZodiacSign(c.m, c.d));
+            const zodData = zodiacLabels.map(z => zodD[z] || 0);
+            upChart('chart-zodiac', 'bar', zodiacLabels, zodData, 'Zodiac Signs');
+
+            // 3. Render Temporal Charts
+            const mD=get(c=>MONTHS[c.m-1]), sD=get(c=>((c.m>=3&&c.m<=5)?'Spring':(c.m>=6&&c.m<=8)?'Summer':(c.m>=9&&c.m<=11)?'Autumn':'Winter'));
+            const wD=get(c=>c.hasYear?['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(c.y,c.m-1,c.d).getDay()]:null);
+            
+            upChart('chart-months','bar',MONTHS,MONTHS.map(m=>mD[m]||0),'Months');
             upChart('chart-season','doughnut',['Spring','Summer','Autumn','Winter'],['Spring','Summer','Autumn','Winter'].map(s=>sD[s]||0),'Season');
             upChart('chart-weekday','bar',['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map(d=>wD[d]||0),'Weekday');
         }
+
         function upChart(id,type,l,d,t){
             const ctx=document.getElementById(id).getContext('2d'); if(chartInstances[id])chartInstances[id].destroy();
-            chartInstances[id]=new Chart(ctx,{type:type,data:{labels:l,datasets:[{label:t,data:d,backgroundColor:type==='doughnut'?['#a7f3d0','#fde68a','#fca5a5','#bfdbfe']:'#6366f1'}]},options:{responsive:true,onClick:(e,el)=>{if(el.length)showListModal(l[el[0].index],t)}}});
+            const isDark = document.body.classList.contains('dark');
+            const textColor = isDark ? '#f8fafc' : '#0f172a';
+            const gridColor = isDark ? '#334155' : '#e2e8f0';
+            
+            const monoPalette = ['#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#94a3b8', '#cbd5e1'];
+            const bgColor = type === 'doughnut' ? monoPalette.slice(0, l.length) : '#6366f1';
+            
+            chartInstances[id]=new Chart(ctx,{
+                type:type,
+                data:{
+                    labels:l,
+                    datasets:[{
+                        label:t,
+                        data:d,
+                        backgroundColor:bgColor,
+                        borderWidth: 1,
+                        borderColor: isDark ? '#1e293b' : '#ffffff'
+                    }]
+                },
+                options:{
+                    responsive:true,
+                    plugins: {
+                        legend: {
+                            display: type === 'doughnut',
+                            labels: {
+                                color: textColor,
+                                font: { family: "'Inter', sans-serif", weight: '500' }
+                            }
+                        }
+                    },
+                    scales: type === 'doughnut' ? {} : {
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { family: "'Inter', sans-serif" } }
+                        },
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, font: { family: "'Inter', sans-serif" }, precision: 0 }
+                        }
+                    },
+                    onClick:(e,el)=>{if(el.length)showListModal(l[el[0].index],t)}
+                }
+            });
         }
+
         function showListModal(crit, cat, src) {
             document.getElementById('list-title').innerText=`${cat}: ${crit}`; const b=document.getElementById('list-body'); b.innerHTML='';
             const matches=src||filteredContacts.filter(c=>{
                 if(cat==='Months')return MONTHS[c.m-1]===crit; if(cat==='Years')return c.y==crit;
                 if(cat==='Season')return ((c.m>=3&&c.m<=5)?'Spring':(c.m>=6&&c.m<=8)?'Summer':(c.m>=9&&c.m<=11)?'Autumn':'Winter')===crit;
                 if(cat==='Weekday')return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(c.y,c.m-1,c.d).getDay()]===crit;
+                if(cat==='Zodiac Signs')return getZodiacSign(c.m, c.d)===crit;
+                if(cat==='Generations')return c.hasYear && getGeneration(c.y)===crit;
                 return false;
             });
             matches.forEach(c=>{
                 const d=document.createElement('div'); d.className='list-item';
-                d.innerHTML=`<img src="${c.photo||'https://ui-avatars.com/api/?name='+c.name}" style="width:30px;height:30px;border-radius:50%"><span>${c.name}</span>`;
+                d.innerHTML=`<img src="${c.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${c.name.replace(/'/g, "\\'")}')'"><span>${c.name}</span>`;
                 d.onclick=()=>{showModal(c);document.getElementById('list-modal').style.display='none'}; b.appendChild(d);
             });
             document.getElementById('list-modal').style.display='flex'; document.getElementById('contact-modal').style.display='none'; document.getElementById('modal-backdrop').style.display='flex';
         }
 
-        function renderMissing() { const g=document.getElementById('missing-grid'); g.innerHTML=''; [...missingContacts,...yearlessContacts].filter(c=>missingActiveTags.size===0||c.tags.some(t=>missingActiveTags.has(t))).forEach(c=>{ const d=document.createElement('div'); d.className='missing-card'; const t=missingContacts.includes(c)?'<span class="badge badge-red">No Date</span>':'<span class="badge badge-yellow">No Year</span>'; d.innerHTML=`<img src="${c.photo||'https://ui-avatars.com/api/?name='+c.name}" style="width:40px;height:40px;border-radius:50%"><div><div style="font-weight:600">${c.name}</div>${t}</div>`; d.onclick=()=>showModal(c); g.appendChild(d); }); }
+        function renderMissing() { const g=document.getElementById('missing-grid'); g.innerHTML=''; [...missingContacts,...yearlessContacts].filter(c=>missingActiveTags.size===0||c.tags.some(t=>missingActiveTags.has(t))).forEach(c=>{ const d=document.createElement('div'); d.className='missing-card'; const t=missingContacts.includes(c)?'<span class="badge badge-red">No Date</span>':'<span class="badge badge-yellow">No Year</span>'; d.innerHTML=`<img src="${c.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${c.name.replace(/'/g, "\\'")}')'"><div><div style="font-weight:600">${c.name}</div>${t}</div>`; d.onclick=()=>showModal(c); g.appendChild(d); }); }
 
         function showModal(c) {
             document.getElementById('m-name').innerText=c.name;
             document.getElementById('m-meta').innerText=`${MONTHS[c.m-1]} ${c.d}, ${c.hasYear?c.y:'????'}`;
-            document.getElementById('m-img').src=c.photo||`https://ui-avatars.com/api/?name=${c.name}`;
+            document.getElementById('m-img').src=c.photo||`https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
             document.getElementById('m-tags').innerHTML=c.tags.map(t=>`<span class="tag">${t}</span>`).join('');
             let h=''; if(c.email)h+=`<div class="detail-row"><i class="fa-solid fa-envelope"></i> ${c.email}</div>`;
             if(c.phone)h+=`<div class="detail-row"><i class="fa-solid fa-phone"></i> ${c.phone}</div>`;
