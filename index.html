@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BirthdayVisualiser v1.2.5</title>
     <meta name="description" content="Visualise your contact birthdays through timelines, statistics, and insights.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -412,32 +413,8 @@
             background: var(--surface);
             padding: 1px 6px;
             border-radius: 4px;
-            cursor: pointer;
             border: 1px solid var(--border);
-            transition: all var(--transition);
-            position: relative;
-        }
-        .build-hash:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-        .build-hash-tooltip {
-            position: absolute;
-            bottom: calc(100% + 6px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--text);
-            color: var(--bg);
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.625rem;
-            white-space: nowrap;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .build-hash-tooltip.visible {
-            opacity: 1;
+            font-size: 0.6875rem;
         }
 
         @media (max-width: 768px) {
@@ -2348,9 +2325,7 @@
                         <i class="fa-brands fa-github"></i>
                     </a>
                     <span>•</span>
-                    <span class="build-hash" id="build-hash" onclick="copyBuildHash()" title="Click to copy">
-                        <span class="build-hash-tooltip" id="build-hash-tooltip">Copied!</span>
-                    </span>
+                    <span class="build-hash" id="build-hash"></span>
                 </div>
             </div>
         </div>
@@ -2578,7 +2553,7 @@
 
         async function loadDemo() {
             const fileLabel = document.getElementById('drop-zone-file');
-            fileLabel.textContent = "example-contacts.csv";
+            fileLabel.textContent = "demo-contacts.csv";
             fileLabel.style.display = 'block';
             fileLabel.style.color = '';
 
@@ -2586,14 +2561,14 @@
             document.getElementById('landing-screen').classList.add('hidden');
             document.getElementById('loading').style.display = 'flex';
             try {
-                const resp = await fetch('example-contacts.csv');
+                const resp = await fetch('demo-contacts.csv');
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 const text = await resp.text();
                 Papa.parse(text, {
                     header: true,
                     skipEmptyLines: true,
                     complete: (res) => {
-                        validateAndProcessData(res.data, 'Demo Data (example-contacts.csv)');
+                        validateAndProcessData(res.data, 'Demo Data (demo-contacts.csv)');
                     },
                     error: (err) => {
                         showUploadError('Failed to parse demo CSV: ' + (err.message || err));
@@ -2732,25 +2707,8 @@
             const hashHex = Math.abs(hash).toString(16).substring(0, 7).padStart(7, '0');
             const hashSpan = document.getElementById('build-hash');
             if (hashSpan) {
-                hashSpan.innerHTML = `build ${hashHex}<span class="build-hash-tooltip" id="build-hash-tooltip">Copied!</span>`;
+                hashSpan.textContent = `build ${hashHex}`;
             }
-        }
-
-        function copyBuildHash() {
-            const hashSpan = document.getElementById('build-hash');
-            if (!hashSpan) return;
-            const text = (hashSpan.textContent || "").replace('build', '').replace('Copied!', '').trim();
-            navigator.clipboard.writeText(text).then(() => {
-                const tooltip = document.getElementById('build-hash-tooltip');
-                if (tooltip) {
-                    tooltip.classList.add('visible');
-                    setTimeout(() => {
-                        tooltip.classList.remove('visible');
-                    }, 1500);
-                }
-            }).catch(err => {
-                console.error("Could not copy build hash: ", err);
-            });
         }
 
         function validateAndProcessData(rows, sourceName) {

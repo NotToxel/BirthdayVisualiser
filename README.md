@@ -98,7 +98,7 @@ Most contact management apps support exporting as CSV or vCard (VCF). Check your
 
 ## 🎮 Demo Mode
 
-Click the **"Try Demo"** button on the landing page to load [example-contacts.csv](example-contacts.csv) — a sample dataset of 30 fictional contacts spanning different decades, tag groups, and birth months. This lets you explore all features without uploading your own data.
+Click the **"Try Demo"** button on the landing page to load [demo-contacts.csv](demo-contacts.csv) — a sample dataset of fictional contacts spanning different decades, tag groups, and birth months. This lets you explore all features without uploading your own data.
 
 ---
 
@@ -117,18 +117,6 @@ Click the **"Try Demo"** button on the landing page to load [example-contacts.cs
 - **[Font Awesome](https://fontawesome.com/)** — Icons
 - **[Google Fonts](https://fonts.google.com/)** — Outfit + Inter typography
 - **GitHub Pages** — Static hosting
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ---
 
