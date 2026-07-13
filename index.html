@@ -1029,7 +1029,7 @@
                 width: auto !important;
                 justify-content: flex-end !important;
             }
-            nav .nav-actions .btn-icon:not(:last-child) {
+            nav .nav-actions .btn-icon {
                 display: none !important;
             }
             #app-container {
@@ -1288,6 +1288,55 @@
             .cal-cell {
                 min-height: 52px;
             }
+        }
+        /* Settings Segmented Controls */
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 1.25rem;
+        }
+        .settings-label {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .settings-label i {
+            color: var(--primary);
+            width: 18px;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+        .segmented-control {
+            display: flex;
+            background: var(--surface-2);
+            border-radius: 8px;
+            padding: 2px;
+            border: 1px solid var(--border);
+        }
+        .segmented-control button {
+            background: transparent;
+            border: none;
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .segmented-control button.active {
+            background: var(--surface);
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        body.dark .segmented-control button.active {
+            background: var(--surface-2);
+            color: #818cf8;
         }
     </style>
 </head>
@@ -1554,13 +1603,30 @@
                 <span>Missing Data</span>
             </div>
             <div class="drawer-divider"></div>
-            <div class="drawer-item" onclick="toggleWesternZodiac();">
-                <i class="fa-solid fa-star-and-crescent" id="drawer-icon-western"></i>
-                <span>Western Zodiac</span>
+            <div style="font-size: 0.6875rem; color: var(--text-muted); font-weight: 700; padding: 6px 1.25rem; text-transform: uppercase; letter-spacing: 0.05em;">Settings</div>
+            
+            <div class="settings-row">
+                <span class="settings-label"><i class="fa-solid fa-star-and-crescent"></i> Western Zodiac</span>
+                <div class="segmented-control">
+                    <button id="mobile-opt-west-show" onclick="setMobileWesternZodiac(true)">Show</button>
+                    <button id="mobile-opt-west-hide" onclick="setMobileWesternZodiac(false)">Hide</button>
+                </div>
             </div>
-            <div class="drawer-item" onclick="toggleChineseZodiac();">
-                <i class="fa-solid fa-dragon" id="drawer-icon-chinese"></i>
-                <span>Chinese Zodiac</span>
+
+            <div class="settings-row">
+                <span class="settings-label"><i class="fa-solid fa-dragon"></i> Chinese Zodiac</span>
+                <div class="segmented-control">
+                    <button id="mobile-opt-chinese-show" onclick="setMobileChineseZodiac(true)">Show</button>
+                    <button id="mobile-opt-chinese-hide" onclick="setMobileChineseZodiac(false)">Hide</button>
+                </div>
+            </div>
+
+            <div class="settings-row">
+                <span class="settings-label"><i class="fa-solid fa-circle-half-stroke"></i> Theme Mode</span>
+                <div class="segmented-control">
+                    <button id="mobile-opt-theme-light" onclick="setMobileTheme('light')">Light</button>
+                    <button id="mobile-opt-theme-dark" onclick="setMobileTheme('dark')">Dark</button>
+                </div>
             </div>
         </div>
     </div>
@@ -2003,10 +2069,44 @@
             if (westBtn) westBtn.style.color = showWesternZodiac ? 'var(--primary)' : '';
             if (chinBtn) chinBtn.style.color = showChineseZodiac ? 'var(--primary)' : '';
 
-            const drawerIconWest = document.getElementById('drawer-icon-western');
-            const drawerIconChin = document.getElementById('drawer-icon-chinese');
-            if (drawerIconWest) drawerIconWest.style.color = showWesternZodiac ? 'var(--primary)' : '';
-            if (drawerIconChin) drawerIconChin.style.color = showChineseZodiac ? 'var(--primary)' : '';
+            updateMobileSettingsUI();
+        }
+
+        function setMobileWesternZodiac(show) {
+            if (showWesternZodiac !== show) toggleWesternZodiac();
+            updateMobileSettingsUI();
+        }
+
+        function setMobileChineseZodiac(show) {
+            if (showChineseZodiac !== show) toggleChineseZodiac();
+            updateMobileSettingsUI();
+        }
+
+        function setMobileTheme(mode) {
+            const isCurrentlyDark = document.body.classList.contains('dark');
+            if ((mode === 'dark' && !isCurrentlyDark) || (mode === 'light' && isCurrentlyDark)) {
+                toggleDark();
+            }
+            updateMobileSettingsUI();
+        }
+
+        function updateMobileSettingsUI() {
+            const isDark = document.body.classList.contains('dark');
+            
+            const btnLight = document.getElementById('mobile-opt-theme-light');
+            const btnDark = document.getElementById('mobile-opt-theme-dark');
+            if (btnLight) btnLight.classList.toggle('active', !isDark);
+            if (btnDark) btnDark.classList.toggle('active', isDark);
+
+            const btnWestShow = document.getElementById('mobile-opt-west-show');
+            const btnWestHide = document.getElementById('mobile-opt-west-hide');
+            if (btnWestShow) btnWestShow.classList.toggle('active', showWesternZodiac);
+            if (btnWestHide) btnWestHide.classList.toggle('active', !showWesternZodiac);
+
+            const btnChinShow = document.getElementById('mobile-opt-chinese-show');
+            const btnChinHide = document.getElementById('mobile-opt-chinese-hide');
+            if (btnChinShow) btnChinShow.classList.toggle('active', showChineseZodiac);
+            if (btnChinHide) btnChinHide.classList.toggle('active', !showChineseZodiac);
         }
 
         function toggleMobileMoreMenu() {
@@ -2020,11 +2120,7 @@
                 backdrop.style.opacity = '0';
                 setTimeout(() => backdrop.style.display = 'none', 200);
             } else {
-                const drawerIconWest = document.getElementById('drawer-icon-western');
-                const drawerIconChin = document.getElementById('drawer-icon-chinese');
-                if (drawerIconWest) drawerIconWest.style.color = showWesternZodiac ? 'var(--primary)' : '';
-                if (drawerIconChin) drawerIconChin.style.color = showChineseZodiac ? 'var(--primary)' : '';
-
+                updateMobileSettingsUI();
                 backdrop.style.display = 'block';
                 requestAnimationFrame(() => {
                     backdrop.style.opacity = '1';
@@ -2129,6 +2225,7 @@
             const landingIcon = document.getElementById('landing-theme-icon');
             if (navIcon) navIcon.className = cls;
             if (landingIcon) landingIcon.className = cls;
+            updateMobileSettingsUI();
             drawHeatmap(); drawScrubber();
             if (allContacts.length > 0) updateStats();
             if (typeof drawBubbles === 'function' && typeof bubbles !== 'undefined' && bubbles.length) drawBubbles();
@@ -2549,16 +2646,21 @@
             bubbleCanvas.height = r.height * dpr;
             bCtx.scale(dpr, dpr);
 
-            const count = filteredContacts.length; if(!count){bubbles=[]; bCtx.clearRect(0,0,r.width,r.height); return;}
+            const displayed = filteredContacts
+                .slice()
+                .sort((a, b) => a._daysUntil - b._daysUntil)
+                .slice(0, 120);
+
+            const count = displayed.length; if(!count){bubbles=[]; bCtx.clearRect(0,0,r.width,r.height); return;}
 
             const area = r.width * r.height;
             let pxPerItem = area / count;
             let baseR = Math.sqrt(pxPerItem / Math.PI) * 0.65;
-            baseR = Math.min(Math.max(baseR, 18), 65);
+            baseR = Math.min(Math.max(baseR, 12), 65);
 
             const existingMap = new Map(bubbles.map(b => [b.data.id, b]));
 
-            bubbles = filteredContacts.map(c => {
+            bubbles = displayed.map(c => {
                 const existing = existingMap.get(c.id);
                 if (existing) {
                     existing.r = baseR;
@@ -2629,8 +2731,9 @@
                 b.scale += (targetScale - b.scale) * 0.12;
             });
 
-            // Collision — include scale + 12px padding room to prevent overlaps and lightly push neighbors
+            // Collision — include scale + dynamic padding room to prevent overlaps and lightly push neighbors
             const iterations = 3;
+            const padding = bubbles.length > 80 ? 4 : 10;
             for (let it = 0; it < iterations; it++) {
                 for (let i = 0; i < bubbles.length; i++) {
                     const b1 = bubbles[i];
@@ -2641,12 +2744,12 @@
                         const dx = b2.x - b1.x;
                         const dy = b2.y - b1.y;
                         const dist = Math.sqrt(dx*dx + dy*dy) || 0.001;
-                        const minDist = r1 + r2 + 12; // 12px padding room between bubbles
+                        const minDist = r1 + r2 + padding;
                         if (dist < minDist) {
                             const overlap = minDist - dist;
                             const nx = dx / dist;
                             const ny = dy / dist;
-                            const push = overlap * 0.25; // Gentle displacement multiplier
+                            const push = Math.min(overlap * 0.25, 2.0); // Cap push force
                             b1.x -= nx * push;
                             b1.y -= ny * push;
                             b2.x += nx * push;
@@ -2657,6 +2760,13 @@
             }
 
             bubbles.forEach(b => {
+                const speed = Math.sqrt(b.vx*b.vx + b.vy*b.vy) || 0.001;
+                const maxSpeed = 2.0;
+                if (speed > maxSpeed) {
+                    b.vx = (b.vx / speed) * maxSpeed;
+                    b.vy = (b.vy / speed) * maxSpeed;
+                }
+
                 b.x += b.vx; b.y += b.vy;
                 b.vx *= damping; b.vy *= damping;
 
