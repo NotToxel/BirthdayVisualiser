@@ -709,6 +709,297 @@
         }
         .list-item:hover { background: var(--surface-2); }
         .list-item:last-child { border-bottom: none; }
+
+        /* ── Calendar View ── */
+        #calendar-view {
+            padding: 1rem 1.25rem;
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg);
+        }
+        #calendar-view.active {
+            display: flex;
+        }
+        #calendar-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        #calendar-header {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+        #calendar-header h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text);
+            text-align: left;
+        }
+        .cal-nav-btn {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: border-color var(--transition), background var(--transition);
+        }
+        .cal-nav-btn:hover {
+            border-color: var(--text-muted);
+        }
+        .cal-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-2);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-align: center;
+            padding: 6px 0;
+        }
+        #calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            flex-grow: 1;
+            height: 100%;
+        }
+        .cal-cell {
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            overflow: hidden;
+            background: var(--surface);
+            position: relative;
+            cursor: pointer;
+            transition: background var(--transition), border-color var(--transition);
+        }
+        .cal-cell:nth-child(7n) {
+            border-right: none;
+        }
+        .cal-cell:hover {
+            background: var(--surface-2);
+            z-index: 5;
+        }
+        .cal-cell.other-month {
+            background: var(--bg);
+            opacity: 0.55;
+        }
+        .cal-cell.other-month:hover {
+            background: var(--surface-2);
+            opacity: 0.85;
+        }
+        .cal-date-num {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .cal-cell.today .cal-date-num {
+            background: var(--primary);
+            color: white;
+        }
+        .cal-cell.today {
+            box-shadow: inset 0 0 0 1px var(--primary);
+        }
+        .cal-photos-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            width: 100%;
+            align-content: flex-start;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .cal-avatar {
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1.5px solid var(--surface);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: transform 100ms ease;
+            background: var(--surface-2);
+        }
+        .cal-avatar:hover {
+            transform: scale(1.18);
+            z-index: 10;
+        }
+
+        /* ── Upcoming View ── */
+        #upcoming-view {
+            display: none;
+            flex-grow: 1;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg);
+        }
+        #upcoming-view.active {
+            display: flex;
+        }
+        #upcoming-layout {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+        #upcoming-sidebar {
+            width: 280px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+        #upcoming-sidebar h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin: 0;
+        }
+        #upcoming-main {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: var(--bg);
+        }
+        #upcoming-feed {
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .upcoming-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .upcoming-sec-header {
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding-bottom: 4px;
+            border-bottom: 1.5px solid var(--border);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .upcoming-sec-header span.sec-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .upcoming-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: border-color var(--transition), transform var(--transition);
+        }
+        .upcoming-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+        .upcoming-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .upcoming-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1.5px solid var(--border);
+            background: var(--surface-2);
+        }
+        .upcoming-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .upcoming-name {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.875rem;
+        }
+        .upcoming-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .upcoming-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .upcoming-kpi-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .upcoming-kpi-label {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .upcoming-kpi-val {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text);
+        }
+        .upcoming-kpi-sub {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
@@ -746,6 +1037,8 @@
             <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v33</span></div>
             <div class="tabs">
                 <div class="tab active" onclick="setTab('timeline')">Timeline</div>
+                <div class="tab" onclick="setTab('calendar')">Calendar</div>
+                <div class="tab" onclick="setTab('upcoming')">Upcoming</div>
                 <div class="tab" onclick="setTab('stats')">Statistics</div>
                 <div class="tab" onclick="setTab('same')">Same Birthday</div>
                 <div class="tab" onclick="setTab('missing')">Missing Data</div>
@@ -868,6 +1161,52 @@
             <div class="same-grid" id="same-grid"></div>
         </div>
 
+        <div id="calendar-view" class="view">
+            <div id="calendar-container">
+                <div id="calendar-header">
+                    <h2 id="calendar-title">Month Year</h2>
+                    <div class="cal-controls">
+                        <button class="cal-nav-btn" onclick="navigateCalendar(-1)"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                        <button class="cal-nav-btn" onclick="navigateCalendar(0)">Today</button>
+                        <button class="cal-nav-btn" onclick="navigateCalendar(1)">Next <i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                    <div class="cal-settings" style="display: flex; align-items: center; gap: 6px; justify-content: flex-end;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Week starts:</span>
+                        <div class="tabs" style="padding: 2px; border-radius: 6px; background: var(--surface-2); display: flex;">
+                            <div id="cal-opt-mon" class="tab active" onclick="toggleCalendarStartOfWeek('Monday')" style="padding: 3px 10px; font-size: 0.75rem; border-radius: 4px;">Mon</div>
+                            <div id="cal-opt-sun" class="tab" onclick="toggleCalendarStartOfWeek('Sunday')" style="padding: 3px 10px; font-size: 0.75rem; border-radius: 4px;">Sun</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="calendar-weekdays"></div>
+                <div id="calendar-grid"></div>
+            </div>
+        </div>
+
+        <div id="upcoming-view" class="view">
+            <div id="upcoming-layout">
+                <div id="upcoming-sidebar">
+                    <h3>Upcoming Insights</h3>
+                    <div class="upcoming-kpi-card">
+                        <div class="upcoming-kpi-label">Busiest Day (Upcoming)</div>
+                        <div class="upcoming-kpi-val" id="up-kpi-busy-day">--</div>
+                        <div class="upcoming-kpi-sub" id="up-kpi-busy-count">--</div>
+                    </div>
+                    <div class="upcoming-kpi-card">
+                        <div class="upcoming-kpi-label">Next 7 Days</div>
+                        <div class="upcoming-kpi-val" id="up-kpi-week-count">0</div>
+                    </div>
+                    <div class="upcoming-kpi-card">
+                        <div class="upcoming-kpi-label">Next 30 Days</div>
+                        <div class="upcoming-kpi-val" id="up-kpi-month-count">0</div>
+                    </div>
+                </div>
+                <div id="upcoming-main">
+                    <div id="upcoming-feed"></div>
+                </div>
+            </div>
+        </div>
+
         <div id="missing-view" class="view">
             <div id="missing-layout">
                 <div id="missing-sidebar">
@@ -924,6 +1263,9 @@
         let showChineseZodiac = localStorage.getItem('showChineseZodiac') !== 'false';
         const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
         const SC_PAD = 50;
+        let calendarMonth = new Date().getMonth() + 1;
+        let calendarYear = new Date().getFullYear();
+        let calendarStartOfWeek = localStorage.getItem('calendarStartOfWeek') || 'Monday';
 
         // --- Init ---
         if (localStorage.getItem('theme') === 'dark') {
@@ -934,8 +1276,30 @@
             if (landingIcon) landingIcon.className = 'fa-solid fa-sun';
         }
         updateZodiacButtons();
+        document.getElementById('cal-opt-mon').classList.toggle('active', calendarStartOfWeek === 'Monday');
+        document.getElementById('cal-opt-sun').classList.toggle('active', calendarStartOfWeek === 'Sunday');
         document.getElementById('upload-input').addEventListener('change', parseFile);
         document.getElementById('name-search').addEventListener('input', applyFilters);
+
+        let lastCalScrollTime = 0;
+        document.getElementById('calendar-container').addEventListener('wheel', (e) => {
+            const photosWrap = e.target.closest('.cal-photos-wrap');
+            if (photosWrap && photosWrap.scrollHeight > photosWrap.clientHeight) {
+                return;
+            }
+            e.preventDefault();
+            const now = Date.now();
+            if (now - lastCalScrollTime < 300) return;
+            if (Math.abs(e.deltaY) < 10) return;
+            
+            if (e.deltaY > 0) {
+                navigateCalendar(1);
+            } else {
+                navigateCalendar(-1);
+            }
+            lastCalScrollTime = now;
+        }, { passive: false });
+
         document.addEventListener('click', e => {
             if(!e.target.closest('.filter-dropdown')) {
                 document.querySelectorAll('.filter-menu').forEach(m=>{if(m.id!=='missing-menu-inner')m.classList.remove('open')});
@@ -1326,11 +1690,29 @@
             return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         }
 
+        function getAgeAsOfToday(c) {
+            if (!c.hasYear) return null;
+            const today = new Date();
+            const hasBday = (c.m >= 1 && c.m <= 12 && c.d >= 1 && c.d <= 31);
+            if (!hasBday) {
+                return today.getFullYear() - c.y;
+            }
+            let age = today.getFullYear() - c.y;
+            const monthDiff = (today.getMonth() + 1) - c.m;
+            const dayDiff = today.getDate() - c.d;
+            if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+                age--;
+            }
+            return age;
+        }
+
         function setTab(t) {
             document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
             const viewIdMap = {
                 'timeline': 'timeline-view',
+                'calendar': 'calendar-view',
+                'upcoming': 'upcoming-view',
                 'stats': 'stats-view',
                 'same': 'same-bday-view',
                 'missing': 'missing-view'
@@ -1340,9 +1722,11 @@
             if (viewEl) viewEl.classList.add('active');
             document.querySelector(`.tab[onclick="setTab('${t}')"]`).classList.add('active');
             const fb = document.getElementById('filter-bar');
-            fb.style.display = (t==='timeline'||t==='stats'||t==='same')?'flex':'none';
+            fb.style.display = (t==='timeline'||t==='stats'||t==='same'||t==='calendar'||t==='upcoming')?'flex':'none';
 
             if(t==='timeline'&&timeline) { setTimeout(() => scheduleLayoutTimeline(), 50); }
+            if(t==='calendar') { renderCalendar(); }
+            if(t==='upcoming') { renderUpcoming(); }
             if(t==='stats') { setSubTab(activeSubTab); } else { stopBubbleLoop(); }
             if(t==='same') { setTimeout(() => renderSame(), 50); }
         }
@@ -1457,6 +1841,8 @@
             updateFilterCounts();
             updateTimelineData(); updateStats();
             if(document.getElementById('same-bday-view').classList.contains('active')) renderSame();
+            if(document.getElementById('calendar-view').classList.contains('active')) renderCalendar();
+            if(document.getElementById('upcoming-view').classList.contains('active')) renderUpcoming();
         }
 
         // --- Timeline ---
@@ -2010,7 +2396,7 @@
             const agedContacts = filteredContacts.filter(c => c.hasYear);
             let avgAge = "N/A";
             if (agedContacts.length > 0) {
-                const sumAge = agedContacts.reduce((sum, c) => sum + (new Date().getFullYear() - c.y), 0);
+                const sumAge = agedContacts.reduce((sum, c) => sum + getAgeAsOfToday(c), 0);
                 avgAge = Math.round(sumAge / agedContacts.length) + " yrs";
             }
 
@@ -2216,37 +2602,323 @@
             });
         }
 
+        // --- Calendar Rendering ---
+        function toggleCalendarStartOfWeek(startDay) {
+            calendarStartOfWeek = startDay;
+            localStorage.setItem('calendarStartOfWeek', startDay);
+            
+            document.getElementById('cal-opt-mon').classList.toggle('active', startDay === 'Monday');
+            document.getElementById('cal-opt-sun').classList.toggle('active', startDay === 'Sunday');
+            
+            renderCalendar();
+        }
+
+        function navigateCalendar(dir) {
+            if (dir === 0) {
+                calendarMonth = new Date().getMonth() + 1;
+                calendarYear = new Date().getFullYear();
+            } else {
+                calendarMonth += dir;
+                if (calendarMonth > 12) {
+                    calendarMonth = 1;
+                    calendarYear++;
+                } else if (calendarMonth < 1) {
+                    calendarMonth = 12;
+                    calendarYear--;
+                }
+            }
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const title = document.getElementById('calendar-title');
+            if (!grid || !title) return;
+
+            grid.innerHTML = '';
+            
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            title.innerText = `${monthNames[calendarMonth - 1]} ${calendarYear}`;
+
+            const weekdaysContainer = document.getElementById('calendar-weekdays');
+            if (weekdaysContainer) {
+                weekdaysContainer.innerHTML = '';
+                const daysMonFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+                const daysSunFirst = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                const isMondayFirst = (calendarStartOfWeek === 'Monday');
+                const days = isMondayFirst ? daysMonFirst : daysSunFirst;
+                days.forEach(day => {
+                    const div = document.createElement('div');
+                    div.innerText = day;
+                    weekdaysContainer.appendChild(div);
+                });
+            }
+
+            const firstDayOfWeek = new Date(calendarYear, calendarMonth - 1, 1).getDay();
+            const isMondayFirst = (calendarStartOfWeek === 'Monday');
+            let firstDayIndex = isMondayFirst ? (firstDayOfWeek + 6) % 7 : firstDayOfWeek;
+
+            const totalDays = new Date(calendarYear, calendarMonth, 0).getDate();
+            const prevMonthDays = new Date(calendarYear, calendarMonth - 1, 0).getDate();
+
+            const cells = [];
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                cells.push({
+                    day: prevMonthDays - i,
+                    month: calendarMonth === 1 ? 12 : calendarMonth - 1,
+                    year: calendarMonth === 1 ? calendarYear - 1 : calendarYear,
+                    isCurrentMonth: false
+                });
+            }
+
+            for (let i = 1; i <= totalDays; i++) {
+                cells.push({
+                    day: i,
+                    month: calendarMonth,
+                    year: calendarYear,
+                    isCurrentMonth: true
+                });
+            }
+
+            const paddingCells = 42 - cells.length;
+            for (let i = 1; i <= paddingCells; i++) {
+                cells.push({
+                    day: i,
+                    month: calendarMonth === 12 ? 1 : calendarMonth + 1,
+                    year: calendarMonth === 12 ? calendarYear + 1 : calendarYear,
+                    isCurrentMonth: false
+                });
+            }
+
+            const today = new Date();
+            const todayD = today.getDate();
+            const todayM = today.getMonth() + 1;
+            const todayY = today.getFullYear();
+
+            cells.forEach(cell => {
+                const div = document.createElement('div');
+                div.className = 'cal-cell';
+                if (!cell.isCurrentMonth) div.classList.add('other-month');
+                
+                if (cell.day === todayD && cell.month === todayM && cell.year === todayY) {
+                    div.classList.add('today');
+                }
+
+                div.innerHTML = `<span class="cal-date-num">${cell.day}</span><div class="cal-photos-wrap"></div>`;
+                const photosWrap = div.querySelector('.cal-photos-wrap');
+
+                const matches = filteredContacts.filter(c => c.m === cell.month && c.d === cell.day);
+                
+                div.onclick = () => {
+                    if (matches.length > 0) {
+                        showListModal(`${monthNames[cell.month - 1]} ${cell.day}`, "Birthdays", matches);
+                    }
+                };
+
+                let photoSize = 42;
+                if (matches.length >= 5) {
+                    photoSize = 24;
+                } else if (matches.length >= 3) {
+                    photoSize = 32;
+                }
+
+                matches.forEach(c => {
+                    const img = document.createElement('img');
+                    img.className = 'cal-avatar';
+                    img.src = c.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
+                    img.style.width = `${photoSize}px`;
+                    img.style.height = `${photoSize}px`;
+                    img.title = `${c.name} (${c.hasYear ? (calendarYear - c.y) : 'Age unknown'})`;
+                    
+                    img.onerror = () => {
+                        img.onerror = null;
+                        img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
+                    };
+
+                    img.onclick = (e) => {
+                        e.stopPropagation();
+                        showModal(c);
+                    };
+
+                    photosWrap.appendChild(img);
+                });
+
+                grid.appendChild(div);
+            });
+        }
+
+        // --- Upcoming Birthdays Rendering ---
+        function renderUpcoming() {
+            const feed = document.getElementById('upcoming-feed');
+            if (!feed) return;
+            feed.innerHTML = '';
+
+            const contacts = [...filteredContacts];
+            if (contacts.length === 0) {
+                feed.innerHTML = '<div style="color:var(--text-muted); padding:3rem; text-align:center; background:var(--surface); border-radius:var(--radius-lg); border:1px solid var(--border);">No upcoming birthdays match the current filters.</div>';
+                
+                document.getElementById('up-kpi-busy-day').innerText = '--';
+                document.getElementById('up-kpi-busy-count').innerText = '--';
+                document.getElementById('up-kpi-week-count').innerText = '0';
+                document.getElementById('up-kpi-month-count').innerText = '0';
+                return;
+            }
+
+            contacts.forEach(c => {
+                c._daysUntil = daysUntilBirthday(c.m, c.d);
+            });
+
+            contacts.sort((a, b) => a._daysUntil - b._daysUntil);
+
+            const buckets = {
+                today: { title: "Today", items: [], color: "var(--accent)" },
+                thisWeek: { title: "This Week", items: [], color: "var(--primary)" },
+                thisMonth: { title: "This Month", items: [], color: "#10b981" },
+                nextMonth: { title: "Next Month", items: [], color: "#f59e0b" },
+                later: { title: "Later", items: [], color: "var(--text-muted)" }
+            };
+
+            contacts.forEach(c => {
+                if (c._daysUntil === 0) {
+                    buckets.today.items.push(c);
+                } else if (c._daysUntil <= 7) {
+                    buckets.thisWeek.items.push(c);
+                } else if (c._daysUntil <= 30) {
+                    buckets.thisMonth.items.push(c);
+                } else if (c._daysUntil <= 60) {
+                    buckets.nextMonth.items.push(c);
+                } else {
+                    buckets.later.items.push(c);
+                }
+            });
+
+            Object.values(buckets).forEach(bucket => {
+                if (bucket.items.length === 0) return;
+
+                const sec = document.createElement('div');
+                sec.className = 'upcoming-section';
+
+                const header = document.createElement('div');
+                header.className = 'upcoming-sec-header';
+                header.style.borderColor = bucket.color;
+                header.style.color = bucket.color;
+                header.innerHTML = `<span>${bucket.title}</span><span class="sec-count">${bucket.items.length} ${bucket.items.length === 1 ? 'birthday' : 'birthdays'}</span>`;
+
+                sec.appendChild(header);
+
+                bucket.items.forEach(c => {
+                    const card = document.createElement('div');
+                    card.className = 'upcoming-card';
+                    card.onclick = () => showModal(c);
+
+                    let ageInfo = "";
+                    if (c.hasYear) {
+                        const today = new Date();
+                        const currentYear = today.getFullYear();
+                        let bdayYear = currentYear;
+                        let bdayDate = new Date(currentYear, c.m - 1, c.d);
+                        bdayDate.setHours(0,0,0,0);
+                        today.setHours(0,0,0,0);
+                        if (bdayDate < today) {
+                            bdayYear = currentYear + 1;
+                        }
+                        const targetAge = bdayYear - c.y;
+                        ageInfo = ` • Turning ${targetAge}`;
+                    }
+
+                    let zodiacHtml = "";
+                    if (showWesternZodiac) {
+                        const wz = getZodiacSign(c.m, c.d);
+                        zodiacHtml += `<span class="tag" style="margin-left: 6px; font-size: 0.6875rem; padding: 2px 6px;">${getZodiacEmoji(wz)} ${wz}</span>`;
+                    }
+
+                    const countdownText = c._daysUntil === 0 ? "Today!" : c._daysUntil === 1 ? "Tomorrow" : `${c._daysUntil} days`;
+                    const badgeClass = c._daysUntil === 0 ? 'badge badge-red' : c._daysUntil <= 7 ? 'badge badge-yellow' : 'badge';
+
+                    card.innerHTML = `
+                        <div class="upcoming-left">
+                            <img class="upcoming-avatar" src="${c.photo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${c.name.replace(/'/g, "\\'")}')">
+                            <div class="upcoming-info">
+                                <span class="upcoming-name">${c.name}</span>
+                                <span class="upcoming-date">${MONTHS[c.m - 1]} ${c.d}${ageInfo}</span>
+                            </div>
+                            ${zodiacHtml}
+                        </div>
+                        <div class="upcoming-right">
+                            <span class="${badgeClass}" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600;">${c._daysUntil === 0 ? '🎂 ' : ''}${countdownText}</span>
+                        </div>
+                    `;
+                    sec.appendChild(card);
+                });
+
+                feed.appendChild(sec);
+            });
+
+            const next7Count = contacts.filter(c => c._daysUntil <= 7).length;
+            const next30Count = contacts.filter(c => c._daysUntil <= 30).length;
+            document.getElementById('up-kpi-week-count').innerText = next7Count;
+            document.getElementById('up-kpi-month-count').innerText = next30Count;
+
+            const bdayCounts = {};
+            contacts.forEach(c => {
+                const key = `${c.m}-${c.d}`;
+                bdayCounts[key] = (bdayCounts[key] || 0) + 1;
+            });
+            let maxCount = 0;
+            let busiestDayKey = '';
+            Object.entries(bdayCounts).forEach(([key, count]) => {
+                if (count > maxCount) {
+                    maxCount = count;
+                    busiestDayKey = key;
+                }
+            });
+
+            if (maxCount > 0 && busiestDayKey) {
+                const [m, d] = busiestDayKey.split('-').map(Number);
+                document.getElementById('up-kpi-busy-day').innerText = `${MONTHS[m - 1]} ${d}`;
+                document.getElementById('up-kpi-busy-count').innerText = `${maxCount} ${maxCount === 1 ? 'person' : 'people'}`;
+            } else {
+                document.getElementById('up-kpi-busy-day').innerText = '--';
+                document.getElementById('up-kpi-busy-count').innerText = '--';
+            }
+        }
+
         function showModal(c) {
+            const hasBday = (c.m >= 1 && c.m <= 12 && c.d >= 1 && c.d <= 31);
             document.getElementById('m-name').innerText=c.name;
-            document.getElementById('m-meta').innerText=`${MONTHS[c.m-1]} ${c.d}, ${c.hasYear?c.y:'????'}`;
+            document.getElementById('m-meta').innerText=hasBday ? `${MONTHS[c.m-1]} ${c.d}, ${c.hasYear?c.y:'????'}` : '';
             document.getElementById('m-img').src=c.photo||`https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
             document.getElementById('m-tags').innerHTML=c.tags.map(t=>`<span class="tag">${t}</span>`).join('');
 
             // Badges: zodiac + countdown
             let badgesHtml = "";
-            if (showWesternZodiac) {
-                const wName = getZodiacSign(c.m, c.d);
-                const wEmoji = getZodiacEmoji(wName);
-                badgesHtml += `<span class="modal-badge modal-badge-primary">${wEmoji} ${wName}</span>`;
-            }
-            if (showChineseZodiac) {
-                const cName = c.hasYear ? getChineseZodiac(c.y) : "N/A";
-                const cEmoji = c.hasYear ? getChineseZodiacEmoji(cName) : "❓";
+            if (hasBday) {
+                if (showWesternZodiac) {
+                    const wName = getZodiacSign(c.m, c.d);
+                    const wEmoji = getZodiacEmoji(wName);
+                    badgesHtml += `<span class="modal-badge modal-badge-primary">${wEmoji} ${wName}</span>`;
+                }
+                if (showChineseZodiac && c.hasYear) {
+                    const cName = getChineseZodiac(c.y);
+                    const cEmoji = getChineseZodiacEmoji(cName);
+                    badgesHtml += `<span class="modal-badge modal-badge-primary">${cEmoji} ${cName}</span>`;
+                }
+                const daysUntil = daysUntilBirthday(c.m, c.d);
+                const countdownText = daysUntil === 0 ? "Today!" : daysUntil === 1 ? "Tomorrow" : `${daysUntil} days`;
+                badgesHtml += `<span class="modal-badge">${daysUntil === 0 ? '🎂 ' : ''}${countdownText}</span>`;
+            } else if (showChineseZodiac && c.hasYear) {
+                const cName = getChineseZodiac(c.y);
+                const cEmoji = getChineseZodiacEmoji(cName);
                 badgesHtml += `<span class="modal-badge modal-badge-primary">${cEmoji} ${cName}</span>`;
             }
-            const daysUntil = daysUntilBirthday(c.m, c.d);
-            const countdownText = daysUntil === 0 ? "Today!" : daysUntil === 1 ? "Tomorrow" : `${daysUntil} days`;
-
-            badgesHtml += `<span class="modal-badge">${daysUntil === 0 ? '🎂 ' : ''}${countdownText}</span>`;
             if (c.hasYear) {
-                const age = new Date().getFullYear() - c.y;
                 const gen = getGeneration(c.y);
                 badgesHtml += `<span class="modal-badge">${gen}</span>`;
             }
             document.getElementById('m-badges').innerHTML = badgesHtml;
 
             let h='';
-            if(c.hasYear) h+=`<div class="detail-row"><i class="fa-solid fa-star"></i> Age: ${new Date().getFullYear()-c.y}</div>`;
+            if(c.hasYear) h+=`<div class="detail-row"><i class="fa-solid fa-star"></i> Age: ${getAgeAsOfToday(c)}</div>`;
             if(c.email) h+=`<div class="detail-row"><i class="fa-solid fa-envelope"></i> ${c.email}</div>`;
             if(c.phone) h+=`<div class="detail-row"><i class="fa-solid fa-phone"></i> ${c.phone}</div>`;
             document.getElementById('m-details').innerHTML=h||'<div style="color:var(--text-muted); font-size:0.8125rem;">No additional details.</div>';
