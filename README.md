@@ -24,8 +24,14 @@
 ### Statistics Overview
 ![Statistics](screenshot-stats.png)
 
-### Real-Time Filtering
+### Real-Time Filtering (Search)
 ![Filtering](screenshot-filtered.png)
+
+### Tags Filtering Dropdown
+![Tags Filtering](screenshot-filter-tags.png)
+
+### Months Filtering Dropdown
+![Months Filtering](screenshot-filter-months.png)
 
 
 ---
