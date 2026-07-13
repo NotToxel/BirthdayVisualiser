@@ -2683,15 +2683,30 @@
             const centerX = r.width / 2;
             const centerY = r.height / 2;
 
+            // Generate concentric hexagonal grid coordinates
+            const coords = [];
+            const packMultiplier = 0.82; // 18% overlap factor for clean stacks
+            const spacingX = baseR * 2 * packMultiplier;
+            const spacingY = baseR * Math.sqrt(3) * packMultiplier;
+            
+            for (let row = -10; row <= 10; row++) {
+                for (let col = -10; col <= 10; col++) {
+                    let x = col * spacingX;
+                    if (Math.abs(row) % 2 === 1) {
+                        x += spacingX / 2;
+                    }
+                    let y = row * spacingY;
+                    coords.push({ x: centerX + x, y: centerY + y, dist: Math.sqrt(x*x + y*y) });
+                }
+            }
+            coords.sort((a, b) => a.dist - b.dist);
+
             const existingMap = new Map(bubbles.map(b => [b.data.id, b]));
 
             bubbles = displayed.map((c, i) => {
                 const existing = existingMap.get(c.id);
-
-                const angle = i * 2.39996; // Golden angle in radians
-                const radius = baseR * 1.65 * Math.sqrt(i);
-                const tx = centerX + Math.cos(angle) * radius;
-                const ty = centerY + Math.sin(angle) * radius;
+                const tx = coords[i].x;
+                const ty = coords[i].y;
 
                 if (existing) {
                     existing.r = baseR;
@@ -2770,7 +2785,7 @@
                         const dx = b.origTx - hoveredBubble.origTx;
                         const dy = b.origTy - hoveredBubble.origTy;
                         const dist = Math.sqrt(dx*dx + dy*dy) || 0.001;
-                        const pushThreshold = hoveredBubble.r * 2.8;
+                        const pushThreshold = hoveredBubble.r * 2.4;
                         if (dist < pushThreshold) {
                             const force = (1.0 - dist / pushThreshold) * (hoveredBubble.r * 0.45);
                             tx += (dx / dist) * force;
