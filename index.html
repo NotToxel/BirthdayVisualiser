@@ -8,7 +8,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
@@ -68,7 +68,7 @@
         * { box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -370,9 +370,9 @@
             background: rgba(244, 63, 94, 0.05);
         }
 
-        .search-wrap { position: relative; margin-left: auto; }
+        .search-wrap { position: relative; margin-left: auto; display: flex; align-items: center; }
         .search-wrap input {
-            padding: 5px 10px 5px 28px;
+            padding: 5px 24px 5px 28px; /* Room for magnifying glass on left and clear mark on right */
             border-radius: 8px;
             border: 1px solid var(--border);
             background: var(--bg);
@@ -384,7 +384,63 @@
             transition: border-color var(--transition);
         }
         .search-wrap input:focus { border-color: var(--primary); }
-        .search-wrap i { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.75rem; }
+        .search-wrap i.fa-search { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.75rem; }
+        
+        .search-clear-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.8125rem;
+            transition: color var(--transition);
+            z-index: 10;
+        }
+        .search-clear-btn:hover {
+            color: var(--accent);
+        }
+
+        /* Empty States */
+        .no-results-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+            text-align: center;
+            height: 100%;
+            width: 100%;
+            background: var(--bg);
+            box-sizing: border-box;
+        }
+        .no-results-icon {
+            font-size: 2.5rem;
+            color: var(--border);
+            margin-bottom: 1rem;
+        }
+        .no-results-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+        .no-results-desc {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            max-width: 280px;
+        }
+
+        /* Filter chip interactive elements */
+        .filter-chip i.fa-xmark {
+            transition: opacity var(--transition), transform var(--transition), color var(--transition);
+        }
+        .filter-chip:hover i.fa-xmark {
+            opacity: 1 !important;
+            color: var(--accent);
+            transform: scale(1.15);
+        }
 
         .count-badge {
             font-weight: 600;
@@ -1436,9 +1492,7 @@
                 <div class="tab" onclick="setTab('missing')">Missing Data</div>
             </div>
             <div class="nav-actions">
-                <div class="btn-icon" id="toggle-western-btn" onclick="toggleWesternZodiac()" title="Toggle Western Zodiac"><i class="fa-solid fa-star-and-crescent" id="icon-western-zodiac" style="transition: color var(--transition);"></i></div>
-                <div class="btn-icon" id="toggle-chinese-btn" onclick="toggleChineseZodiac()" title="Toggle Chinese Zodiac"><i class="fa-solid fa-dragon" id="icon-chinese-zodiac" style="transition: color var(--transition);"></i></div>
-                <div class="btn-icon" onclick="toggleDark()" title="Toggle theme"><i class="fa-solid fa-moon" id="theme-icon"></i></div>
+                <div class="btn-icon" onclick="openSettingsModal()" title="Settings"><i class="fa-solid fa-gear"></i></div>
                 <button class="btn-new" onclick="newAnalysis()"><i class="fa-solid fa-arrow-rotate-right"></i> New</button>
             </div>
         </nav>
@@ -1466,6 +1520,7 @@
             <div class="search-wrap">
                 <i class="fa-solid fa-search"></i>
                 <input type="text" id="name-search" placeholder="Search name…">
+                <i class="fa-solid fa-circle-xmark search-clear-btn" id="search-clear" onclick="clearSearch()" style="display:none"></i>
             </div>
             <div class="count-badge" id="count-display">0</div>
         </div>
@@ -1478,12 +1533,22 @@
                 <div id="lbl-start" class="scrubber-label" style="left: 10px;"></div>
                 <div id="lbl-end" class="scrubber-label" style="right: 10px;"></div>
             </div>
-            <div id="timeline-wrapper">
+            <div id="timeline-wrapper" style="position:relative;">
                 <div id="timeline-vis" style="width:100%; height:100%;"></div>
+                <div id="timeline-no-results" class="no-results-placeholder" style="display:none; position:absolute; inset:0; z-index:10;">
+                    <i class="fa-solid fa-calendar-xmark no-results-icon"></i>
+                    <div class="no-results-title">No Matches Found</div>
+                    <div class="no-results-desc">Try adjusting your tag, month, or search filters.</div>
+                </div>
             </div>
         </div>
 
         <div id="stats-view" class="view">
+            <div id="stats-no-results" class="no-results-placeholder" style="display:none; height:calc(100vh - 160px);">
+                <i class="fa-solid fa-chart-pie no-results-icon"></i>
+                <div class="no-results-title">No Statistics Available</div>
+                <div class="no-results-desc">No data matches the selected filters to compute statistics.</div>
+            </div>
             <div id="stats-content">
                 <div class="sub-tabs">
                     <div class="sub-tab active" onclick="setSubTab('overview')">Overview</div>
@@ -1570,6 +1635,9 @@
                         </div>
                     </div>
                 </div>
+                <div id="calendar-no-results-banner" style="display:none; background:rgba(244,63,94,0.08); border-bottom:1px solid rgba(244,63,94,0.15); padding:8px 12px; font-size:0.75rem; color:#f43f5e; text-align:center; font-weight:500;">
+                    <i class="fa-solid fa-circle-info"></i> No birthdays match the current filters.
+                </div>
                 <div id="calendar-weekdays"></div>
                 <div id="calendar-grid"></div>
             </div>
@@ -1585,6 +1653,11 @@
                         <div class="upcoming-kpi-sub" id="up-kpi-busy-count">--</div>
                     </div>
                     <div class="upcoming-kpi-card">
+                        <div class="upcoming-kpi-label">Busiest Week (Upcoming)</div>
+                        <div class="upcoming-kpi-val" id="up-kpi-busy-week">--</div>
+                        <div class="upcoming-kpi-sub" id="up-kpi-busy-week-count">--</div>
+                    </div>
+                    <div class="upcoming-kpi-card">
                         <div class="upcoming-kpi-label">Next 7 Days</div>
                         <div class="upcoming-kpi-val" id="up-kpi-week-count">0</div>
                     </div>
@@ -1595,6 +1668,11 @@
                 </div>
                 <div id="upcoming-main">
                     <div id="upcoming-feed"></div>
+                    <div id="upcoming-no-results" class="no-results-placeholder" style="display:none;">
+                        <i class="fa-solid fa-calendar-xmark no-results-icon"></i>
+                        <div class="no-results-title">No Upcoming Birthdays</div>
+                        <div class="no-results-desc">No birthdays match the selected search or filters.</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1657,30 +1735,9 @@
                 <span>Missing Data</span>
             </div>
             <div class="drawer-divider"></div>
-            <div style="font-size: 0.6875rem; color: var(--text-muted); font-weight: 700; padding: 6px 1.25rem; text-transform: uppercase; letter-spacing: 0.05em;">Settings</div>
-            
-            <div class="settings-row">
-                <span class="settings-label"><i class="fa-solid fa-star-and-crescent"></i> Western Zodiac</span>
-                <div class="segmented-control">
-                    <button id="mobile-opt-west-show" onclick="setMobileWesternZodiac(true)">Show</button>
-                    <button id="mobile-opt-west-hide" onclick="setMobileWesternZodiac(false)">Hide</button>
-                </div>
-            </div>
-
-            <div class="settings-row">
-                <span class="settings-label"><i class="fa-solid fa-dragon"></i> Chinese Zodiac</span>
-                <div class="segmented-control">
-                    <button id="mobile-opt-chinese-show" onclick="setMobileChineseZodiac(true)">Show</button>
-                    <button id="mobile-opt-chinese-hide" onclick="setMobileChineseZodiac(false)">Hide</button>
-                </div>
-            </div>
-
-            <div class="settings-row">
-                <span class="settings-label"><i class="fa-solid fa-circle-half-stroke"></i> Theme Mode</span>
-                <div class="segmented-control">
-                    <button id="mobile-opt-theme-light" onclick="setMobileTheme('light')">Light</button>
-                    <button id="mobile-opt-theme-dark" onclick="setMobileTheme('dark')">Dark</button>
-                </div>
+            <div class="drawer-item" onclick="openSettingsModalFromDrawer()">
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
             </div>
         </div>
     </div>
@@ -1713,6 +1770,37 @@
             </div>
             <div class="list-body" id="list-body"></div>
         </div>
+        <div class="modal" id="settings-modal" style="display:none; width: 350px;">
+            <div class="list-header">
+                <span><i class="fa-solid fa-gear"></i> Settings</span>
+                <i class="fa-solid fa-xmark" onclick="closeSettingsModal()" style="cursor:pointer"></i>
+            </div>
+            <div class="list-body" style="padding: 1rem 0;">
+                <div class="settings-row">
+                    <span class="settings-label"><i class="fa-solid fa-star-and-crescent"></i> Western Zodiac</span>
+                    <div class="segmented-control">
+                        <button id="opt-west-show" onclick="setWesternZodiacOpt(true)">Show</button>
+                        <button id="opt-west-hide" onclick="setWesternZodiacOpt(false)">Hide</button>
+                    </div>
+                </div>
+
+                <div class="settings-row">
+                    <span class="settings-label"><i class="fa-solid fa-dragon"></i> Chinese Zodiac</span>
+                    <div class="segmented-control">
+                        <button id="opt-chinese-show" onclick="setChineseZodiacOpt(true)">Show</button>
+                        <button id="opt-chinese-hide" onclick="setChineseZodiacOpt(false)">Hide</button>
+                    </div>
+                </div>
+
+                <div class="settings-row">
+                    <span class="settings-label"><i class="fa-solid fa-circle-half-stroke"></i> Theme Mode</span>
+                    <div class="segmented-control">
+                        <button id="opt-theme-light" onclick="setThemeOpt('light')">Light</button>
+                        <button id="opt-theme-dark" onclick="setThemeOpt('dark')">Dark</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1737,11 +1825,14 @@
             if (navIcon) navIcon.className = 'fa-solid fa-sun';
             if (landingIcon) landingIcon.className = 'fa-solid fa-sun';
         }
-        updateZodiacButtons();
         document.getElementById('cal-opt-mon').classList.toggle('active', calendarStartOfWeek === 'Monday');
         document.getElementById('cal-opt-sun').classList.toggle('active', calendarStartOfWeek === 'Sunday');
         document.getElementById('upload-input').addEventListener('change', parseFile);
-        document.getElementById('name-search').addEventListener('input', applyFilters);
+        document.getElementById('name-search').addEventListener('input', e => {
+            const clearBtn = document.getElementById('search-clear');
+            if (clearBtn) clearBtn.style.display = e.target.value ? 'block' : 'none';
+            applyFilters();
+        });
 
         let lastCalScrollTime = 0;
         document.getElementById('calendar-container').addEventListener('wheel', (e) => {
@@ -2092,22 +2183,6 @@
             return CHINESE_EMOJIS[sign] || "❓";
         }
 
-        function toggleWesternZodiac() {
-            showWesternZodiac = !showWesternZodiac;
-            localStorage.setItem('showWesternZodiac', showWesternZodiac);
-            updateZodiacButtons();
-            updateStats();
-            refreshActiveModal();
-        }
-
-        function toggleChineseZodiac() {
-            showChineseZodiac = !showChineseZodiac;
-            localStorage.setItem('showChineseZodiac', showChineseZodiac);
-            updateZodiacButtons();
-            updateStats();
-            refreshActiveModal();
-        }
-
         function refreshActiveModal() {
             const modalBackdrop = document.getElementById('modal-backdrop');
             const contactModal = document.getElementById('contact-modal');
@@ -2118,48 +2193,66 @@
             }
         }
 
-        function updateZodiacButtons() {
-            const westBtn = document.getElementById('icon-western-zodiac');
-            const chinBtn = document.getElementById('icon-chinese-zodiac');
-            if (westBtn) westBtn.style.color = showWesternZodiac ? 'var(--primary)' : '';
-            if (chinBtn) chinBtn.style.color = showChineseZodiac ? 'var(--primary)' : '';
-
-            updateMobileSettingsUI();
+        function openSettingsModal() {
+            closeModal();
+            document.getElementById('modal-backdrop').style.display = 'flex';
+            document.getElementById('settings-modal').style.display = 'block';
+            updateSettingsModalUI();
         }
 
-        function setMobileWesternZodiac(show) {
-            if (showWesternZodiac !== show) toggleWesternZodiac();
-            updateMobileSettingsUI();
+        function openSettingsModalFromDrawer() {
+            toggleMobileMoreMenu();
+            openSettingsModal();
         }
 
-        function setMobileChineseZodiac(show) {
-            if (showChineseZodiac !== show) toggleChineseZodiac();
-            updateMobileSettingsUI();
+        function closeSettingsModal() {
+            document.getElementById('modal-backdrop').style.display = 'none';
+            document.getElementById('settings-modal').style.display = 'none';
         }
 
-        function setMobileTheme(mode) {
+        function setWesternZodiacOpt(show) {
+            if (showWesternZodiac !== show) {
+                showWesternZodiac = show;
+                localStorage.setItem('showWesternZodiac', showWesternZodiac);
+                updateStats();
+                refreshActiveModal();
+            }
+            updateSettingsModalUI();
+        }
+
+        function setChineseZodiacOpt(show) {
+            if (showChineseZodiac !== show) {
+                showChineseZodiac = show;
+                localStorage.setItem('showChineseZodiac', showChineseZodiac);
+                updateStats();
+                refreshActiveModal();
+            }
+            updateSettingsModalUI();
+        }
+
+        function setThemeOpt(mode) {
             const isCurrentlyDark = document.body.classList.contains('dark');
             if ((mode === 'dark' && !isCurrentlyDark) || (mode === 'light' && isCurrentlyDark)) {
                 toggleDark();
             }
-            updateMobileSettingsUI();
+            updateSettingsModalUI();
         }
 
-        function updateMobileSettingsUI() {
+        function updateSettingsModalUI() {
             const isDark = document.body.classList.contains('dark');
             
-            const btnLight = document.getElementById('mobile-opt-theme-light');
-            const btnDark = document.getElementById('mobile-opt-theme-dark');
+            const btnLight = document.getElementById('opt-theme-light');
+            const btnDark = document.getElementById('opt-theme-dark');
             if (btnLight) btnLight.classList.toggle('active', !isDark);
             if (btnDark) btnDark.classList.toggle('active', isDark);
 
-            const btnWestShow = document.getElementById('mobile-opt-west-show');
-            const btnWestHide = document.getElementById('mobile-opt-west-hide');
+            const btnWestShow = document.getElementById('opt-west-show');
+            const btnWestHide = document.getElementById('opt-west-hide');
             if (btnWestShow) btnWestShow.classList.toggle('active', showWesternZodiac);
             if (btnWestHide) btnWestHide.classList.toggle('active', !showWesternZodiac);
 
-            const btnChinShow = document.getElementById('mobile-opt-chinese-show');
-            const btnChinHide = document.getElementById('mobile-opt-chinese-hide');
+            const btnChinShow = document.getElementById('opt-chinese-show');
+            const btnChinHide = document.getElementById('opt-chinese-hide');
             if (btnChinShow) btnChinShow.classList.toggle('active', showChineseZodiac);
             if (btnChinHide) btnChinHide.classList.toggle('active', !showChineseZodiac);
         }
@@ -2175,7 +2268,6 @@
                 backdrop.style.opacity = '0';
                 setTimeout(() => backdrop.style.display = 'none', 200);
             } else {
-                updateMobileSettingsUI();
                 backdrop.style.display = 'block';
                 requestAnimationFrame(() => {
                     backdrop.style.opacity = '1';
@@ -2356,8 +2448,20 @@
 
         function updateBadges() {
             const c=document.getElementById('active-badges'); c.innerHTML='';
-            activeTags.forEach(t=>c.innerHTML+=`<div class="filter-chip tag-chip"><i class="fa-solid fa-tag" style="font-size:0.6875rem;opacity:0.8;"></i> <span>${t}</span> <i class="fa-solid fa-xmark" onclick="removeTag('${t}')"></i></div>`);
-            activeMonths.forEach(m=>c.innerHTML+=`<div class="filter-chip month-chip"><i class="fa-solid fa-calendar-days" style="font-size:0.6875rem;opacity:0.8;"></i> <span>${MONTHS[m-1]}</span> <i class="fa-solid fa-xmark" onclick="removeMonth(${m})"></i></div>`);
+            activeTags.forEach(t => {
+                const chip = document.createElement('div');
+                chip.className = 'filter-chip tag-chip';
+                chip.innerHTML = `<i class="fa-solid fa-tag" style="font-size:0.6875rem;opacity:0.8;"></i> <span>${t}</span> <i class="fa-solid fa-xmark" style="margin-left: 4px; opacity: 0.6;"></i>`;
+                chip.onclick = () => removeTag(t);
+                c.appendChild(chip);
+            });
+            activeMonths.forEach(m => {
+                const chip = document.createElement('div');
+                chip.className = 'filter-chip month-chip';
+                chip.innerHTML = `<i class="fa-solid fa-calendar-days" style="font-size:0.6875rem;opacity:0.8;"></i> <span>${MONTHS[m-1]}</span> <i class="fa-solid fa-xmark" style="margin-left: 4px; opacity: 0.6;"></i>`;
+                chip.onclick = () => removeMonth(m);
+                c.appendChild(chip);
+            });
             
             if (activeTags.size > 0 || activeMonths.size > 0) {
                 const clearBtn = document.createElement('button');
@@ -2380,6 +2484,14 @@
         function removeMissingTag(t){ missingActiveTags.delete(t); renderMissing(); updateMissingBadges(); document.querySelectorAll('#missing-tag-list input').forEach(i=>{if(i.nextElementSibling.innerText==t)i.checked=false}); }
         function clearMonths(){ activeMonths.clear(); document.querySelectorAll('.month-tog').forEach(e=>e.classList.remove('selected')); applyFilters(); updateBadges(); }
         function clearTags(){ activeTags.clear(); document.querySelectorAll('#tag-list input').forEach(i=>i.checked=false); applyFilters(); updateBadges(); }
+        
+        function clearSearch() {
+            const inp = document.getElementById('name-search');
+            if (inp) inp.value = '';
+            const clearBtn = document.getElementById('search-clear');
+            if (clearBtn) clearBtn.style.display = 'none';
+            applyFilters();
+        }
 
         function applyFilters() {
             const s=document.getElementById('name-search').value.toLowerCase();
@@ -2391,6 +2503,35 @@
             });
             document.getElementById('count-display').innerText = filteredContacts.length;
             updateFilterCounts();
+
+            const noResults = filteredContacts.length === 0;
+
+            const timelineNoRes = document.getElementById('timeline-no-results');
+            const timelineVis = document.getElementById('timeline-vis');
+            if (timelineNoRes && timelineVis) {
+                timelineNoRes.style.display = noResults ? 'flex' : 'none';
+                timelineVis.style.display = noResults ? 'none' : 'block';
+            }
+
+            const upcomingNoRes = document.getElementById('upcoming-no-results');
+            const upcomingFeed = document.getElementById('upcoming-feed');
+            if (upcomingNoRes && upcomingFeed) {
+                upcomingNoRes.style.display = noResults ? 'flex' : 'none';
+                upcomingFeed.style.display = noResults ? 'none' : 'block';
+            }
+
+            const statsNoRes = document.getElementById('stats-no-results');
+            const statsContent = document.getElementById('stats-content');
+            if (statsNoRes && statsContent) {
+                statsNoRes.style.display = noResults ? 'flex' : 'none';
+                statsContent.style.display = noResults ? 'none' : 'flex';
+            }
+
+            const calBanner = document.getElementById('calendar-no-results-banner');
+            if (calBanner) {
+                calBanner.style.display = noResults ? 'block' : 'none';
+            }
+
             updateTimelineData(); updateStats();
             if(document.getElementById('same-bday-view').classList.contains('active')) renderSame();
             if(document.getElementById('calendar-view').classList.contains('active')) renderCalendar();
@@ -2654,10 +2795,10 @@
             if (!g) return;
             g.innerHTML = '';
 
-            const contacts = (filteredContacts && filteredContacts.length > 0) ? filteredContacts : (allContacts || []);
+            const contacts = filteredContacts || [];
 
             if (!contacts || contacts.length === 0) {
-                g.innerHTML = '<div style="color:var(--text-muted); padding:2rem; text-align:center;">No contacts loaded.</div>';
+                g.innerHTML = '<div style="color:var(--text-muted); padding:2rem; text-align:center;">No matching contacts.</div>';
                 return;
             }
 
@@ -2677,7 +2818,7 @@
             });
 
             if (!keys.length) {
-                g.innerHTML = '<div style="color:var(--text-muted); padding:2rem; text-align:center;">No contacts share the same birthday.</div>';
+                g.innerHTML = '<div style="color:var(--text-muted); padding:2rem; text-align:center;">No matching contacts share the same birthday.</div>';
                 return;
             }
 
@@ -2887,7 +3028,7 @@
                         bCtx.fillStyle = '#6366f1';
                         bCtx.fillRect(b.x-s, b.y-s, s*2, s*2);
                         bCtx.fillStyle = '#ffffff';
-                        bCtx.font = `bold ${Math.max(11, Math.round(s * 0.45))}px Inter, sans-serif`;
+                        bCtx.font = `bold ${Math.max(11, Math.round(s * 0.45))}px Outfit, Inter, sans-serif`;
                         bCtx.textAlign = 'center';
                         bCtx.textBaseline = 'middle';
 
@@ -2937,7 +3078,7 @@
             const maxC=Math.max(...Object.values(counts),1);
 
             const isDark = document.body.classList.contains('dark');
-            ctx.font="10px Inter, sans-serif"; ctx.textAlign="right"; ctx.textBaseline="middle";
+            ctx.font="10px Outfit, Inter, sans-serif"; ctx.textAlign="right"; ctx.textBaseline="middle";
             ctx.fillStyle = isDark ? '#a1a1aa' : '#71717a';
             for(let m=1;m<=12;m++) ctx.fillText(MONTHS[m-1], xPad-5, (m-1)*cellH+cellH/2);
             for(let y=minY; y<=maxY; y++){
@@ -3130,7 +3271,7 @@
                             display: type === 'doughnut',
                             labels: {
                                 color: textColor,
-                                font: { family: "'Inter', sans-serif", size: 12, weight: '500' },
+                                font: { family: "'Outfit', 'Inter', sans-serif", size: 12, weight: '500' },
                                 padding: 16,
                                 usePointStyle: true,
                                 pointStyle: 'circle',
@@ -3140,11 +3281,11 @@
                     scales: type === 'doughnut' ? {} : {
                         x: {
                             grid: { color: gridColor, drawBorder: false },
-                            ticks: { color: textColor, font: { family: "'Inter', sans-serif", size: 11 } }
+                            ticks: { color: textColor, font: { family: "'Outfit', 'Inter', sans-serif", size: 11 } }
                         },
                         y: {
                             grid: { color: gridColor, drawBorder: false },
-                            ticks: { color: textColor, font: { family: "'Inter', sans-serif", size: 11 }, precision: 0 }
+                            ticks: { color: textColor, font: { family: "'Outfit', 'Inter', sans-serif", size: 11 }, precision: 0 }
                         }
                     },
                     onClick:(e,el)=>{if(el.length)showListModal(l[el[0].index],t)}
@@ -3347,6 +3488,8 @@
                 
                 document.getElementById('up-kpi-busy-day').innerText = '--';
                 document.getElementById('up-kpi-busy-count').innerText = '--';
+                document.getElementById('up-kpi-busy-week').innerText = '--';
+                document.getElementById('up-kpi-busy-week-count').innerText = '--';
                 document.getElementById('up-kpi-week-count').innerText = '0';
                 document.getElementById('up-kpi-month-count').innerText = '0';
                 return;
@@ -3414,12 +3557,6 @@
                         ageInfo = ` • Turning ${targetAge}`;
                     }
 
-                    let zodiacHtml = "";
-                    if (showWesternZodiac) {
-                        const wz = getZodiacSign(c.m, c.d);
-                        zodiacHtml += `<span class="tag" style="margin-left: 6px; font-size: 0.6875rem; padding: 2px 6px;">${getZodiacEmoji(wz)} ${wz}</span>`;
-                    }
-
                     const countdownText = c._daysUntil === 0 ? "Today!" : c._daysUntil === 1 ? "Tomorrow" : `${c._daysUntil} days`;
                     const badgeClass = c._daysUntil === 0 ? 'badge badge-red' : c._daysUntil <= 7 ? 'badge badge-yellow' : 'badge';
 
@@ -3430,7 +3567,6 @@
                                 <span class="upcoming-name">${c.name}</span>
                                 <span class="upcoming-date">${MONTHS[c.m - 1]} ${c.d}${ageInfo}</span>
                             </div>
-                            ${zodiacHtml}
                         </div>
                         <div class="upcoming-right">
                             <span class="${badgeClass}" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600;">${c._daysUntil === 0 ? '🎂 ' : ''}${countdownText}</span>
@@ -3468,6 +3604,32 @@
             } else {
                 document.getElementById('up-kpi-busy-day').innerText = '--';
                 document.getElementById('up-kpi-busy-count').innerText = '--';
+            }
+
+            // Calculate Next Busiest Week (rolling 7-day window)
+            let maxWeekCount = 0;
+            let busiestWeekStart = 0;
+            for (let d = 0; d <= 365 - 7; d++) {
+                const count = contacts.filter(c => c._daysUntil >= d && c._daysUntil < d + 7).length;
+                if (count > maxWeekCount) {
+                    maxWeekCount = count;
+                    busiestWeekStart = d;
+                }
+            }
+
+            if (maxWeekCount > 0) {
+                const startBday = new Date();
+                startBday.setDate(startBday.getDate() + busiestWeekStart);
+                const endBday = new Date();
+                endBday.setDate(endBday.getDate() + busiestWeekStart + 6);
+                
+                const startStr = `${MONTHS[startBday.getMonth()]} ${startBday.getDate()}`;
+                const endStr = `${MONTHS[endBday.getMonth()]} ${endBday.getDate()}`;
+                document.getElementById('up-kpi-busy-week').innerText = `${startStr} - ${endStr}`;
+                document.getElementById('up-kpi-busy-week-count').innerText = `${maxWeekCount} ${maxWeekCount === 1 ? 'birthday' : 'birthdays'}`;
+            } else {
+                document.getElementById('up-kpi-busy-week').innerText = '--';
+                document.getElementById('up-kpi-busy-week-count').innerText = '--';
             }
         }
 
