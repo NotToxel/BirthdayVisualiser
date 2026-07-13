@@ -93,9 +93,14 @@ BirthdayVisualiser automatically detects common column headers:
 📖 [Official Apple Support Article →](https://support.apple.com/en-gb/guide/contacts/adrbk1457/mac)
 
 ### Apple Contacts (iPhone/iPad)
-iOS doesn't provide a built-in CSV export. You have two options:
-1. **Via iCloud**: Go to [icloud.com/contacts](https://www.icloud.com/contacts), select contacts, and export as vCard
-2. **Via the Contacts app**: Share individual contacts as vCard files
+Export all contacts directly on your device as a single vCard (VCF) file:
+1. Open the **Contacts** app
+2. Tap **"Lists"** in the top-left corner
+3. Touch and hold **"All Contacts"** (or a specific group list)
+4. Tap **"Export"** in the menu
+5. Select **"Save to Files"** to save the `.vcf` file locally (or share via email, AirDrop, etc.)
+
+📖 [Official Apple Support Article →](https://support.apple.com/en-gb/guide/iphone/iph075ddebf2/ios)
 
 ### Outlook
 1. Go to [outlook.live.com/people](https://outlook.live.com/people/)
