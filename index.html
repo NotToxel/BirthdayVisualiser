@@ -847,15 +847,33 @@
             background: var(--surface-2);
             border: 1px solid var(--border);
             color: var(--text);
-            padding: 4px 10px;
-            border-radius: 6px;
+            padding: 6px 14px;
+            border-radius: 30px;
             font-size: 0.8125rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: border-color var(--transition), background var(--transition);
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         .cal-nav-btn:hover {
-            border-color: var(--text-muted);
+            background: var(--surface-3);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+        .cal-nav-btn:active {
+            transform: translateY(0);
+        }
+        #cal-opt-mon, #cal-opt-sun {
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        #cal-opt-mon.active, #cal-opt-sun.active {
+            background: var(--primary) !important;
+            color: #ffffff !important;
+            font-weight: 600;
         }
         .cal-controls {
             display: flex;
@@ -1662,11 +1680,12 @@
             <!-- Quick Jump Panel -->
             <div id="cal-quick-jump-panel">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
-                    <span style="font-weight: 600; font-size: 0.875rem;"><i class="fa-solid fa-bolt" style="color:var(--primary);"></i> Quick Jump Heatmap</span>
+                    <span style="font-weight: 600; font-size: 0.875rem;"><i class="fa-regular fa-calendar-days" style="color:var(--primary);"></i> Quick Date Selector</span>
                     <i class="fa-solid fa-xmark" onclick="toggleQuickJump()" style="cursor: pointer; color: var(--text-muted); hover: color: var(--text)"></i>
                 </div>
-                <div style="margin-bottom: 10px;">
-                    <select id="jump-month-select" onchange="renderJumpDayGrid()" style="width: 100%; padding: 6px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: inherit; font-size: 0.8125rem; font-weight: 500;"></select>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <select id="jump-year-select" onchange="renderJumpDayGrid()" style="flex: 1; padding: 6px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: inherit; font-size: 0.8125rem; font-weight: 500;"></select>
+                    <select id="jump-month-select" onchange="renderJumpDayGrid()" style="flex: 1; padding: 6px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: inherit; font-size: 0.8125rem; font-weight: 500;"></select>
                 </div>
                 <div id="jump-day-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;"></div>
                 <div id="jump-preview-info" style="margin-top: 10px; font-size: 0.75rem; text-align: center; color: var(--text-muted); font-weight: 500; min-height: 1.25rem;">Select a date to jump to</div>
@@ -1679,7 +1698,7 @@
                         <button class="cal-nav-btn" onclick="navigateCalendar(-1)"><i class="fa-solid fa-chevron-left"></i> Prev</button>
                         <button class="cal-nav-btn" onclick="navigateCalendar(0)">Today</button>
                         <button class="cal-nav-btn" onclick="navigateCalendar(1)">Next <i class="fa-solid fa-chevron-right"></i></button>
-                        <button class="cal-nav-btn" id="btn-quick-jump" onclick="toggleQuickJump()"><i class="fa-solid fa-bolt"></i> Jump</button>
+                        <button class="cal-nav-btn" id="btn-quick-jump" onclick="toggleQuickJump()"><i class="fa-regular fa-calendar-days"></i> Select Date</button>
                     </div>
                     <div class="cal-settings" style="display: flex; align-items: center; gap: 6px; justify-content: flex-end;">
                         <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Week starts:</span>
@@ -2728,7 +2747,7 @@
 
             ctx.fillStyle = isDark ? '#818cf8' : '#6366f1';
             ctx.textAlign = "center";
-            ctx.font = "9px Inter, sans-serif";
+            ctx.font = "9px Outfit, Inter, sans-serif";
 
             // Calculate smart label interval based on available space
             const yearWidth = monthWidth * 12; // pixels per year
@@ -3386,35 +3405,61 @@
             const isShowing = panel.style.display === 'flex';
             panel.style.display = isShowing ? 'none' : 'flex';
             if (!isShowing) {
-                const sel = document.getElementById('jump-month-select');
-                if (sel.options.length === 0) {
+                // Populate Year Select
+                const yrSel = document.getElementById('jump-year-select');
+                if (yrSel && yrSel.options.length === 0) {
+                    const currentYear = new Date().getFullYear();
+                    let minYear = 1900;
+                    if (allContacts && allContacts.length > 0) {
+                        const years = allContacts.filter(c => c.hasYear).map(c => c.y);
+                        if (years.length > 0) {
+                            minYear = Math.min(...years);
+                        }
+                    }
+                    for (let y = currentYear + 20; y >= minYear; y--) {
+                        const opt = document.createElement('option');
+                        opt.value = y;
+                        opt.text = y;
+                        yrSel.appendChild(opt);
+                    }
+                }
+                if (yrSel) yrSel.value = calendarYear;
+
+                // Populate Month Select
+                const mSel = document.getElementById('jump-month-select');
+                if (mSel && mSel.options.length === 0) {
                     MONTHS.forEach((m, idx) => {
                         const opt = document.createElement('option');
                         opt.value = idx + 1;
                         opt.text = m;
-                        sel.appendChild(opt);
+                        mSel.appendChild(opt);
                     });
                 }
-                sel.value = calendarMonth;
+                if (mSel) mSel.value = calendarMonth;
+
                 renderJumpDayGrid();
             }
         }
 
         function renderJumpDayGrid() {
-            const sel = document.getElementById('jump-month-select');
-            const m = parseInt(sel.value);
+            const yrSel = document.getElementById('jump-year-select');
+            const mSel = document.getElementById('jump-month-select');
+            if (!yrSel || !mSel) return;
+            const y = parseInt(yrSel.value);
+            const m = parseInt(mSel.value);
             const grid = document.getElementById('jump-day-grid');
             const info = document.getElementById('jump-preview-info');
             if (!grid) return;
             grid.innerHTML = '';
             info.innerText = 'Select a date to jump to';
 
-            const numDays = new Date(2024, m, 0).getDate();
+            const numDays = new Date(y, m, 0).getDate();
             const dayCounts = Array(numDays + 1).fill(0);
             const dayContacts = Array(numDays + 1).fill(null).map(() => []);
 
             filteredContacts.forEach(c => {
-                if (c.m === m && c.d <= numDays) {
+                // Keep year to account so not showing their birthday in years they weren't born
+                if (c.m === m && c.d <= numDays && (!c.hasYear || y >= c.y)) {
                     dayCounts[c.d]++;
                     dayContacts[c.d].push(c);
                 }
@@ -3440,7 +3485,7 @@
                 cell.innerHTML = `<div>${d}</div><div class="jump-day-count">${count > 0 ? count : ''}</div>`;
 
                 cell.onmouseenter = () => {
-                    info.innerText = `${count} ${count === 1 ? 'birthday' : 'birthdays'} on ${MONTHS[m - 1]} ${d}`;
+                    info.innerText = `${count} ${count === 1 ? 'birthday' : 'birthdays'} on ${MONTHS[m - 1]} ${d}, ${y}`;
                 };
                 cell.onmouseleave = () => {
                     info.innerText = 'Select a date to jump to';
@@ -3448,10 +3493,11 @@
 
                 cell.onclick = () => {
                     calendarMonth = m;
+                    calendarYear = y;
                     renderCalendar();
 
                     if (count > 0) {
-                        showListModal(`${MONTHS[m - 1]} ${d}`, "Birthdays", dayContacts[d]);
+                        showListModal(`${MONTHS[m - 1]} ${d}, ${y}`, "Birthdays", dayContacts[d]);
                     }
                     toggleQuickJump();
                 };
@@ -3577,11 +3623,11 @@
                 div.innerHTML = `<span class="cal-date-num">${cell.day}</span><div class="cal-photos-wrap"></div>`;
                 const photosWrap = div.querySelector('.cal-photos-wrap');
 
-                const matches = filteredContacts.filter(c => c.m === cell.month && c.d === cell.day);
+                const matches = filteredContacts.filter(c => c.m === cell.month && c.d === cell.day && (!c.hasYear || cell.year >= c.y));
                 
                 div.onclick = () => {
                     if (matches.length > 0) {
-                        showListModal(`${monthNames[cell.month - 1]} ${cell.day}`, "Birthdays", matches);
+                        showListModal(`${monthNames[cell.month - 1]} ${cell.day}, ${cell.year}`, "Birthdays", matches);
                     }
                 };
 
