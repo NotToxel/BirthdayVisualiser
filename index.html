@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BirthdayVisualiser v1.2.3</title>
+    <title>BirthdayVisualiser v1.2.4</title>
     <meta name="description" content="Visualise your contact birthdays through timelines, statistics, and insights.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -548,13 +548,13 @@
         canvas { display: block; }
         #bubble-canvas, #heatmap-canvas, #scrubber-canvas { width: 100%; height: 100%; display: block; }
 
-        /* Statistics Sub-tabs (Segmented Pill Style) */
+        /* Statistics Sub-tabs (Segmented Rounded Rectangle Style) */
         .sub-tabs {
             display: flex;
             gap: 4px;
             background: var(--surface-2);
             padding: 4px;
-            border-radius: 30px;
+            border-radius: 8px;
             border: 1px solid var(--border);
             margin: 0 auto 1.5rem auto;
             max-width: fit-content;
@@ -562,7 +562,7 @@
         }
         .sub-tab {
             padding: 6px 20px;
-            border-radius: 20px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 0.8125rem;
             font-weight: 600;
@@ -871,7 +871,7 @@
             border: 1px solid var(--border);
             color: var(--text);
             padding: 6px 14px;
-            border-radius: 30px;
+            border-radius: 8px;
             font-size: 0.8125rem;
             font-weight: 600;
             cursor: pointer;
@@ -1339,17 +1339,25 @@
             .search-wrap {
                 width: 100%;
                 max-width: none;
+                order: 2 !important;
             }
             .filter-dropdown {
                 flex-grow: 1;
+                order: 1 !important;
             }
             .filter-btn {
                 width: 100%;
                 box-sizing: border-box;
                 justify-content: space-between;
             }
+            .active-filters {
+                width: 100% !important;
+                margin-left: 0 !important;
+                order: 3 !important;
+            }
             #count-display {
                 margin-left: auto;
+                order: 4 !important;
             }
 
             /* 3. Upcoming Birthdays View */
@@ -1541,7 +1549,7 @@
             <i class="fa-solid fa-moon" id="landing-theme-icon"></i>
         </button>
         <div class="landing-content">
-            <h1 class="landing-title">BirthdayVisualiser <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 2px;">v1.2.3</span></h1>
+            <h1 class="landing-title">BirthdayVisualiser <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 2px;">v1.2.4</span></h1>
             <p class="landing-subtitle">Explore your contacts' birthdays through timelines, statistics, and insights.</p>
 
             <label class="drop-zone" id="drop-zone">
@@ -1565,7 +1573,7 @@
     <!-- App -->
     <div id="app-container">
         <nav>
-            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v1.2.3</span></div>
+            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v1.2.4</span></div>
             <div class="tabs">
                 <div class="tab active" onclick="setTab('timeline')">Timeline</div>
                 <div class="tab" onclick="setTab('calendar')">Calendar</div>
