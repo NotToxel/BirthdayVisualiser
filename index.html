@@ -1872,6 +1872,14 @@
                         <button id="opt-theme-dark" onclick="setThemeOpt('dark')">Dark</button>
                     </div>
                 </div>
+
+                <div class="settings-row">
+                    <span class="settings-label"><i class="fa-solid fa-calendar-week"></i> Week Starts From</span>
+                    <div class="segmented-control">
+                        <button id="opt-week-monday" onclick="toggleCalendarStartOfWeek('Monday')">Monday</button>
+                        <button id="opt-week-sunday" onclick="toggleCalendarStartOfWeek('Sunday')">Sunday</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2327,6 +2335,11 @@
             const btnChinHide = document.getElementById('opt-chinese-hide');
             if (btnChinShow) btnChinShow.classList.toggle('active', showChineseZodiac);
             if (btnChinHide) btnChinHide.classList.toggle('active', !showChineseZodiac);
+
+            const btnWeekMon = document.getElementById('opt-week-monday');
+            const btnWeekSun = document.getElementById('opt-week-sunday');
+            if (btnWeekMon) btnWeekMon.classList.toggle('active', calendarStartOfWeek === 'Monday');
+            if (btnWeekSun) btnWeekSun.classList.toggle('active', calendarStartOfWeek === 'Sunday');
         }
 
         function toggleMobileMoreMenu() {
@@ -2714,14 +2727,17 @@
 
             const isDark = document.body.classList.contains('dark');
 
-            const years = filteredContacts.filter(c=>c.hasYear).map(c=>c.y);
-            if(!years.length) {
+            const hasFilterMatches = filteredContacts.filter(c => c.hasYear).length > 0;
+            const targetContacts = hasFilterMatches ? filteredContacts : allContacts;
+            const years = targetContacts.filter(c => c.hasYear).map(c => c.y);
+
+            if (!years.length) {
                 document.getElementById('scrubber-needle').style.display = 'none';
-                document.getElementById('lbl-start').innerText='';
-                document.getElementById('lbl-end').innerText='';
+                document.getElementById('lbl-start').innerText = '';
+                document.getElementById('lbl-end').innerText = '';
                 return;
             } else {
-                document.getElementById('scrubber-needle').style.display = 'block';
+                document.getElementById('scrubber-needle').style.display = (hasFilterMatches && filteredContacts.length > 0) ? 'block' : 'none';
             }
 
             const minY = Math.min(...years), maxY = Math.max(...years);
@@ -2732,7 +2748,7 @@
             document.getElementById('lbl-end').innerText=maxY;
 
             const monthYearCounts = {};
-            filteredContacts.forEach(c => {
+            targetContacts.forEach(c => {
                 if(c.hasYear && c.m >= 1 && c.m <= 12) {
                     const key = `${c.y}-${c.m}`;
                     monthYearCounts[key] = (monthYearCounts[key] || 0) + 1;
@@ -3525,6 +3541,7 @@
             document.getElementById('cal-opt-mon').classList.toggle('active', startDay === 'Monday');
             document.getElementById('cal-opt-sun').classList.toggle('active', startDay === 'Sunday');
             
+            if (typeof updateSettingsModalUI === 'function') updateSettingsModalUI();
             renderCalendar();
         }
 
@@ -3634,10 +3651,18 @@
                 const isMobile = window.innerWidth < 768;
                 const isSmallMobile = window.innerWidth < 480;
                 let photoSize = isMobile ? (isSmallMobile ? 22 : 30) : 42;
-                if (matches.length >= 5) {
-                    photoSize = isMobile ? (isSmallMobile ? 12 : 16) : 24;
-                } else if (matches.length >= 3) {
-                    photoSize = isMobile ? (isSmallMobile ? 16 : 22) : 32;
+                if (isMobile) {
+                    if (matches.length >= 5) {
+                        photoSize = isSmallMobile ? 12 : 16;
+                    } else if (matches.length >= 3) {
+                        photoSize = isSmallMobile ? 16 : 22;
+                    }
+                } else {
+                    if (matches.length >= 8) {
+                        photoSize = 24;
+                    } else if (matches.length >= 5) {
+                        photoSize = 32;
+                    }
                 }
 
                 matches.forEach(c => {
@@ -3747,7 +3772,23 @@
                     }
 
                     const countdownText = c._daysUntil === 0 ? "Today!" : c._daysUntil === 1 ? "Tomorrow" : `${c._daysUntil} days`;
-                    const badgeClass = c._daysUntil === 0 ? 'badge badge-red' : c._daysUntil <= 7 ? 'badge badge-yellow' : 'badge';
+                    
+                    let badgeStyle = "font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600;";
+                    if (c._daysUntil === 0) {
+                        badgeStyle += "background: rgba(239, 68, 68, 0.15); color: #ef4444;";
+                    } else if (c._daysUntil === 1) {
+                        badgeStyle += "background: rgba(249, 115, 22, 0.15); color: #f97316;";
+                    } else if (c._daysUntil <= 3) {
+                        badgeStyle += "background: rgba(245, 158, 11, 0.15); color: #f59e0b;";
+                    } else if (c._daysUntil <= 7) {
+                        badgeStyle += "background: rgba(132, 204, 22, 0.15); color: #84cc16;";
+                    } else if (c._daysUntil <= 30) {
+                        badgeStyle += "background: rgba(16, 185, 129, 0.15); color: #10b981;";
+                    } else if (c._daysUntil <= 60) {
+                        badgeStyle += "background: rgba(59, 130, 246, 0.15); color: #3b82f6;";
+                    } else {
+                        badgeStyle += "background: var(--surface-2); color: var(--text-muted);";
+                    }
 
                     card.innerHTML = `
                         <div class="upcoming-left">
@@ -3758,7 +3799,7 @@
                             </div>
                         </div>
                         <div class="upcoming-right">
-                            <span class="${badgeClass}" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600;">${c._daysUntil === 0 ? '🎂 ' : ''}${countdownText}</span>
+                            <span style="${badgeStyle}">${c._daysUntil === 0 ? '🎂 ' : ''}${countdownText}</span>
                         </div>
                     `;
                     sec.appendChild(card);
@@ -3822,12 +3863,34 @@
             }
         }
 
+        const TAG_PALETTE = [
+            { bg: 'rgba(99, 102, 241, 0.15)', fg: '#6366f1' },
+            { bg: 'rgba(236, 72, 153, 0.15)', fg: '#ec4899' },
+            { bg: 'rgba(16, 185, 129, 0.15)', fg: '#10b981' },
+            { bg: 'rgba(245, 158, 11, 0.15)', fg: '#f59e0b' },
+            { bg: 'rgba(59, 130, 246, 0.15)', fg: '#3b82f6' },
+            { bg: 'rgba(168, 85, 247, 0.15)', fg: '#a855f7' },
+            { bg: 'rgba(6, 182, 212, 0.15)', fg: '#06b6d4' },
+            { bg: 'rgba(239, 68, 68, 0.15)', fg: '#ef4444' },
+            { bg: 'rgba(132, 204, 22, 0.15)', fg: '#84cc16' }
+        ];
+
+        function getTagBadgeStyle(t) {
+            let hash = 0;
+            for (let i = 0; i < t.length; i++) {
+                hash = t.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const index = Math.abs(hash) % TAG_PALETTE.length;
+            const item = TAG_PALETTE[index];
+            return `background: ${item.bg}; color: ${item.fg}; border: 1px solid rgba(255,255,255,0.05);`;
+        }
+
         function showModal(c) {
             const hasBday = (c.m >= 1 && c.m <= 12 && c.d >= 1 && c.d <= 31);
             document.getElementById('m-name').innerText=c.name;
             document.getElementById('m-meta').innerText=hasBday ? `${MONTHS[c.m-1]} ${c.d}, ${c.hasYear?c.y:'????'}` : '';
             document.getElementById('m-img').src=c.photo||`https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
-            document.getElementById('m-tags').innerHTML=c.tags.map(t=>`<span class="tag">${t}</span>`).join('');
+            document.getElementById('m-tags').innerHTML=c.tags.map(t=>`<span class="tag" style="${getTagBadgeStyle(t)}">${t}</span>`).join('');
 
             // Badges: zodiac + countdown
             let badgesHtml = "";
