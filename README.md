@@ -17,14 +17,14 @@
   | View | Light Mode | Dark Mode |
   | :--- | :---: | :---: |
   | **Desktop** | <img src="screenshots/screenshot-timeline.png" width="450"> | <img src="screenshots/screenshot-timeline-dark.png" width="450"> |
-  | **Mobile** | <img src="screenshots/screenshot-mobile-timeline.png" width="160"> | <img src="screenshots/screenshot-mobile-timeline-dark.png" width="160"> |
+  | **Mobile** | <img src="screenshots/screenshot-mobile-timeline.png" width="180"> | <img src="screenshots/screenshot-mobile-timeline-dark.png" width="180"> |
 
 - **📅 Calendar View** — Monthly calendar with birthday density, contact photos, mouse wheel navigation, and a date selector with heatmap preview.
   
   | View | Light Mode | Dark Mode |
   | :--- | :---: | :---: |
   | **Desktop** | <img src="screenshots/screenshot-calendar.png" width="450"> | <img src="screenshots/screenshot-calendar-dark.png" width="450"> |
-  | **Mobile** | <img src="screenshots/screenshot-mobile-calendar.png" width="160"> | <img src="screenshots/screenshot-mobile-calendar-dark.png" width="160"> |
+  | **Mobile** | <img src="screenshots/screenshot-mobile-calendar.png" width="180"> | <img src="screenshots/screenshot-mobile-calendar-dark.png" width="180"> |
 
 - **📊 Rich Statistics & ☁️ Contact Cloud** — Comprehensive charts for birth months, decades, years, weekdays, etc. and animated hexagonal honeycomb bubble visualization.
   
@@ -62,7 +62,7 @@ Visit the [live demo](https://nottoxel.github.io/BirthdayVisualiser/) and click 
 | View | Light Mode | Dark Mode |
 | :--- | :---: | :---: |
 | **Desktop** | <img src="screenshots/screenshot-landing.png" width="400"> | <img src="screenshots/screenshot-landing-dark.png" width="400"> |
-| **Mobile** | <img src="screenshots/screenshot-mobile-landing.png" width="150"> | <img src="screenshots/screenshot-mobile-landing-dark.png" width="150"> |
+| **Mobile** | <img src="screenshots/screenshot-mobile-landing.png" width="170"> | <img src="screenshots/screenshot-mobile-landing-dark.png" width="170"> |
 
 ### Option 2: Use Your Own Contacts
 1. Export your contacts as a **CSV** or **VCF (vCard)** file (see [Export Guides](#-how-to-export-your-contacts) below)
