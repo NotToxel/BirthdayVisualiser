@@ -1230,6 +1230,20 @@
             }
 
             /* 6. Calendar View cell scaling on mobile */
+            #calendar-view {
+                height: 100% !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+                padding: 8px !important;
+            }
+            #calendar-container {
+                height: auto !important;
+                overflow: visible !important;
+            }
+            #calendar-grid {
+                grid-template-rows: repeat(6, 75px) !important;
+                height: auto !important;
+            }
             #calendar-weekdays {
                 font-size: 0.6875rem;
             }
