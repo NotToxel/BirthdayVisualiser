@@ -862,6 +862,46 @@
             align-items: center;
             gap: 8px;
         }
+        #cal-quick-jump-panel {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            max-width: 95%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+        .jump-day-cell {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all var(--transition);
+        }
+        .jump-day-cell:hover {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+        .jump-day-count {
+            font-size: 0.5625rem;
+            opacity: 0.85;
+            font-weight: 700;
+            margin-top: 1px;
+        }
         #calendar-weekdays {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -1618,7 +1658,20 @@
             <div class="same-grid" id="same-grid"></div>
         </div>
 
-        <div id="calendar-view" class="view">
+        <div id="calendar-view" class="view" style="position: relative;">
+            <!-- Quick Jump Panel -->
+            <div id="cal-quick-jump-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                    <span style="font-weight: 600; font-size: 0.875rem;"><i class="fa-solid fa-bolt" style="color:var(--primary);"></i> Quick Jump Heatmap</span>
+                    <i class="fa-solid fa-xmark" onclick="toggleQuickJump()" style="cursor: pointer; color: var(--text-muted); hover: color: var(--text)"></i>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <select id="jump-month-select" onchange="renderJumpDayGrid()" style="width: 100%; padding: 6px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: inherit; font-size: 0.8125rem; font-weight: 500;"></select>
+                </div>
+                <div id="jump-day-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;"></div>
+                <div id="jump-preview-info" style="margin-top: 10px; font-size: 0.75rem; text-align: center; color: var(--text-muted); font-weight: 500; min-height: 1.25rem;">Select a date to jump to</div>
+            </div>
+
             <div id="calendar-container">
                 <div id="calendar-header">
                     <h2 id="calendar-title">Month Year</h2>
@@ -1626,6 +1679,7 @@
                         <button class="cal-nav-btn" onclick="navigateCalendar(-1)"><i class="fa-solid fa-chevron-left"></i> Prev</button>
                         <button class="cal-nav-btn" onclick="navigateCalendar(0)">Today</button>
                         <button class="cal-nav-btn" onclick="navigateCalendar(1)">Next <i class="fa-solid fa-chevron-right"></i></button>
+                        <button class="cal-nav-btn" id="btn-quick-jump" onclick="toggleQuickJump()"><i class="fa-solid fa-bolt"></i> Jump</button>
                     </div>
                     <div class="cal-settings" style="display: flex; align-items: center; gap: 6px; justify-content: flex-end;">
                         <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Week starts:</span>
@@ -2356,7 +2410,7 @@
             fb.style.display = (t==='timeline'||t==='stats'||t==='same'||t==='calendar'||t==='upcoming')?'flex':'none';
 
             if(t==='timeline'&&timeline) { setTimeout(() => scheduleLayoutTimeline(), 50); }
-            if(t==='calendar') { renderCalendar(); }
+            if(t==='calendar') { renderCalendar(); } else { document.getElementById('cal-quick-jump-panel').style.display = 'none'; }
             if(t==='upcoming') { renderUpcoming(); }
             if(t==='stats') { setSubTab(activeSubTab); } else { stopBubbleLoop(); }
             if(t==='same') { setTimeout(() => renderSame(), 50); }
@@ -2533,7 +2587,12 @@
 
             updateTimelineData(); updateStats();
             if(document.getElementById('same-bday-view').classList.contains('active')) renderSame();
-            if(document.getElementById('calendar-view').classList.contains('active')) renderCalendar();
+            if(document.getElementById('calendar-view').classList.contains('active')) {
+                renderCalendar();
+                if (document.getElementById('cal-quick-jump-panel').style.display === 'flex') {
+                    renderJumpDayGrid();
+                }
+            }
             if(document.getElementById('upcoming-view').classList.contains('active')) renderUpcoming();
         }
 
@@ -3319,6 +3378,86 @@
             document.getElementById('settings-modal').style.display='none'; 
             lastModalOpenTime = Date.now();
             document.getElementById('modal-backdrop').style.display='flex';
+        }
+
+        function toggleQuickJump() {
+            const panel = document.getElementById('cal-quick-jump-panel');
+            if (!panel) return;
+            const isShowing = panel.style.display === 'flex';
+            panel.style.display = isShowing ? 'none' : 'flex';
+            if (!isShowing) {
+                const sel = document.getElementById('jump-month-select');
+                if (sel.options.length === 0) {
+                    MONTHS.forEach((m, idx) => {
+                        const opt = document.createElement('option');
+                        opt.value = idx + 1;
+                        opt.text = m;
+                        sel.appendChild(opt);
+                    });
+                }
+                sel.value = calendarMonth;
+                renderJumpDayGrid();
+            }
+        }
+
+        function renderJumpDayGrid() {
+            const sel = document.getElementById('jump-month-select');
+            const m = parseInt(sel.value);
+            const grid = document.getElementById('jump-day-grid');
+            const info = document.getElementById('jump-preview-info');
+            if (!grid) return;
+            grid.innerHTML = '';
+            info.innerText = 'Select a date to jump to';
+
+            const numDays = new Date(2024, m, 0).getDate();
+            const dayCounts = Array(numDays + 1).fill(0);
+            const dayContacts = Array(numDays + 1).fill(null).map(() => []);
+
+            filteredContacts.forEach(c => {
+                if (c.m === m && c.d <= numDays) {
+                    dayCounts[c.d]++;
+                    dayContacts[c.d].push(c);
+                }
+            });
+
+            const maxCount = Math.max(...dayCounts, 1);
+            const isDark = document.body.classList.contains('dark');
+
+            for (let d = 1; d <= numDays; d++) {
+                const count = dayCounts[d];
+                const cell = document.createElement('div');
+                cell.className = 'jump-day-cell';
+                
+                if (count === 0) {
+                    cell.style.background = isDark ? '#1c1c24' : '#f4f4f5';
+                    cell.style.color = isDark ? '#a1a1aa' : '#71717a';
+                } else {
+                    const pct = count / maxCount;
+                    cell.style.background = `rgba(99, 102, 241, ${0.15 + pct * 0.85})`;
+                    cell.style.color = '#ffffff';
+                }
+
+                cell.innerHTML = `<div>${d}</div><div class="jump-day-count">${count > 0 ? count : ''}</div>`;
+
+                cell.onmouseenter = () => {
+                    info.innerText = `${count} ${count === 1 ? 'birthday' : 'birthdays'} on ${MONTHS[m - 1]} ${d}`;
+                };
+                cell.onmouseleave = () => {
+                    info.innerText = 'Select a date to jump to';
+                };
+
+                cell.onclick = () => {
+                    calendarMonth = m;
+                    renderCalendar();
+
+                    if (count > 0) {
+                        showListModal(`${MONTHS[m - 1]} ${d}`, "Birthdays", dayContacts[d]);
+                    }
+                    toggleQuickJump();
+                };
+
+                grid.appendChild(cell);
+            }
         }
 
         function renderMissing() {
