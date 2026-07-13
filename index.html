@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BirthdayVisualiser v1.2.1</title>
+    <title>BirthdayVisualiser v1.2.2</title>
     <meta name="description" content="Visualise your contact birthdays through timelines, statistics, and insights.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -503,6 +503,12 @@
         }
         .vis-item { border-color: transparent !important; background: transparent !important; box-shadow: none !important; }
         .vis-item.vis-selected { background: transparent !important; }
+        .timeline-today-needle-bg {
+            background-color: rgba(244, 63, 94, 0.04) !important;
+            border-left: 1.5px dashed #f43f5e !important;
+            pointer-events: none;
+            z-index: 0 !important;
+        }
 
         /* ── Stats ── */
         #stats-content { padding: 1.5rem; overflow-y: auto; background: var(--bg); }
@@ -1386,17 +1392,19 @@
             /* 6. Calendar View cell scaling on mobile */
             #calendar-view {
                 height: 100% !important;
-                overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch;
+                overflow: hidden !important;
                 padding: 8px !important;
+                box-sizing: border-box;
             }
             #calendar-container {
-                height: auto !important;
-                overflow: visible !important;
+                height: 100% !important;
+                overflow: hidden !important;
+                display: flex;
+                flex-direction: column;
             }
             #calendar-grid {
-                grid-template-rows: repeat(6, 75px) !important;
-                height: auto !important;
+                grid-template-rows: repeat(6, 1fr) !important;
+                height: 100% !important;
             }
             #calendar-weekdays {
                 font-size: 0.6875rem;
@@ -1516,7 +1524,7 @@
             <i class="fa-solid fa-moon" id="landing-theme-icon"></i>
         </button>
         <div class="landing-content">
-            <h1 class="landing-title">BirthdayVisualiser <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 2px;">v1.2.1</span></h1>
+            <h1 class="landing-title">BirthdayVisualiser <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 2px;">v1.2.2</span></h1>
             <p class="landing-subtitle">Explore your contacts' birthdays through timelines, statistics, and insights.</p>
 
             <label class="drop-zone" id="drop-zone">
@@ -1540,7 +1548,7 @@
     <!-- App -->
     <div id="app-container">
         <nav>
-            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v1.2.1</span></div>
+            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v1.2.2</span></div>
             <div class="tabs">
                 <div class="tab active" onclick="setTab('timeline')">Timeline</div>
                 <div class="tab" onclick="setTab('calendar')">Calendar</div>
@@ -1873,13 +1881,6 @@
                     </div>
                 </div>
 
-                <div class="settings-row">
-                    <span class="settings-label"><i class="fa-solid fa-calendar-week"></i> Week Starts From</span>
-                    <div class="segmented-control">
-                        <button id="opt-week-monday" onclick="toggleCalendarStartOfWeek('Monday')">Monday</button>
-                        <button id="opt-week-sunday" onclick="toggleCalendarStartOfWeek('Sunday')">Sunday</button>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -2336,10 +2337,6 @@
             if (btnChinShow) btnChinShow.classList.toggle('active', showChineseZodiac);
             if (btnChinHide) btnChinHide.classList.toggle('active', !showChineseZodiac);
 
-            const btnWeekMon = document.getElementById('opt-week-monday');
-            const btnWeekSun = document.getElementById('opt-week-sunday');
-            if (btnWeekMon) btnWeekMon.classList.toggle('active', calendarStartOfWeek === 'Monday');
-            if (btnWeekSun) btnWeekSun.classList.toggle('active', calendarStartOfWeek === 'Sunday');
         }
 
         function toggleMobileMoreMenu() {
@@ -2707,6 +2704,29 @@
                 start: `${c.hasYear?c.y:2000}-${String(c.m).padStart(2,'0')}-${String(c.d).padStart(2,'0')}`,
                 name: c.name, photo: c.photo
             }));
+
+            // Add background needle for the current date (Month/Day) in each year
+            const years = allContacts.filter(c => c.hasYear).map(c => c.y);
+            if (years.length > 0) {
+                const minY = Math.min(...years);
+                const maxY = Math.max(...years);
+                const today = new Date();
+                const tm = today.getMonth() + 1;
+                const td = today.getDate();
+                const mStr = String(tm).padStart(2, '0');
+                const dStr = String(td).padStart(2, '0');
+                
+                for (let y = minY; y <= maxY; y++) {
+                    items.push({
+                        id: `today-needle-${y}`,
+                        start: `${y}-${mStr}-${dStr} 00:00:00`,
+                        end: `${y}-${mStr}-${dStr} 23:59:59`,
+                        type: 'background',
+                        className: 'timeline-today-needle-bg'
+                    });
+                }
+            }
+
             timeline.setItems(items);
             timeline.redraw();
             scheduleLayoutTimeline(items.length > 0);
@@ -3286,7 +3306,9 @@
 
             // Charts
             const yD=get(c=>c.hasYear?c.y:null);
-            upChart('chart-years','bar',Object.keys(yD).sort(),Object.values(yD),'Years');
+            const yKeys = Object.keys(yD).sort((a,b)=>Number(a)-Number(b));
+            const yData = yKeys.map(k=>yD[k]);
+            upChart('chart-years','bar',yKeys,yData,'Years');
 
             // Decades of Birth
             const decD = get(c => {
@@ -3294,7 +3316,9 @@
                 const dec = Math.floor(c.y / 10) * 10;
                 return `${dec}s`;
             });
-            upChart('chart-decades', 'bar', Object.keys(decD).sort(), Object.values(decD), 'Decades');
+            const decKeys = Object.keys(decD).sort((a,b)=>parseInt(a)-parseInt(b));
+            const decData = decKeys.map(k=>decD[k]);
+            upChart('chart-decades', 'bar', decKeys, decData, 'Decades');
 
             const genD = get(c => c.hasYear ? getGeneration(c.y) : null);
             const genLabels = ["Boomers", "Gen X", "Millennials", "Gen Z", "Gen Alpha", "Silent Gen"].filter(g => genD[g] !== undefined);
@@ -3541,7 +3565,6 @@
             document.getElementById('cal-opt-mon').classList.toggle('active', startDay === 'Monday');
             document.getElementById('cal-opt-sun').classList.toggle('active', startDay === 'Sunday');
             
-            if (typeof updateSettingsModalUI === 'function') updateSettingsModalUI();
             renderCalendar();
         }
 
