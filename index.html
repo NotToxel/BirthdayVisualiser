@@ -782,7 +782,7 @@
         /* List modal */
         #list-modal {
             display: none; background: var(--surface);
-            width: 350px; height: 500px;
+            width: 350px; max-height: 480px; height: auto;
             border-radius: var(--radius-lg);
             flex-direction: column;
             position: relative; overflow: hidden;
@@ -2206,8 +2206,7 @@
         }
 
         function closeSettingsModal() {
-            document.getElementById('modal-backdrop').style.display = 'none';
-            document.getElementById('settings-modal').style.display = 'none';
+            closeModal();
         }
 
         function setWesternZodiacOpt(show) {
@@ -3315,7 +3314,9 @@
                     `<span>${c.name}</span>`;
                 d.onclick=()=>{showModal(c);document.getElementById('list-modal').style.display='none'}; b.appendChild(d);
             });
-            document.getElementById('list-modal').style.display='flex'; document.getElementById('contact-modal').style.display='none'; 
+            document.getElementById('list-modal').style.display='flex';
+            document.getElementById('contact-modal').style.display='none'; 
+            document.getElementById('settings-modal').style.display='none'; 
             lastModalOpenTime = Date.now();
             document.getElementById('modal-backdrop').style.display='flex';
         }
@@ -3446,11 +3447,12 @@
                 };
 
                 const isMobile = window.innerWidth < 768;
-                let photoSize = isMobile ? 30 : 42;
+                const isSmallMobile = window.innerWidth < 480;
+                let photoSize = isMobile ? (isSmallMobile ? 22 : 30) : 42;
                 if (matches.length >= 5) {
-                    photoSize = isMobile ? 16 : 24;
+                    photoSize = isMobile ? (isSmallMobile ? 12 : 16) : 24;
                 } else if (matches.length >= 3) {
-                    photoSize = isMobile ? 22 : 32;
+                    photoSize = isMobile ? (isSmallMobile ? 16 : 22) : 32;
                 }
 
                 matches.forEach(c => {
@@ -3674,11 +3676,18 @@
             if(c.email) h+=`<div class="detail-row"><i class="fa-solid fa-envelope"></i> ${c.email}</div>`;
             if(c.phone) h+=`<div class="detail-row"><i class="fa-solid fa-phone"></i> ${c.phone}</div>`;
             document.getElementById('m-details').innerHTML=h||'<div style="color:var(--text-muted); font-size:0.8125rem;">No additional details.</div>';
-            document.getElementById('contact-modal').style.display='flex'; document.getElementById('list-modal').style.display='none';
+            document.getElementById('contact-modal').style.display='flex';
+            document.getElementById('list-modal').style.display='none';
+            document.getElementById('settings-modal').style.display='none';
             lastModalOpenTime = Date.now();
             document.getElementById('modal-backdrop').style.display='flex';
         }
-        function closeModal(){document.getElementById('modal-backdrop').style.display='none'}
+        function closeModal(){
+            document.getElementById('modal-backdrop').style.display='none';
+            document.getElementById('contact-modal').style.display='none';
+            document.getElementById('list-modal').style.display='none';
+            document.getElementById('settings-modal').style.display='none';
+        }
         document.getElementById('modal-backdrop').onclick=e=>{
             if(Date.now() - lastModalOpenTime < 350) return;
             if(e.target.id==='modal-backdrop')closeModal()
