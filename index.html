@@ -441,7 +441,7 @@
             position: relative; overflow: hidden;
         }
         canvas { display: block; }
-        #bubble-canvas, #heatmap-canvas { width: 100%; height: 100%; display: block; }
+        #bubble-canvas, #heatmap-canvas, #scrubber-canvas { width: 100%; height: 100%; display: block; }
 
         /* Statistics Sub-tabs */
         .sub-tabs {
@@ -1680,6 +1680,7 @@
         let allContacts=[], filteredContacts=[], missingContacts=[], yearlessContacts=[];
         let timeline=null, chartInstances={}, activeTags=new Set(), activeMonths=new Set();
         let missingActiveTags = new Set();
+        let lastModalOpenTime = 0;
         let showWesternZodiac = localStorage.getItem('showWesternZodiac') !== 'false';
         let showChineseZodiac = localStorage.getItem('showChineseZodiac') !== 'false';
         const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -3110,7 +3111,9 @@
                     `<span>${c.name}</span>`;
                 d.onclick=()=>{showModal(c);document.getElementById('list-modal').style.display='none'}; b.appendChild(d);
             });
-            document.getElementById('list-modal').style.display='flex'; document.getElementById('contact-modal').style.display='none'; document.getElementById('modal-backdrop').style.display='flex';
+            document.getElementById('list-modal').style.display='flex'; document.getElementById('contact-modal').style.display='none'; 
+            lastModalOpenTime = Date.now();
+            document.getElementById('modal-backdrop').style.display='flex';
         }
 
         function renderMissing() {
@@ -3447,10 +3450,14 @@
             if(c.phone) h+=`<div class="detail-row"><i class="fa-solid fa-phone"></i> ${c.phone}</div>`;
             document.getElementById('m-details').innerHTML=h||'<div style="color:var(--text-muted); font-size:0.8125rem;">No additional details.</div>';
             document.getElementById('contact-modal').style.display='flex'; document.getElementById('list-modal').style.display='none';
+            lastModalOpenTime = Date.now();
             document.getElementById('modal-backdrop').style.display='flex';
         }
         function closeModal(){document.getElementById('modal-backdrop').style.display='none'}
-        document.getElementById('modal-backdrop').onclick=e=>{if(e.target.id==='modal-backdrop')closeModal()};
+        document.getElementById('modal-backdrop').onclick=e=>{
+            if(Date.now() - lastModalOpenTime < 350) return;
+            if(e.target.id==='modal-backdrop')closeModal()
+        };
 
     </script>
 </body>
