@@ -1002,40 +1002,154 @@
         }
 
         /* ── Responsive styling (Mobile & Tablet) ── */
+        /* Desktop Bottom Navigation & Drawer hidden */
+        #mobile-nav-bar { display: none; }
+        #mobile-more-menu { display: none; }
+        #mobile-drawer-backdrop { display: none; }
+
         @media (max-width: 900px) {
             /* 1. Header and Navigation */
             nav {
-                flex-direction: column;
-                height: auto;
-                padding: 10px 1rem;
-                gap: 10px;
-                align-items: stretch;
+                display: flex;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                height: 52px !important;
+                padding: 0 1rem !important;
             }
             nav .logo {
-                text-align: center;
-                justify-content: center;
+                font-size: 0.95rem;
+                text-align: left;
+                justify-content: flex-start;
             }
             nav .tabs {
-                width: 100%;
-                overflow-x: auto;
-                white-space: nowrap;
-                display: flex;
-                padding-bottom: 4px;
-                -webkit-overflow-scrolling: touch;
-                justify-content: flex-start;
-                gap: 4px;
-            }
-            nav .tabs::-webkit-scrollbar {
-                display: none; /* Hide scrollbars for a clean iOS app feel */
-            }
-            nav .tab {
-                padding: 6px 12px;
-                font-size: 0.8125rem;
-                flex-shrink: 0;
+                display: none !important;
             }
             nav .nav-actions {
+                width: auto !important;
+                justify-content: flex-end !important;
+            }
+            nav .nav-actions .btn-icon:not(:last-child) {
+                display: none !important;
+            }
+            #app-container {
+                height: calc(100% - 60px) !important;
+                padding-bottom: 60px !important;
+                box-sizing: border-box;
+            }
+
+            /* Bottom navigation bar visible on mobile */
+            #mobile-nav-bar {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 60px;
+                background: var(--surface);
+                border-top: 1px solid var(--border);
+                justify-content: space-around;
+                align-items: center;
+                z-index: 1000;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            }
+            .mobile-nav-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
                 justify-content: center;
-                width: 100%;
+                gap: 4px;
+                color: var(--text-muted);
+                font-size: 0.6875rem;
+                font-weight: 500;
+                cursor: pointer;
+                flex: 1;
+                height: 100%;
+                transition: color var(--transition);
+            }
+            .mobile-nav-item i {
+                font-size: 1.15rem;
+            }
+            .mobile-nav-item.active {
+                color: var(--primary);
+            }
+
+            /* Bottom-sheet drawer styles */
+            #mobile-more-menu {
+                display: block;
+                position: fixed;
+                bottom: -100%;
+                left: 0;
+                right: 0;
+                background: var(--surface);
+                border-top-left-radius: 16px;
+                border-top-right-radius: 16px;
+                z-index: 2000;
+                transition: bottom 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94);
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+                padding-bottom: 24px;
+            }
+            #mobile-more-menu.open {
+                bottom: 0;
+            }
+            #mobile-drawer-backdrop {
+                display: none;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(0,0,0,0.4);
+                z-index: 1999;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+            }
+            .drawer-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem 1.25rem;
+                border-bottom: 1px solid var(--border);
+                font-weight: 700;
+                font-size: 0.95rem;
+                color: var(--text);
+            }
+            .drawer-header i {
+                cursor: pointer;
+                font-size: 1.1rem;
+                color: var(--text-muted);
+            }
+            .drawer-body {
+                padding: 8px;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+            .drawer-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 1rem;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: var(--text);
+                transition: background var(--transition);
+            }
+            .drawer-item:hover {
+                background: var(--surface-2);
+            }
+            .drawer-item i {
+                font-size: 1.1rem;
+                color: var(--primary);
+                width: 20px;
+                text-align: center;
+            }
+            .drawer-divider {
+                height: 1px;
+                background: var(--border);
+                margin: 6px 1rem;
             }
 
             /* 2. Filter Bar */
@@ -1399,6 +1513,58 @@
             </div>
         </div>
     </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <div id="mobile-nav-bar">
+        <div class="mobile-nav-item active" onclick="setTab('timeline')">
+            <i class="fa-solid fa-timeline"></i>
+            <span>Timeline</span>
+        </div>
+        <div class="mobile-nav-item" onclick="setTab('calendar')">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Calendar</span>
+        </div>
+        <div class="mobile-nav-item" onclick="setTab('upcoming')">
+            <i class="fa-solid fa-cake-candles"></i>
+            <span>Upcoming</span>
+        </div>
+        <div class="mobile-nav-item" onclick="setTab('stats')">
+            <i class="fa-solid fa-chart-simple"></i>
+            <span>Stats</span>
+        </div>
+        <div class="mobile-nav-item" onclick="toggleMobileMoreMenu()">
+            <i class="fa-solid fa-ellipsis"></i>
+            <span>More</span>
+        </div>
+    </div>
+
+    <!-- Mobile More Drawer -->
+    <div id="mobile-more-menu" class="mobile-drawer">
+        <div class="drawer-header">
+            <span>More Options</span>
+            <i class="fa-solid fa-xmark" onclick="toggleMobileMoreMenu()"></i>
+        </div>
+        <div class="drawer-body">
+            <div class="drawer-item" onclick="selectDrawerTab('same')">
+                <i class="fa-solid fa-people-group"></i>
+                <span>Same Birthday</span>
+            </div>
+            <div class="drawer-item" onclick="selectDrawerTab('missing')">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Missing Data</span>
+            </div>
+            <div class="drawer-divider"></div>
+            <div class="drawer-item" onclick="toggleWesternZodiac();">
+                <i class="fa-solid fa-star-and-crescent" id="drawer-icon-western"></i>
+                <span>Western Zodiac</span>
+            </div>
+            <div class="drawer-item" onclick="toggleChineseZodiac();">
+                <i class="fa-solid fa-dragon" id="drawer-icon-chinese"></i>
+                <span>Chinese Zodiac</span>
+            </div>
+        </div>
+    </div>
+    <div id="mobile-drawer-backdrop" onclick="toggleMobileMoreMenu()"></div>
 
     <!-- Hover Card -->
     <div id="hover-card"><div id="hc-name" style="font-weight:600;"></div><div id="hc-date" style="color:var(--text-muted); font-size:0.75rem;"></div></div>
@@ -1836,6 +2002,40 @@
             const chinBtn = document.getElementById('icon-chinese-zodiac');
             if (westBtn) westBtn.style.color = showWesternZodiac ? 'var(--primary)' : '';
             if (chinBtn) chinBtn.style.color = showChineseZodiac ? 'var(--primary)' : '';
+
+            const drawerIconWest = document.getElementById('drawer-icon-western');
+            const drawerIconChin = document.getElementById('drawer-icon-chinese');
+            if (drawerIconWest) drawerIconWest.style.color = showWesternZodiac ? 'var(--primary)' : '';
+            if (drawerIconChin) drawerIconChin.style.color = showChineseZodiac ? 'var(--primary)' : '';
+        }
+
+        function toggleMobileMoreMenu() {
+            const drawer = document.getElementById('mobile-more-menu');
+            const backdrop = document.getElementById('mobile-drawer-backdrop');
+            if (!drawer || !backdrop) return;
+            
+            const isOpen = drawer.classList.contains('open');
+            if (isOpen) {
+                drawer.classList.remove('open');
+                backdrop.style.opacity = '0';
+                setTimeout(() => backdrop.style.display = 'none', 200);
+            } else {
+                const drawerIconWest = document.getElementById('drawer-icon-western');
+                const drawerIconChin = document.getElementById('drawer-icon-chinese');
+                if (drawerIconWest) drawerIconWest.style.color = showWesternZodiac ? 'var(--primary)' : '';
+                if (drawerIconChin) drawerIconChin.style.color = showChineseZodiac ? 'var(--primary)' : '';
+
+                backdrop.style.display = 'block';
+                requestAnimationFrame(() => {
+                    backdrop.style.opacity = '1';
+                    drawer.classList.add('open');
+                });
+            }
+        }
+
+        function selectDrawerTab(t) {
+            setTab(t);
+            toggleMobileMoreMenu();
         }
 
         function getZodiacEmoji(sign) {
@@ -1884,6 +2084,17 @@
         function setTab(t) {
             document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+
+            // Mobile bottom navigation active class updates
+            document.querySelectorAll('.mobile-nav-item').forEach(e => e.classList.remove('active'));
+            const mobileNavItem = document.querySelector(`.mobile-nav-item[onclick*="setTab('${t}')"]`);
+            if (mobileNavItem) {
+                mobileNavItem.classList.add('active');
+            } else if (t === 'same' || t === 'missing') {
+                const moreBtn = document.querySelector(`.mobile-nav-item[onclick*="toggleMobileMoreMenu"]`);
+                if (moreBtn) moreBtn.classList.add('active');
+            }
+
             const viewIdMap = {
                 'timeline': 'timeline-view',
                 'calendar': 'calendar-view',
@@ -1895,7 +2106,10 @@
             const viewId = viewIdMap[t] || `${t}-view`;
             const viewEl = document.getElementById(viewId);
             if (viewEl) viewEl.classList.add('active');
-            document.querySelector(`.tab[onclick="setTab('${t}')"]`).classList.add('active');
+            
+            const topTab = document.querySelector(`.tab[onclick="setTab('${t}')"]`);
+            if (topTab) topTab.classList.add('active');
+
             const fb = document.getElementById('filter-bar');
             fb.style.display = (t==='timeline'||t==='stats'||t==='same'||t==='calendar'||t==='upcoming')?'flex':'none';
 
