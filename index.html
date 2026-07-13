@@ -537,6 +537,7 @@
             position: relative; overflow: hidden;
         }
         canvas { display: block; }
+        .card canvas { flex-grow: 1; width: 100% !important; height: 100% !important; }
         #bubble-canvas, #heatmap-canvas, #scrubber-canvas { width: 100%; height: 100%; display: block; }
 
         /* Statistics Sub-tabs */
@@ -3266,6 +3267,7 @@
                 },
                 options:{
                     responsive:true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             display: type === 'doughnut',
