@@ -1000,6 +1000,181 @@
             font-size: 0.6875rem;
             color: var(--text-muted);
         }
+
+        /* ── Responsive styling (Mobile & Tablet) ── */
+        @media (max-width: 900px) {
+            /* 1. Header and Navigation */
+            nav {
+                flex-direction: column;
+                height: auto;
+                padding: 10px 1rem;
+                gap: 10px;
+                align-items: stretch;
+            }
+            nav .logo {
+                text-align: center;
+                justify-content: center;
+            }
+            nav .tabs {
+                width: 100%;
+                overflow-x: auto;
+                white-space: nowrap;
+                display: flex;
+                padding-bottom: 4px;
+                -webkit-overflow-scrolling: touch;
+                justify-content: flex-start;
+                gap: 4px;
+            }
+            nav .tabs::-webkit-scrollbar {
+                display: none; /* Hide scrollbars for a clean iOS app feel */
+            }
+            nav .tab {
+                padding: 6px 12px;
+                font-size: 0.8125rem;
+                flex-shrink: 0;
+            }
+            nav .nav-actions {
+                justify-content: center;
+                width: 100%;
+            }
+
+            /* 2. Filter Bar */
+            #filter-bar {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 8px 12px;
+                height: auto;
+            }
+            .search-wrap {
+                width: 100%;
+                max-width: none;
+            }
+            .filter-dropdown {
+                flex-grow: 1;
+            }
+            .filter-btn {
+                width: 100%;
+                box-sizing: border-box;
+                justify-content: space-between;
+            }
+            #count-display {
+                margin-left: auto;
+            }
+
+            /* 3. Upcoming Birthdays View */
+            #upcoming-layout {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+            #upcoming-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 1rem;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 8px;
+                overflow: visible;
+            }
+            #upcoming-sidebar h3 {
+                width: 100%;
+                margin-bottom: 2px;
+            }
+            #upcoming-sidebar .upcoming-kpi-card {
+                flex: 1 1 calc(50% - 8px);
+                box-sizing: border-box;
+                padding: 8px;
+            }
+            #upcoming-main {
+                padding: 1rem;
+                overflow-y: visible;
+            }
+
+            /* 4. Missing Data View */
+            #missing-layout {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+            #missing-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 1rem;
+                box-sizing: border-box;
+            }
+            #missing-main {
+                padding: 1rem;
+                overflow-y: visible;
+            }
+
+            /* 5. Statistics View layout fixes */
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .card-heatmap, .card-cloud {
+                grid-column: span 1 !important;
+            }
+
+            /* 6. Calendar View cell scaling on mobile */
+            #calendar-weekdays {
+                font-size: 0.6875rem;
+            }
+            .cal-cell {
+                padding: 4px;
+            }
+            .cal-date-num {
+                font-size: 0.6875rem;
+                width: 16px;
+                height: 16px;
+                margin-bottom: 2px;
+            }
+            .cal-avatar {
+                border-width: 1px;
+            }
+
+            /* 7. Modals mobile styling */
+            .modal {
+                width: 92%;
+                max-width: 440px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            .modal-top {
+                gap: 12px;
+            }
+            .modal-avatar {
+                width: 60px;
+                height: 60px;
+            }
+            .modal-name {
+                font-size: 1.15rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #upcoming-sidebar .upcoming-kpi-card {
+                flex: 1 1 100%;
+            }
+            #calendar-header {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                align-items: center;
+                padding: 8px;
+            }
+            #calendar-header h2 {
+                text-align: center;
+                width: 100%;
+            }
+            #calendar-header .cal-settings {
+                position: static;
+                justify-content: center;
+                width: 100%;
+            }
+            .cal-cell {
+                min-height: 52px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1894,12 +2069,16 @@
             if (fit) timeline.fit();
             timeline.redraw();
             const itemObjs = timeline.itemSet?.items ? Object.values(timeline.itemSet.items) : [];
-            const ready = itemObjs.length > 0 && itemObjs.some(item => item.displayed);
+            if (itemObjs.length === 0) {
+                drawScrubber();
+                return;
+            }
+            const ready = itemObjs.some(item => item.displayed);
             if (!ready && attempt < 15) {
                 setTimeout(() => layoutTimeline(fit, attempt + 1), 100);
                 return;
             }
-            if (!ready || itemObjs.length === 0) return;
+            if (!ready) return;
             repositionAllTimelineItems();
             requestAnimationFrame(() => repositionAllTimelineItems());
             drawScrubber();
@@ -2025,6 +2204,11 @@
 
         new ResizeObserver(() => drawScrubber()).observe(document.getElementById('scrubber-container'));
         new ResizeObserver(() => { if (timeline) scheduleLayoutTimeline(); }).observe(document.getElementById('timeline-wrapper'));
+        new ResizeObserver(() => {
+            if(document.getElementById('calendar-view').classList.contains('active')) {
+                renderCalendar();
+            }
+        }).observe(document.getElementById('calendar-grid'));
 
         const sCon=document.getElementById('scrubber-container'), sN=document.getElementById('scrubber-needle'), sD=document.getElementById('scrubber-date');
         let sDrag=false;
@@ -2643,8 +2827,9 @@
             const weekdaysContainer = document.getElementById('calendar-weekdays');
             if (weekdaysContainer) {
                 weekdaysContainer.innerHTML = '';
-                const daysMonFirst = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-                const daysSunFirst = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                const isSmallScreen = window.innerWidth < 480;
+                const daysMonFirst = isSmallScreen ? ["M", "T", "W", "T", "F", "S", "S"] : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+                const daysSunFirst = isSmallScreen ? ["S", "M", "T", "W", "T", "F", "S"] : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
                 const isMondayFirst = (calendarStartOfWeek === 'Monday');
                 const days = isMondayFirst ? daysMonFirst : daysSunFirst;
                 days.forEach(day => {
@@ -2715,11 +2900,12 @@
                     }
                 };
 
-                let photoSize = 42;
+                const isMobile = window.innerWidth < 768;
+                let photoSize = isMobile ? 30 : 42;
                 if (matches.length >= 5) {
-                    photoSize = 24;
+                    photoSize = isMobile ? 16 : 24;
                 } else if (matches.length >= 3) {
-                    photoSize = 32;
+                    photoSize = isMobile ? 22 : 32;
                 }
 
                 matches.forEach(c => {
