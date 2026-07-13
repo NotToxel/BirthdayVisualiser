@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BirthdayVisualiser v1.2.4</title>
+    <title>BirthdayVisualiser v1.2.5</title>
     <meta name="description" content="Visualise your contact birthdays through timelines, statistics, and insights.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -93,27 +93,39 @@
         #landing-screen {
             position: fixed; inset: 0; z-index: 5000;
             background: var(--bg);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: flex; flex-direction: column;
             transition: opacity 0.3s ease;
-            padding: 2rem;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         #landing-screen.hidden { opacity: 0; pointer-events: none; }
 
-        .landing-content {
+        .landing-hero {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             text-align: center;
-            max-width: 480px;
+            padding: 4rem 2rem 3rem 2rem;
+            min-height: 90vh;
+            position: relative;
+        }
+        .landing-content {
+            max-width: 520px;
             width: 100%;
         }
         .landing-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin: 0 0 0.5rem 0;
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin: 0 0 0.75rem 0;
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .landing-subtitle {
             color: var(--text-muted);
             margin: 0 0 2rem 0;
-            font-size: 0.9375rem;
+            font-size: 1.0625rem;
+            line-height: 1.6;
         }
 
         .drop-zone {
@@ -154,10 +166,290 @@
             display: none;
         }
 
+        .landing-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.25rem;
+            flex-wrap: wrap;
+        }
+        .demo-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            background: var(--primary-bg);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .demo-btn:hover {
+            background: var(--primary);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .landing-privacy {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--surface-2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
         .landing-format-hint {
             margin-top: 1.25rem;
             font-size: 0.75rem;
             color: var(--text-muted);
+        }
+
+        .landing-scroll-hint {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            animation: bounce-down 2s ease-in-out infinite;
+            opacity: 0.6;
+        }
+        @keyframes bounce-down {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(6px); }
+        }
+
+        /* Landing Sections */
+        .landing-section {
+            padding: 3rem 2rem;
+            max-width: 960px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .landing-section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 0 0 0.5rem 0;
+        }
+        .landing-section-desc {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin: 0 0 2rem 0;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: all var(--transition);
+        }
+        .feature-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+        .feature-card h3 {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+        }
+        .feature-card p {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Export Guide */
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        .export-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+        }
+        .export-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.75rem;
+        }
+        .export-card-header i {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+        .export-card-header h3 {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .export-card ol, .export-card p {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.6;
+        }
+        .export-card ol {
+            padding-left: 1.25rem;
+        }
+        .export-card a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .export-card a:hover {
+            text-decoration: underline;
+        }
+
+        /* Landing Footer */
+        .landing-footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+        }
+        .landing-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .landing-footer a:hover {
+            text-decoration: underline;
+        }
+        .landing-footer-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-decoration: none;
+            transition: all var(--transition);
+        }
+        .github-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+            text-decoration: none;
+        }
+
+        /* Build Info */
+        .build-info {
+            background: var(--surface-2);
+            border-top: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+        .build-info-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .build-info-label {
+            opacity: 0.7;
+        }
+        .build-info-value {
+            font-weight: 600;
+            color: var(--text);
+        }
+        .build-info-footer {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.6875rem;
+        }
+        .build-hash {
+            font-family: 'Courier New', monospace;
+            background: var(--surface);
+            padding: 1px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: all var(--transition);
+            position: relative;
+        }
+        .build-hash:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .build-hash-tooltip {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: var(--bg);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.625rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .build-hash-tooltip.visible {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .landing-hero { padding: 3rem 1.25rem 2rem; min-height: auto; }
+            .landing-title { font-size: 1.75rem; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .export-grid { grid-template-columns: 1fr; }
+            .landing-section { padding: 2rem 1.25rem; }
+            .landing-scroll-hint { display: none; }
+        }
+        @media (max-width: 480px) {
+            .features-grid { grid-template-columns: 1fr; }
         }
 
         /* ── Loading ── */
@@ -1545,22 +1837,151 @@
 
     <!-- Landing Screen -->
     <div id="landing-screen">
-        <button class="btn-icon" onclick="toggleDark()" style="position: absolute; top: 16px; right: 16px;" title="Toggle theme">
+        <button class="btn-icon" onclick="toggleDark()" style="position: fixed; top: 16px; right: 16px; z-index: 5001;" title="Toggle theme">
             <i class="fa-solid fa-moon" id="landing-theme-icon"></i>
         </button>
-        <div class="landing-content">
-            <h1 class="landing-title">BirthdayVisualiser <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 2px;">v1.2.4</span></h1>
-            <p class="landing-subtitle">Explore your contacts' birthdays through timelines, statistics, and insights.</p>
 
-            <label class="drop-zone" id="drop-zone">
-                <i class="fa-solid fa-arrow-up-from-bracket drop-zone-icon"></i>
-                <span class="drop-zone-text">Drop your contacts CSV here</span>
-                <span class="drop-zone-hint">or click to browse</span>
-                <span class="drop-zone-file" id="drop-zone-file"></span>
-                <input type="file" id="upload-input" accept=".csv">
-            </label>
+        <!-- Hero -->
+        <div class="landing-hero">
+            <div class="landing-content">
+                <h1 class="landing-title">BirthdayVisualiser</h1>
+                <p class="landing-subtitle">Explore your contacts' birthdays through interactive timelines, rich statistics, calendar views, and beautiful visualisations — all privately in your browser.</p>
 
-            <p class="landing-format-hint">Works with Google Contacts exports (CSV format)</p>
+                <label class="drop-zone" id="drop-zone">
+                    <i class="fa-solid fa-arrow-up-from-bracket drop-zone-icon"></i>
+                    <span class="drop-zone-text">Drop your contacts CSV or VCF here</span>
+                    <span class="drop-zone-hint">or click to browse</span>
+                    <span class="drop-zone-file" id="drop-zone-file"></span>
+                    <input type="file" id="upload-input" accept=".csv,.vcf,.vcard">
+                </label>
+
+                <div class="landing-actions">
+                    <button class="demo-btn" onclick="loadDemo()">
+                        <i class="fa-solid fa-play"></i> Try Demo
+                    </button>
+                    <p class="landing-format-hint" style="margin: 0;">Supports Google Contacts CSV &amp; vCard VCF</p>
+                </div>
+
+                <div class="landing-privacy">
+                    <i class="fa-solid fa-lock"></i> Your data never leaves your browser
+                </div>
+            </div>
+
+            <div class="landing-scroll-hint">
+                <span>Learn more</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="landing-section">
+            <h2 class="landing-section-title">What You Can Do</h2>
+            <p class="landing-section-desc">Discover insights about your contacts' birthdays you never knew existed.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🗓</span>
+                    <h3>Interactive Timeline</h3>
+                    <p>Visualise every birthday on a zoomable timeline. Hover for quick details, click to see full contact info.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📅</span>
+                    <h3>Calendar View</h3>
+                    <p>Monthly calendar with contact photos, birthday density heatmap, and a date selector to jump to any month.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📊</span>
+                    <h3>Rich Statistics</h3>
+                    <p>Charts for birth months, decades, generations, zodiac signs, seasons, weekdays, and birthstones.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔍</span>
+                    <h3>Smart Filters</h3>
+                    <p>Filter by contact groups, birth months, and name search — updates all views in real-time.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">☁️</span>
+                    <h3>Contact Cloud</h3>
+                    <p>Animated hexagonal bubble visualisation of all your contacts with smooth hover interactions.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔒</span>
+                    <h3>100% Private</h3>
+                    <p>Everything runs in your browser. No data is uploaded, stored, or shared with any server.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Guide -->
+        <div class="landing-section">
+            <h2 class="landing-section-title">How to Export Your Contacts</h2>
+            <p class="landing-section-desc">Export as CSV or VCF (vCard) from your contacts provider.</p>
+
+            <div class="export-grid">
+                <div class="export-card">
+                    <div class="export-card-header">
+                        <i class="fa-brands fa-google"></i>
+                        <h3>Google Contacts</h3>
+                    </div>
+                    <ol>
+                        <li>Go to <a href="https://contacts.google.com" target="_blank" rel="noopener">contacts.google.com</a></li>
+                        <li>Click <strong>Export</strong> in the left sidebar</li>
+                        <li>Choose <strong>Google CSV</strong> format</li>
+                        <li>Click <strong>Export</strong> to download</li>
+                    </ol>
+                    <p style="margin-top: 8px;"><a href="https://support.google.com/contacts/answer/7199294" target="_blank" rel="noopener">📖 Official Google guide →</a></p>
+                </div>
+
+                <div class="export-card">
+                    <div class="export-card-header">
+                        <i class="fa-brands fa-apple"></i>
+                        <h3>Apple Contacts (Mac)</h3>
+                    </div>
+                    <ol>
+                        <li>Open the <strong>Contacts</strong> app</li>
+                        <li>Select all contacts with <strong>⌘A</strong></li>
+                        <li>Go to <strong>File → Export → Export vCard…</strong></li>
+                        <li>Save the <code>.vcf</code> file</li>
+                    </ol>
+                    <p style="margin-top: 8px;"><a href="https://support.apple.com/en-gb/guide/contacts/adrbk1457/mac" target="_blank" rel="noopener">📖 Official Apple guide →</a></p>
+                </div>
+
+                <div class="export-card">
+                    <div class="export-card-header">
+                        <i class="fa-brands fa-apple"></i>
+                        <h3>Apple (iPhone / iPad)</h3>
+                    </div>
+                    <p>iOS doesn't have a built-in CSV export. You can:</p>
+                    <ol>
+                        <li>Visit <a href="https://www.icloud.com/contacts" target="_blank" rel="noopener">icloud.com/contacts</a></li>
+                        <li>Select contacts and export as <strong>vCard</strong></li>
+                    </ol>
+                    <p style="margin-top: 4px;">Or share individual contacts as VCF files from the Contacts app.</p>
+                </div>
+
+                <div class="export-card">
+                    <div class="export-card-header">
+                        <i class="fa-solid fa-address-book"></i>
+                        <h3>Outlook &amp; Others</h3>
+                    </div>
+                    <p>Most providers support CSV or vCard export:</p>
+                    <ol>
+                        <li><strong>Outlook</strong>: Visit <a href="https://outlook.live.com/people/" target="_blank" rel="noopener">Outlook People</a> → Manage → Export</li>
+                        <li><strong>Yahoo, Samsung, etc.</strong>: Check your provider's settings for export options</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="landing-footer">
+            <div class="landing-footer-links">
+                <a href="https://github.com/NotToxel/BirthdayVisualiser" target="_blank" rel="noopener" class="github-link">
+                    <i class="fa-brands fa-github"></i> View on GitHub
+                </a>
+            </div>
+            <p>v1.2.5 · Licensed under <a href="https://github.com/NotToxel/BirthdayVisualiser/blob/main/LICENSE" target="_blank" rel="noopener">AGPL-3.0</a></p>
+            <p>Made with ❤️ by <a href="https://github.com/NotToxel" target="_blank" rel="noopener">NotToxel</a></p>
         </div>
     </div>
 
@@ -1573,7 +1994,7 @@
     <!-- App -->
     <div id="app-container">
         <nav>
-            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v1.2.4</span></div>
+            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v1.2.5</span></div>
             <div class="tabs">
                 <div class="tab active" onclick="setTab('timeline')">Timeline</div>
                 <div class="tab" onclick="setTab('calendar')">Calendar</div>
@@ -1907,6 +2328,31 @@
                 </div>
 
             </div>
+            <div class="build-info" id="build-info" style="display: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg);">
+                <div class="build-info-line">
+                    <span class="build-info-label">Report generated at:</span>
+                    <span class="build-info-value" id="build-generated-at">—</span>
+                </div>
+                <div class="build-info-line">
+                    <span class="build-info-label">Data source:</span>
+                    <span class="build-info-value" id="build-data-source">—</span>
+                </div>
+                <div class="build-info-line">
+                    <span class="build-info-label">Build version:</span>
+                    <span class="build-info-value">v1.2.5</span>
+                </div>
+                <div class="build-info-footer">
+                    <span>Generated with BirthdayVisualiser</span>
+                    <span>•</span>
+                    <a href="https://github.com/NotToxel/BirthdayVisualiser" target="_blank" rel="noopener" style="color: var(--text-muted); text-decoration: none;">
+                        <i class="fa-brands fa-github"></i>
+                    </a>
+                    <span>•</span>
+                    <span class="build-hash" id="build-hash" onclick="copyBuildHash()" title="Click to copy">
+                        <span class="build-hash-tooltip" id="build-hash-tooltip">Copied!</span>
+                    </span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1923,6 +2369,8 @@
         let calendarMonth = new Date().getMonth() + 1;
         let calendarYear = new Date().getFullYear();
         let calendarStartOfWeek = localStorage.getItem('calendarStartOfWeek') || 'Monday';
+        let reportGeneratedAt = null;
+        let reportSource = null;
 
         // --- Init ---
         if (localStorage.getItem('theme') === 'dark') {
@@ -1990,10 +2438,11 @@
             dropZone.classList.remove('dragover');
             const file = e.dataTransfer.files[0];
             if (file) {
-                if (file.name.toLowerCase().endsWith('.csv')) {
+                const ext = file.name.toLowerCase();
+                if (ext.endsWith('.csv') || ext.endsWith('.vcf') || ext.endsWith('.vcard')) {
                     processUploadedFile(file);
                 } else {
-                    showUploadError("Invalid file type. Please upload a CSV file (.csv).");
+                    showUploadError("Invalid file type. Please upload a CSV file (.csv) or VCF file (.vcf, .vcard).");
                 }
             }
         });
@@ -2009,9 +2458,12 @@
                         const item = items[i];
                         if (item.kind === 'file') {
                             const file = item.getAsFile();
-                            if (file && file.name.toLowerCase().endsWith('.csv')) {
-                                processUploadedFile(file);
-                                return;
+                            if (file) {
+                                const ext = file.name.toLowerCase();
+                                if (ext.endsWith('.csv') || ext.endsWith('.vcf') || ext.endsWith('.vcard')) {
+                                    processUploadedFile(file);
+                                    return;
+                                }
                             }
                         }
                     }
@@ -2051,37 +2503,253 @@
             document.getElementById('landing-screen').classList.add('hidden');
             document.getElementById('loading').style.display = 'flex';
 
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: (res) => {
-                    validateAndProcessData(res.data, file.name);
-                },
-                error: (err) => {
-                    showUploadError(`Failed to parse CSV file: ${err.message || err}`);
-                }
-            });
+            const ext = file.name.toLowerCase();
+            if (ext.endsWith('.vcf') || ext.endsWith('.vcard')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    setTimeout(() => {
+                        try {
+                            const rows = parseVCF(e.target.result);
+                            validateAndProcessData(rows, file.name);
+                        } catch (err) {
+                            showUploadError(`Failed to parse VCF file: ${err.message || err}`);
+                        }
+                    }, 100);
+                };
+                reader.onerror = (err) => {
+                    showUploadError(`Failed to read file: ${err}`);
+                };
+                reader.readAsText(file);
+            } else {
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (res) => {
+                        validateAndProcessData(res.data, file.name);
+                    },
+                    error: (err) => {
+                        showUploadError(`Failed to parse CSV file: ${err.message || err}`);
+                    }
+                });
+            }
         }
 
         function processPastedText(text) {
             const fileLabel = document.getElementById('drop-zone-file');
-            fileLabel.textContent = "Pasted CSV text data";
+            const trimmed = text.trim();
+            if (trimmed.toUpperCase().startsWith("BEGIN:VCARD")) {
+                fileLabel.textContent = "Pasted VCF text data";
+                fileLabel.style.display = 'block';
+                fileLabel.style.color = '';
+
+                document.getElementById('loading-text').textContent = "Processing pasted VCF data…";
+                document.getElementById('landing-screen').classList.add('hidden');
+                document.getElementById('loading').style.display = 'flex';
+
+                setTimeout(() => {
+                    try {
+                        const rows = parseVCF(text);
+                        validateAndProcessData(rows, "Pasted VCF Content");
+                    } catch (err) {
+                        showUploadError(`Failed to parse pasted VCF content: ${err.message || err}`);
+                    }
+                }, 100);
+            } else {
+                fileLabel.textContent = "Pasted CSV text data";
+                fileLabel.style.display = 'block';
+                fileLabel.style.color = '';
+
+                document.getElementById('loading-text').textContent = "Processing pasted CSV data…";
+                document.getElementById('landing-screen').classList.add('hidden');
+                document.getElementById('loading').style.display = 'flex';
+
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (res) => {
+                        validateAndProcessData(res.data, "Pasted Content");
+                    },
+                    error: (err) => {
+                        showUploadError(`Failed to parse pasted content: ${err.message || err}`);
+                    }
+                });
+            }
+        }
+
+        async function loadDemo() {
+            const fileLabel = document.getElementById('drop-zone-file');
+            fileLabel.textContent = "example-contacts.csv";
             fileLabel.style.display = 'block';
             fileLabel.style.color = '';
 
-            document.getElementById('loading-text').textContent = "Processing pasted CSV data…";
+            document.getElementById('loading-text').textContent = 'Loading demo data…';
             document.getElementById('landing-screen').classList.add('hidden');
             document.getElementById('loading').style.display = 'flex';
+            try {
+                const resp = await fetch('example-contacts.csv');
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const text = await resp.text();
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (res) => {
+                        validateAndProcessData(res.data, 'Demo Data (example-contacts.csv)');
+                    },
+                    error: (err) => {
+                        showUploadError('Failed to parse demo CSV: ' + (err.message || err));
+                    }
+                });
+            } catch(e) {
+                showUploadError('Failed to fetch demo data: ' + e.message + '. Please try uploading a file instead.');
+            }
+        }
 
-            Papa.parse(text, {
-                header: true,
-                skipEmptyLines: true,
-                complete: (res) => {
-                    validateAndProcessData(res.data, "Pasted Content");
-                },
-                error: (err) => {
-                    showUploadError(`Failed to parse pasted content: ${err.message || err}`);
+        function parseVCF(text) {
+            const unfolded = text.replace(/\r?\n[ \t]/g, '');
+            const lines = unfolded.split(/\r?\n/);
+            const contacts = [];
+            let currentContact = null;
+
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+
+                if (line.toUpperCase() === "BEGIN:VCARD") {
+                    currentContact = {
+                        name: "",
+                        birthday: "",
+                        tags: [],
+                        email: "",
+                        phone: "",
+                        photo: ""
+                    };
+                    continue;
                 }
+
+                if (line.toUpperCase() === "END:VCARD") {
+                    if (currentContact) {
+                        if (!currentContact.name && currentContact.n) {
+                            const parts = currentContact.n.split(';');
+                            const family = parts[0] || '';
+                            const given = parts[1] || '';
+                            const middle = parts[2] || '';
+                            currentContact.name = [given, middle, family].filter(Boolean).join(' ').trim();
+                        }
+                        contacts.push({
+                            "Name": currentContact.name || "Unnamed",
+                            "Birthday": currentContact.birthday,
+                            "Group 1 - Name": currentContact.tags.join(" ::: "),
+                            "E-mail 1 - Value": currentContact.email,
+                            "Phone 1 - Value": currentContact.phone,
+                            "Photo": currentContact.photo
+                        });
+                        currentContact = null;
+                    }
+                    continue;
+                }
+
+                if (!currentContact) continue;
+
+                const colonIdx = line.indexOf(':');
+                if (colonIdx === -1) continue;
+
+                const keyPart = line.substring(0, colonIdx).trim().toUpperCase();
+                const value = line.substring(colonIdx + 1).trim();
+
+                if (keyPart.startsWith("FN")) {
+                    currentContact.name = value;
+                } else if (keyPart.startsWith("N")) {
+                    currentContact.n = value;
+                } else if (keyPart.startsWith("BDAY")) {
+                    currentContact.birthday = normalizeVcfBirthday(value);
+                } else if (keyPart.startsWith("CATEGORIES") || keyPart.startsWith("X-ADDRESSBOOKSERVER-GROUP")) {
+                    const categories = value.split(',').map(c => c.trim()).filter(Boolean);
+                    currentContact.tags = currentContact.tags.concat(categories);
+                } else if (keyPart.startsWith("EMAIL")) {
+                    if (!currentContact.email) {
+                        currentContact.email = value;
+                    }
+                } else if (keyPart.startsWith("TEL")) {
+                    if (!currentContact.phone) {
+                        currentContact.phone = value;
+                    }
+                } else if (keyPart.startsWith("PHOTO")) {
+                    if (keyPart.includes("ENCODING=B") || keyPart.includes("BASE64")) {
+                        const mimeType = keyPart.includes("PNG") ? "image/png" : "image/jpeg";
+                        currentContact.photo = `data:${mimeType};base64,${value}`;
+                    } else if (value.toLowerCase().startsWith("http") || value.startsWith("data:")) {
+                        currentContact.photo = value;
+                    }
+                }
+            }
+            return contacts;
+        }
+
+        function normalizeVcfBirthday(val) {
+            let clean = val.replace(/VALUE=date:?/gi, '').replace(/:/g, '').trim();
+            clean = clean.split('T')[0];
+            
+            if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+                return clean;
+            }
+            if (/^\d{8}$/.test(clean)) {
+                return `${clean.substring(0,4)}-${clean.substring(4,6)}-${clean.substring(6,8)}`;
+            }
+            if (/^--\d{2}-\d{2}$/.test(clean)) {
+                return clean;
+            }
+            if (/^--\d{4}$/.test(clean)) {
+                return `--${clean.substring(2,4)}-${clean.substring(4,6)}`;
+            }
+            let replaced = clean.replace(/[\/\.]/g, '-');
+            if (/^\d{4}-\d{2}-\d{2}$/.test(replaced)) {
+                return replaced;
+            }
+            if (/^--\d{2}-\d{2}$/.test(replaced)) {
+                return replaced;
+            }
+            return val;
+        }
+
+        function updateBuildInfoUI() {
+            const buildInfoDiv = document.getElementById('build-info');
+            if (buildInfoDiv) {
+                buildInfoDiv.style.display = 'block';
+            }
+            const genAtSpan = document.getElementById('build-generated-at');
+            if (genAtSpan && reportGeneratedAt) {
+                genAtSpan.textContent = reportGeneratedAt;
+            }
+            const sourceSpan = document.getElementById('build-data-source');
+            if (sourceSpan && reportSource) {
+                sourceSpan.textContent = reportSource;
+            }
+            const textToHash = document.documentElement.outerHTML || "";
+            let hash = 0;
+            for (let i = 0; i < textToHash.length; i++) {
+                hash = (hash * 31 + textToHash.charCodeAt(i)) | 0;
+            }
+            const hashHex = Math.abs(hash).toString(16).substring(0, 7).padStart(7, '0');
+            const hashSpan = document.getElementById('build-hash');
+            if (hashSpan) {
+                hashSpan.innerHTML = `build ${hashHex}<span class="build-hash-tooltip" id="build-hash-tooltip">Copied!</span>`;
+            }
+        }
+
+        function copyBuildHash() {
+            const hashSpan = document.getElementById('build-hash');
+            if (!hashSpan) return;
+            const text = (hashSpan.textContent || "").replace('build', '').replace('Copied!', '').trim();
+            navigator.clipboard.writeText(text).then(() => {
+                const tooltip = document.getElementById('build-hash-tooltip');
+                if (tooltip) {
+                    tooltip.classList.add('visible');
+                    setTimeout(() => {
+                        tooltip.classList.remove('visible');
+                    }, 1500);
+                }
+            }).catch(err => {
+                console.error("Could not copy build hash: ", err);
             });
         }
 
@@ -2118,6 +2786,9 @@
                     showUploadError(`Invalid contact file format: No 'Birthday' or date of birth column was found in "${sourceName}".`);
                     return;
                 }
+
+                reportGeneratedAt = new Date().toISOString();
+                reportSource = sourceName;
 
                 // Successfully validated contacts data format, call main process function
                 processData(rows);
@@ -2245,6 +2916,7 @@
             buildFilters(Array.from(tags).sort());
             document.getElementById('loading').style.display='none';
             document.getElementById('app-container').style.display='flex';
+            updateBuildInfoUI();
             requestAnimationFrame(() => {
                 initTimeline();
                 renderMissing();
