@@ -12,8 +12,21 @@
 
 ## 📸 Screenshots
 
-<!-- Add screenshots here -->
-*Screenshots coming soon*
+### Landing Page
+![Landing Page](screenshot-landing.png)
+
+### Timeline View
+![Timeline View](screenshot-timeline.png)
+
+### Calendar View
+![Calendar View](screenshot-calendar.png)
+
+### Statistics Overview
+![Statistics](screenshot-stats.png)
+
+### Real-Time Filtering
+![Filtering](screenshot-filtered.png)
+
 
 ---
 
