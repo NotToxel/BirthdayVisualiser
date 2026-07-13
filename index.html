@@ -2685,7 +2685,7 @@
 
             // Generate concentric hexagonal grid coordinates
             const coords = [];
-            const packMultiplier = 0.82; // 18% overlap factor for clean stacks
+            const packMultiplier = 1.08; // No overlap, clean padding gap
             const spacingX = baseR * 2 * packMultiplier;
             const spacingY = baseR * Math.sqrt(3) * packMultiplier;
             
@@ -2785,9 +2785,9 @@
                         const dx = b.origTx - hoveredBubble.origTx;
                         const dy = b.origTy - hoveredBubble.origTy;
                         const dist = Math.sqrt(dx*dx + dy*dy) || 0.001;
-                        const pushThreshold = hoveredBubble.r * 2.4;
+                        const pushThreshold = hoveredBubble.r * 2.8;
                         if (dist < pushThreshold) {
-                            const force = (1.0 - dist / pushThreshold) * (hoveredBubble.r * 0.45);
+                            const force = (1.0 - dist / pushThreshold) * (hoveredBubble.r * 0.85);
                             tx += (dx / dist) * force;
                             ty += (dy / dist) * force;
                         }
