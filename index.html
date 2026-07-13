@@ -2668,15 +2668,14 @@
 
             const displayed = filteredContacts
                 .slice()
-                .sort((a, b) => a._daysUntil - b._daysUntil)
-                .slice(0, 120);
+                .sort((a, b) => a._daysUntil - b._daysUntil);
 
             const count = displayed.length; if(!count){bubbles=[]; bCtx.clearRect(0,0,r.width,r.height); return;}
 
             const area = r.width * r.height;
             let pxPerItem = area / count;
             let baseR = Math.sqrt(pxPerItem / Math.PI) * 0.65;
-            baseR = Math.min(Math.max(baseR, 12), 65);
+            baseR = Math.min(Math.max(baseR, 6), 65);
 
             const centerX = r.width / 2;
             const centerY = r.height / 2;
@@ -2687,9 +2686,9 @@
             const spacingX = baseR * 2 * packMultiplier;
             const spacingY = baseR * Math.sqrt(3) * packMultiplier;
             
-            // Loop wide enough to populate viewports of any aspect ratio
-            for (let row = -15; row <= 15; row++) {
-                for (let col = -15; col <= 15; col++) {
+            // Loop wide enough to populate viewports of any aspect ratio for large lists
+            for (let row = -30; row <= 30; row++) {
+                for (let col = -30; col <= 30; col++) {
                     let x = col * spacingX;
                     if (Math.abs(row) % 2 === 1) {
                         x += spacingX / 2;
