@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BirthdayVisualiser v1.2.2</title>
+    <title>BirthdayVisualiser v1.2.3</title>
     <meta name="description" content="Visualise your contact birthdays through timelines, statistics, and insights.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -504,10 +504,13 @@
         .vis-item { border-color: transparent !important; background: transparent !important; box-shadow: none !important; }
         .vis-item.vis-selected { background: transparent !important; }
         .timeline-today-needle-bg {
-            background-color: rgba(244, 63, 94, 0.04) !important;
-            border-left: 1.5px dashed #f43f5e !important;
+            background-color: rgba(244, 63, 94, 0.015) !important;
+            border-left: 1px dashed rgba(244, 63, 94, 0.35) !important;
             pointer-events: none;
             z-index: 0 !important;
+        }
+        .timeline-hide-needles .timeline-today-needle-bg {
+            display: none !important;
         }
 
         /* ── Stats ── */
@@ -545,22 +548,36 @@
         canvas { display: block; }
         #bubble-canvas, #heatmap-canvas, #scrubber-canvas { width: 100%; height: 100%; display: block; }
 
-        /* Statistics Sub-tabs */
+        /* Statistics Sub-tabs (Segmented Pill Style) */
         .sub-tabs {
-            display: flex; gap: 4px;
-            margin-bottom: 1.25rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 8px;
-            max-width: 96%; margin-left: auto; margin-right: auto;
+            display: flex;
+            gap: 4px;
+            background: var(--surface-2);
+            padding: 4px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            margin: 0 auto 1.5rem auto;
+            max-width: fit-content;
+            box-shadow: var(--shadow-sm);
         }
         .sub-tab {
-            padding: 6px 12px; border-radius: 6px;
-            cursor: pointer; font-size: 0.8125rem;
-            font-weight: 500; color: var(--text-muted);
-            transition: color var(--transition), background var(--transition);
+            padding: 6px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all var(--transition);
+            text-align: center;
         }
-        .sub-tab:hover { color: var(--text); }
-        .sub-tab.active { color: var(--primary); background: var(--primary-bg); }
+        .sub-tab:hover {
+            color: var(--text);
+        }
+        .sub-tab.active {
+            color: #ffffff !important;
+            background: var(--primary) !important;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+        }
 
         .sub-view { display: none; }
         .sub-view.active { display: block; }
@@ -1524,7 +1541,7 @@
             <i class="fa-solid fa-moon" id="landing-theme-icon"></i>
         </button>
         <div class="landing-content">
-            <h1 class="landing-title">BirthdayVisualiser <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 2px;">v1.2.2</span></h1>
+            <h1 class="landing-title">BirthdayVisualiser <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-muted); vertical-align: middle; margin-left: 2px;">v1.2.3</span></h1>
             <p class="landing-subtitle">Explore your contacts' birthdays through timelines, statistics, and insights.</p>
 
             <label class="drop-zone" id="drop-zone">
@@ -1548,7 +1565,7 @@
     <!-- App -->
     <div id="app-container">
         <nav>
-            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v1.2.2</span></div>
+            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v1.2.3</span></div>
             <div class="tabs">
                 <div class="tab active" onclick="setTab('timeline')">Timeline</div>
                 <div class="tab" onclick="setTab('calendar')">Calendar</div>
@@ -2475,7 +2492,8 @@
             const l = document.getElementById('tag-list'); l.innerHTML='';
             tags.forEach(t=>{
                 const d=document.createElement('div'); d.className='check-item';
-                d.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><input type="checkbox"><span>${t}</span></div><small id="cnt-${t}"></small>`;
+                const badgeStyle = getTagBadgeStyle(t);
+                d.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><input type="checkbox"><span class="tag" style="${badgeStyle} padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">${t}</span></div><small id="cnt-${t}"></small>`;
                 d.onclick=()=>{ const cb=d.querySelector('input'); cb.checked=!cb.checked; if(cb.checked)activeTags.add(t); else activeTags.delete(t); applyFilters(); updateBadges(); };
                 l.appendChild(d);
             });
@@ -2484,7 +2502,8 @@
             tags.forEach(t=>{
                 const c = [...missingContacts, ...yearlessContacts].filter(co=>co.tags.includes(t)).length;
                 const d=document.createElement('div'); d.className=`check-item ${c===0?'disabled':''}`;
-                d.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><input type="checkbox" ${c===0?'disabled':''}><span>${t}</span></div><small>(${c})</small>`;
+                const badgeStyle = getTagBadgeStyle(t);
+                d.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><input type="checkbox" ${c===0?'disabled':''}><span class="tag" style="${badgeStyle} padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; opacity: ${c===0?0.5:1}">${t}</span></div><small>(${c})</small>`;
                 d.onclick=()=>{
                     if(c===0)return;
                     const cb=d.querySelector('input'); cb.checked=!cb.checked;
@@ -2533,6 +2552,7 @@
             activeTags.forEach(t => {
                 const chip = document.createElement('div');
                 chip.className = 'filter-chip tag-chip';
+                chip.style = getTagBadgeStyle(t) + " border-radius: 20px; font-weight: 600;";
                 chip.innerHTML = `<i class="fa-solid fa-tag" style="font-size:0.6875rem;opacity:0.8;"></i> <span>${t}</span> <i class="fa-solid fa-xmark" style="margin-left: 4px; opacity: 0.6;"></i>`;
                 chip.onclick = () => removeTag(t);
                 c.appendChild(chip);
@@ -2559,7 +2579,14 @@
         function updateMissingBadges() {
             const c=document.getElementById('missing-active-badges'); if(!c) return;
             c.innerHTML='';
-            missingActiveTags.forEach(t=>c.innerHTML+=`<div class="filter-chip">${t} <i class="fa-solid fa-xmark" onclick="removeMissingTag('${t}')"></i></div>`);
+            missingActiveTags.forEach(t => {
+                const chip = document.createElement('div');
+                chip.className = 'filter-chip';
+                chip.style = getTagBadgeStyle(t) + " border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin-right: 6px; cursor: pointer;";
+                chip.innerHTML = `${t} <i class="fa-solid fa-xmark" style="opacity: 0.6;"></i>`;
+                chip.onclick = () => removeMissingTag(t);
+                c.appendChild(chip);
+            });
         }
         function removeTag(t){ activeTags.delete(t); applyFilters(); updateBadges(); document.querySelectorAll('#tag-list input').forEach(i=>{if(i.nextElementSibling.innerText==t)i.checked=false}); }
         function removeMonth(m){ activeMonths.delete(m); applyFilters(); updateBadges(); document.getElementById(`btn-month-${m}`).classList.remove('selected'); }
@@ -2633,7 +2660,10 @@
                 zoomMin: 1000*60*60*24*30, zoomMax: 1000*60*60*24*365*10,
                 showCurrentTime: false, verticalScroll: true, zoomKey: 'ctrlKey', margin:{item:15},
                 autoResize: true,
-                template: (item) => `<div class="contact-node"><img width="48" height="48" src="${item.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(item.name)}" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}'"></div>`
+                template: (item) => {
+                    if (item.type === 'background') return '';
+                    return `<div class="contact-node"><img width="48" height="48" src="${item.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(item.name)}" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}'"></div>`;
+                }
             });
 
             timeline.on('itemover', p => { const c=filteredContacts.find(x=>x.id==p.item); if(c){ const h=document.getElementById('hover-card'); h.style.display='block'; h.style.left=p.event.clientX+15+'px'; h.style.top=p.event.clientY+15+'px'; document.getElementById('hc-name').innerText=c.name; document.getElementById('hc-date').innerText=`${MONTHS[c.m-1]} ${c.d}, ${c.hasYear?c.y:''}`; } });
@@ -2858,6 +2888,16 @@
 
             const range = timeline.getWindow();
             if(!range || !range.start || !range.end) { updatingFromTimeline = false; return; }
+
+            const diffMs = range.end.getTime() - range.start.getTime();
+            const visContainer = document.getElementById('timeline-vis');
+            if (visContainer) {
+                if (diffMs > 1.2 * 365 * 24 * 60 * 60 * 1000) {
+                    visContainer.classList.add('timeline-hide-needles');
+                } else {
+                    visContainer.classList.remove('timeline-hide-needles');
+                }
+            }
 
             const centerDate = new Date((range.start.getTime() + range.end.getTime()) / 2);
             const centerYear = centerDate.getFullYear();
@@ -3407,7 +3447,19 @@
                             ticks: { color: textColor, font: { family: "'Outfit', 'Inter', sans-serif", size: 11 }, precision: 0 }
                         }
                     },
-                    onClick:(e,el)=>{if(el.length)showListModal(l[el[0].index],t)}
+                    onClick:(e,el)=>{
+                        if(el.length) {
+                            showListModal(l[el[0].index],t);
+                        } else {
+                            const chart = chartInstances[id];
+                            if(chart && chart.scales && chart.scales.x) {
+                                const index = Math.round(chart.scales.x.getValueForPixel(e.x));
+                                if(index >= 0 && index < l.length) {
+                                    showListModal(l[index], t);
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -3930,7 +3982,23 @@
                 }
                 const daysUntil = daysUntilBirthday(c.m, c.d);
                 const countdownText = daysUntil === 0 ? "Today!" : daysUntil === 1 ? "Tomorrow" : `${daysUntil} days`;
-                badgesHtml += `<span class="modal-badge">${daysUntil === 0 ? '🎂 ' : ''}${countdownText}</span>`;
+                let countdownStyle = "font-weight:600;";
+                if (daysUntil === 0) {
+                    countdownStyle += "background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; border: 1px solid rgba(239, 68, 68, 0.25) !important;";
+                } else if (daysUntil === 1) {
+                    countdownStyle += "background: rgba(249, 115, 22, 0.15) !important; color: #f97316 !important; border: 1px solid rgba(249, 115, 22, 0.25) !important;";
+                } else if (daysUntil <= 3) {
+                    countdownStyle += "background: rgba(245, 158, 11, 0.15) !important; color: #f59e0b !important; border: 1px solid rgba(245, 158, 11, 0.25) !important;";
+                } else if (daysUntil <= 7) {
+                    countdownStyle += "background: rgba(132, 204, 22, 0.15) !important; color: #84cc16 !important; border: 1px solid rgba(132, 204, 22, 0.25) !important;";
+                } else if (daysUntil <= 30) {
+                    countdownStyle += "background: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.25) !important;";
+                } else if (daysUntil <= 60) {
+                    countdownStyle += "background: rgba(59, 130, 246, 0.15) !important; color: #3b82f6 !important; border: 1px solid rgba(59, 130, 246, 0.25) !important;";
+                } else {
+                    countdownStyle += "background: var(--surface-2); color: var(--text-muted);";
+                }
+                badgesHtml += `<span class="modal-badge" style="${countdownStyle}">${daysUntil === 0 ? '🎂 ' : ''}${countdownText}</span>`;
             } else if (showChineseZodiac && c.hasYear) {
                 const cName = getChineseZodiac(c.y);
                 const cEmoji = getChineseZodiacEmoji(cName);
@@ -3938,7 +4006,22 @@
             }
             if (c.hasYear) {
                 const gen = getGeneration(c.y);
-                badgesHtml += `<span class="modal-badge">${gen}</span>`;
+                let genStyle = "";
+                let genIcon = '<i class="fa-solid fa-hourglass-half" style="font-size:0.7rem; margin-right: 4px;"></i> ';
+                if (gen === "Gen Alpha") {
+                    genStyle = "background: rgba(6, 182, 212, 0.1) !important; color: #06b6d4 !important; border: 1.5px solid rgba(6, 182, 212, 0.5) !important;";
+                } else if (gen === "Gen Z") {
+                    genStyle = "background: rgba(139, 92, 246, 0.1) !important; color: #8b5cf6 !important; border: 1.5px solid rgba(139, 92, 246, 0.5) !important;";
+                } else if (gen === "Millennials") {
+                    genStyle = "background: rgba(236, 72, 153, 0.1) !important; color: #ec4899 !important; border: 1.5px solid rgba(236, 72, 153, 0.5) !important;";
+                } else if (gen === "Gen X") {
+                    genStyle = "background: rgba(249, 115, 22, 0.1) !important; color: #f97316 !important; border: 1.5px solid rgba(249, 115, 22, 0.5) !important;";
+                } else if (gen === "Boomers") {
+                    genStyle = "background: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; border: 1.5px solid rgba(16, 185, 129, 0.5) !important;";
+                } else {
+                    genStyle = "background: rgba(100, 116, 139, 0.1) !important; color: #64748b !important; border: 1.5px solid rgba(100, 116, 139, 0.5) !important;";
+                }
+                badgesHtml += `<span class="modal-badge" style="${genStyle}">${genIcon}${gen}</span>`;
             }
             document.getElementById('m-badges').innerHTML = badgesHtml;
 
