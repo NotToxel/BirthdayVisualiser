@@ -10,36 +10,46 @@
 
 ---
 
-## 📸 Screenshots
-
-| Feature View / Tab | Light Mode (Desktop) | Dark Mode (Desktop) | Mobile View |
-| :--- | :--- | :--- | :--- |
-| **Landing Screen** | ![Landing Page Light](screenshot-landing.png) | ![Landing Page Dark](screenshot-landing-dark.png) | ![Landing Mobile](screenshot-mobile-landing.png) |
-| **Timeline View** | ![Timeline Light](screenshot-timeline.png) | — | ![Timeline Mobile](screenshot-mobile-timeline.png) |
-| **Calendar View** | ![Calendar Light](screenshot-calendar.png) | ![Calendar Dark](screenshot-calendar-dark.png) | ![Calendar Mobile](screenshot-mobile-calendar.png) |
-| **Statistics & Charts** | ![Stats Light](screenshot-stats.png) | ![Stats Dark](screenshot-stats-dark.png) | — |
-| **Contact Cloud** | ![Cloud](screenshot-cloud.png) | — | — |
-| **Same Birthday List** | ![Same Birthday](screenshot-same.png) | — | — |
-| **Missing Data Audit** | ![Missing Data](screenshot-missing.png) | — | — |
-| **Name Search Filter** | ![Name Search Filter](screenshot-filtered.png) | — | — |
-| **Tags Filter Dropdown** | ![Tags Filter](screenshot-filter-tags.png) | — | — |
-| **Months Filter Dropdown** | ![Months Filter](screenshot-filter-months.png) | — | — |
-
-
----
-
 ## ✨ Features
 
-- **🗓 Interactive Timeline** — Zoomable vis.js timeline showing every contact's birthday, with hover cards and click-to-detail
-- **📅 Calendar View** — Monthly calendar with birthday density, contact photos, mouse wheel navigation, and a date selector with heatmap preview
-- **📊 Rich Statistics** — Charts for birth months, decades, years, weekdays, seasons, zodiac signs, generations, and birthstones
-- **☁️ Contact Cloud** — Animated hexagonal honeycomb bubble visualisation of all contacts
-- **🔍 Smart Filters** — Filter by tags, months, and name search in real-time across all views
-- **⏰ Upcoming Birthdays** — Countdown list with colour-scaled urgency indicators and busiest week KPI
-- **👥 Same Birthday** — Discover which contacts share the same birthday
-- **📋 Missing Data** — Identify contacts missing birthday information
-- **🌙 Dark Mode** — Full dark/light theme toggle
-- **📱 Mobile Responsive** — Optimised layouts with bottom navigation for mobile devices
+- **🗓 Interactive Timeline** — Zoomable vis.js timeline showing every contact's birthday, with hover cards and click-to-detail.
+  
+  | View | Light Mode | Dark Mode |
+  | :--- | :---: | :---: |
+  | **Desktop** | <img src="screenshots/screenshot-timeline.png" width="450"> | <img src="screenshots/screenshot-timeline-dark.png" width="450"> |
+  | **Mobile** | <img src="screenshots/screenshot-mobile-timeline.png" width="160"> | <img src="screenshots/screenshot-mobile-timeline-dark.png" width="160"> |
+
+- **📅 Calendar View** — Monthly calendar with birthday density, contact photos, mouse wheel navigation, and a date selector with heatmap preview.
+  
+  | View | Light Mode | Dark Mode |
+  | :--- | :---: | :---: |
+  | **Desktop** | <img src="screenshots/screenshot-calendar.png" width="450"> | <img src="screenshots/screenshot-calendar-dark.png" width="450"> |
+  | **Mobile** | <img src="screenshots/screenshot-mobile-calendar.png" width="160"> | <img src="screenshots/screenshot-mobile-calendar-dark.png" width="160"> |
+
+- **📊 Rich Statistics & ☁️ Contact Cloud** — Comprehensive charts for birth months, decades, years, weekdays, etc. and animated hexagonal honeycomb bubble visualization.
+  
+  | Statistics Dashboard | Contact Cloud |
+  | :---: | :---: |
+  | <img src="screenshots/screenshot-stats.png" width="400"> | <img src="screenshots/screenshot-cloud.png" width="400"> |
+
+- **🔍 Smart Filters** — Filter by tags, months, and name search in real-time across all views.
+  
+  | Active Name Search Filter | Tags Filter Dropdown |
+  | :---: | :---: |
+  | <img src="screenshots/screenshot-filtered.png" width="400"> | <img src="screenshots/screenshot-filter-tags.png" width="400"> |
+
+- **⏰ Upcoming Birthdays & 👥 Same Birthday** — Countdown list with color-scaled urgency indicators and busiest week KPI, plus a view to discover contacts sharing the same birthday.
+  
+  | Upcoming Birthdays | Same Birthday |
+  | :---: | :---: |
+  | <img src="screenshots/screenshot-upcoming.png" width="400"> | <img src="screenshots/screenshot-same.png" width="400"> |
+
+- **📋 Missing Data Audit** — Identify contacts missing birthday information to keep your contact list clean.
+  
+  <img src="screenshots/screenshot-missing.png" width="600">
+
+- **🌙 Dark Mode** — Full dark/light theme toggle.
+- **📱 Mobile Responsive** — Optimized layouts with bottom navigation for mobile devices.
 - **🔒 100% Private** — All data processing happens entirely in your browser. No data is ever uploaded or stored on any server.
 
 ---
@@ -48,6 +58,11 @@
 
 ### Option 1: Try the Demo
 Visit the [live demo](https://nottoxel.github.io/BirthdayVisualiser/) and click **"Try Demo"** to explore with sample data.
+
+| View | Light Mode | Dark Mode |
+| :--- | :---: | :---: |
+| **Desktop** | <img src="screenshots/screenshot-landing.png" width="400"> | <img src="screenshots/screenshot-landing-dark.png" width="400"> |
+| **Mobile** | <img src="screenshots/screenshot-mobile-landing.png" width="150"> | <img src="screenshots/screenshot-mobile-landing-dark.png" width="150"> |
 
 ### Option 2: Use Your Own Contacts
 1. Export your contacts as a **CSV** or **VCF (vCard)** file (see [Export Guides](#-how-to-export-your-contacts) below)
