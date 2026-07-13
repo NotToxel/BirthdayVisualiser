@@ -12,26 +12,18 @@
 
 ## 📸 Screenshots
 
-### Landing Page
-![Landing Page](screenshot-landing.png)
-
-### Timeline View
-![Timeline View](screenshot-timeline.png)
-
-### Calendar View
-![Calendar View](screenshot-calendar.png)
-
-### Statistics Overview
-![Statistics](screenshot-stats.png)
-
-### Real-Time Filtering (Search)
-![Filtering](screenshot-filtered.png)
-
-### Tags Filtering Dropdown
-![Tags Filtering](screenshot-filter-tags.png)
-
-### Months Filtering Dropdown
-![Months Filtering](screenshot-filter-months.png)
+| Feature View / Tab | Light Mode (Desktop) | Dark Mode (Desktop) | Mobile View |
+| :--- | :--- | :--- | :--- |
+| **Landing Screen** | ![Landing Page Light](screenshot-landing.png) | ![Landing Page Dark](screenshot-landing-dark.png) | ![Landing Mobile](screenshot-mobile-landing.png) |
+| **Timeline View** | ![Timeline Light](screenshot-timeline.png) | — | ![Timeline Mobile](screenshot-mobile-timeline.png) |
+| **Calendar View** | ![Calendar Light](screenshot-calendar.png) | ![Calendar Dark](screenshot-calendar-dark.png) | ![Calendar Mobile](screenshot-mobile-calendar.png) |
+| **Statistics & Charts** | ![Stats Light](screenshot-stats.png) | ![Stats Dark](screenshot-stats-dark.png) | — |
+| **Contact Cloud** | ![Cloud](screenshot-cloud.png) | — | — |
+| **Same Birthday List** | ![Same Birthday](screenshot-same.png) | — | — |
+| **Missing Data Audit** | ![Missing Data](screenshot-missing.png) | — | — |
+| **Name Search Filter** | ![Name Search Filter](screenshot-filtered.png) | — | — |
+| **Tags Filter Dropdown** | ![Tags Filter](screenshot-filter-tags.png) | — | — |
+| **Months Filter Dropdown** | ![Months Filter](screenshot-filter-months.png) | — | — |
 
 
 ---
