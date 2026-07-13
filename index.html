@@ -2661,6 +2661,11 @@
             bubbleCanvas.height = r.height * dpr;
             bCtx.scale(dpr, dpr);
 
+            // Populate _daysUntil so sorting is always functional
+            filteredContacts.forEach(c => {
+                c._daysUntil = daysUntilBirthday(c.m, c.d);
+            });
+
             const displayed = filteredContacts
                 .slice()
                 .sort((a, b) => a._daysUntil - b._daysUntil)
@@ -2668,26 +2673,41 @@
 
             const count = displayed.length; if(!count){bubbles=[]; bCtx.clearRect(0,0,r.width,r.height); return;}
 
-            const area = r.width * r.height;
+            // Bounding square to fit both wide landscape & thin portrait viewports perfectly
+            const side = Math.min(r.width, r.height);
+            const area = side * side;
             let pxPerItem = area / count;
             let baseR = Math.sqrt(pxPerItem / Math.PI) * 0.65;
             baseR = Math.min(Math.max(baseR, 12), 65);
 
+            const centerX = r.width / 2;
+            const centerY = r.height / 2;
+
             const existingMap = new Map(bubbles.map(b => [b.data.id, b]));
 
-            bubbles = displayed.map(c => {
+            bubbles = displayed.map((c, i) => {
                 const existing = existingMap.get(c.id);
+
+                const angle = i * 2.39996; // Golden angle in radians
+                const radius = baseR * 1.65 * Math.sqrt(i);
+                const tx = centerX + Math.cos(angle) * radius;
+                const ty = centerY + Math.sin(angle) * radius;
+
                 if (existing) {
                     existing.r = baseR;
+                    existing.origTx = tx;
+                    existing.origTy = ty;
                     return existing;
                 }
-                const angle = Math.random() * Math.PI * 2;
-                const dist = Math.random() * 50;
+
+                // Smoothly bloom out from center
                 return {
-                    x: r.width / 2 + Math.cos(angle) * dist,
-                    y: r.height / 2 + Math.sin(angle) * dist,
+                    x: centerX,
+                    y: centerY,
                     vx: 0, vy: 0,
-                    r: baseR, scale: 1,
+                    r: baseR, scale: 0.1,
+                    origTx: tx,
+                    origTy: ty,
                     img: (() => {
                         const img = new Image();
                         img.src = c.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
@@ -2697,13 +2717,7 @@
                 };
             });
 
-            const tempMouse = { x: mouse.x, y: mouse.y };
-            mouse.x = -999; mouse.y = -999;
-            for (let i = 0; i < 300; i++) { updatePhysics(); }
-            bubbles.forEach(b => { b.vx = 0; b.vy = 0; b.scale = 1.0; });
-            mouse.x = tempMouse.x; mouse.y = tempMouse.y;
-
-            activeFrames = 1;
+            activeFrames = 60; // Run layout lerp for at least 60 frames to bloom nicely
             drawBubbles();
 
             if(!animId) loopBubbles();
@@ -2728,78 +2742,58 @@
         function stopBubbleLoop(){cancelAnimationFrame(animId);animId=null;}
 
         function updatePhysics() {
+            if (!bubbleCanvas) return;
             const width = bubbleCanvas.width / (window.devicePixelRatio || 1);
             const height = bubbleCanvas.height / (window.devicePixelRatio || 1);
-            const centerX = width / 2;
-            const centerY = height / 2;
 
-            const gravity = 0.003;
-            const damping = 0.55;
-
-            // Scale transitions — hovered bubble scales up smoothly
+            // Find if any bubble is hovered
+            let hoveredBubble = null;
             bubbles.forEach(b => {
-                b.vx += (centerX - b.x) * gravity;
-                b.vy += (centerY - b.y) * gravity;
-
                 const distToMouse = Math.sqrt((mouse.x - b.x)**2 + (mouse.y - b.y)**2);
-                const targetScale = distToMouse < b.r * 1.1 ? 1.15 : 1.0;
-                b.scale += (targetScale - b.scale) * 0.12;
+                if (distToMouse < b.r * b.scale) {
+                    hoveredBubble = b;
+                }
             });
 
-            // Collision — include scale + dynamic padding room to prevent overlaps and lightly push neighbors
-            const iterations = 3;
-            const padding = bubbles.length > 80 ? 4 : 10;
-            for (let it = 0; it < iterations; it++) {
-                for (let i = 0; i < bubbles.length; i++) {
-                    const b1 = bubbles[i];
-                    const r1 = b1.r * b1.scale;
-                    for (let j = i + 1; j < bubbles.length; j++) {
-                        const b2 = bubbles[j];
-                        const r2 = b2.r * b2.scale;
-                        const dx = b2.x - b1.x;
-                        const dy = b2.y - b1.y;
+            // Update each bubble's target and smoothly interpolate
+            let needsUpdate = false;
+            bubbles.forEach(b => {
+                let tx = b.origTx;
+                let ty = b.origTy;
+                let targetScale = 1.0;
+
+                if (hoveredBubble) {
+                    if (b === hoveredBubble) {
+                        targetScale = 1.25;
+                    } else {
+                        // Push neighbors away from hovered bubble
+                        const dx = b.origTx - hoveredBubble.origTx;
+                        const dy = b.origTy - hoveredBubble.origTy;
                         const dist = Math.sqrt(dx*dx + dy*dy) || 0.001;
-                        const minDist = r1 + r2 + padding;
-                        if (dist < minDist) {
-                            const overlap = minDist - dist;
-                            const nx = dx / dist;
-                            const ny = dy / dist;
-                            const push = Math.min(overlap * 0.25, 2.0); // Cap push force
-                            b1.x -= nx * push;
-                            b1.y -= ny * push;
-                            b2.x += nx * push;
-                            b2.y += ny * push;
+                        const pushThreshold = hoveredBubble.r * 2.8;
+                        if (dist < pushThreshold) {
+                            const force = (1.0 - dist / pushThreshold) * (hoveredBubble.r * 0.45);
+                            tx += (dx / dist) * force;
+                            ty += (dy / dist) * force;
                         }
                     }
                 }
-            }
 
-            bubbles.forEach(b => {
-                const speed = Math.sqrt(b.vx*b.vx + b.vy*b.vy) || 0.001;
-                const maxSpeed = 2.0;
-                if (speed > maxSpeed) {
-                    b.vx = (b.vx / speed) * maxSpeed;
-                    b.vy = (b.vy / speed) * maxSpeed;
+                // Smooth interpolation (lerp)
+                const dx = tx - b.x;
+                const dy = ty - b.y;
+                const ds = targetScale - b.scale;
+
+                b.x += dx * 0.12;
+                b.y += dy * 0.12;
+                b.scale += ds * 0.12;
+
+                if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05 || Math.abs(ds) > 0.002) {
+                    needsUpdate = true;
                 }
-
-                b.x += b.vx; b.y += b.vy;
-                b.vx *= damping; b.vy *= damping;
-
-                const r_curr = b.r * b.scale;
-                if (b.x < r_curr) { b.x = r_curr; b.vx = 0; }
-                if (b.x > width - r_curr) { b.x = width - r_curr; b.vx = 0; }
-                if (b.y < r_curr) { b.y = r_curr; b.vy = 0; }
-                if (b.y > height - r_curr) { b.y = height - r_curr; b.vy = 0; }
             });
 
-            let needsUpdate = false;
-            bubbles.forEach(b => {
-                const distToMouse = Math.sqrt((mouse.x - b.x)**2 + (mouse.y - b.y)**2);
-                const targetScale = distToMouse < b.r * 1.1 ? 1.15 : 1.0;
-                if (Math.abs(targetScale - b.scale) > 0.003) needsUpdate = true;
-                if (Math.abs(b.vx) > 0.005 || Math.abs(b.vy) > 0.005) needsUpdate = true;
-            });
-            if (needsUpdate) activeFrames = Math.max(activeFrames, 5);
+            if (needsUpdate) activeFrames = Math.max(activeFrames, 2);
         }
 
         function drawBubbles() {
