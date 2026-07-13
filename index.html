@@ -317,8 +317,6 @@
 
         .active-filters { display: flex; gap: 6px; flex-wrap: wrap; flex-grow: 1; margin-left: 8px; }
         .filter-chip {
-            background: var(--primary-bg);
-            color: var(--primary);
             padding: 3px 8px;
             border-radius: 6px;
             font-size: 0.75rem;
@@ -329,6 +327,48 @@
         }
         .filter-chip:hover { opacity: 0.8; }
         .filter-chip i { font-size: 0.625rem; }
+
+        .filter-chip.tag-chip {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            color: var(--primary);
+        }
+        body.dark .filter-chip.tag-chip {
+            background: rgba(129, 140, 248, 0.12);
+            border: 1px solid rgba(129, 140, 248, 0.3);
+            color: #818cf8;
+        }
+
+        .filter-chip.month-chip {
+            background: rgba(244, 63, 94, 0.08);
+            border: 1px solid rgba(244, 63, 94, 0.25);
+            color: #f43f5e;
+        }
+        body.dark .filter-chip.month-chip {
+            background: rgba(251, 113, 133, 0.12);
+            border: 1px solid rgba(251, 113, 133, 0.3);
+            color: #fb7185;
+        }
+
+        .btn-clear-filters {
+            background: transparent;
+            border: 1px dashed var(--border);
+            color: var(--text-muted);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all var(--transition);
+        }
+        .btn-clear-filters:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(244, 63, 94, 0.05);
+        }
 
         .search-wrap { position: relative; margin-left: auto; }
         .search-wrap input {
@@ -2316,8 +2356,19 @@
 
         function updateBadges() {
             const c=document.getElementById('active-badges'); c.innerHTML='';
-            activeTags.forEach(t=>c.innerHTML+=`<div class="filter-chip">${t} <i class="fa-solid fa-xmark" onclick="removeTag('${t}')"></i></div>`);
-            activeMonths.forEach(m=>c.innerHTML+=`<div class="filter-chip">${MONTHS[m-1]} <i class="fa-solid fa-xmark" onclick="removeMonth(${m})"></i></div>`);
+            activeTags.forEach(t=>c.innerHTML+=`<div class="filter-chip tag-chip"><i class="fa-solid fa-tag" style="font-size:0.6875rem;opacity:0.8;"></i> <span>${t}</span> <i class="fa-solid fa-xmark" onclick="removeTag('${t}')"></i></div>`);
+            activeMonths.forEach(m=>c.innerHTML+=`<div class="filter-chip month-chip"><i class="fa-solid fa-calendar-days" style="font-size:0.6875rem;opacity:0.8;"></i> <span>${MONTHS[m-1]}</span> <i class="fa-solid fa-xmark" onclick="removeMonth(${m})"></i></div>`);
+            
+            if (activeTags.size > 0 || activeMonths.size > 0) {
+                const clearBtn = document.createElement('button');
+                clearBtn.className = 'btn-clear-filters';
+                clearBtn.innerHTML = `<i class="fa-solid fa-trash-can"></i> Clear All`;
+                clearBtn.onclick = () => {
+                    clearTags();
+                    clearMonths();
+                };
+                c.appendChild(clearBtn);
+            }
         }
         function updateMissingBadges() {
             const c=document.getElementById('missing-active-badges'); if(!c) return;
