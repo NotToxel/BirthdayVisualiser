@@ -2,7 +2,7 @@
 
 **Explore your contacts' birthdays through interactive timelines, statistics, and insights.**
 
-[![Version](https://img.shields.io/badge/version-v2.0.0-276c58)](https://github.com/NotToxel/BirthdayVisualiser)
+[![Version](https://img.shields.io/badge/version-v2.0.1-276c58)](https://github.com/NotToxel/BirthdayVisualiser)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://nottoxel.github.io/BirthdayVisualiser/)
 
@@ -12,7 +12,7 @@
 
 ## ✨ Features
 
-- **🗓 Interactive Timeline** — Zoomable vis.js timeline showing every contact's birthday, with hover cards and click-to-detail.
+- **🗓 Interactive Timeline** — Zoomable vis.js timeline with contact photos, optional grouping at wide zoom levels, hover cards, and click-to-detail.
   
   | View | Light Mode | Dark Mode |
   | :--- | :---: | :---: |
@@ -50,7 +50,7 @@
 
 - **🌙 Dark Mode** — Full dark/light theme toggle.
 - **📱 Mobile Responsive** — Optimized layouts with bottom navigation for mobile devices.
-- **🔒 100% Private** — All data processing happens entirely in your browser. No data is ever uploaded or stored on any server.
+- **🔒 Local contact processing** — Contact files are parsed in your browser. External photo URLs load from their image host.
 
 ---
 
@@ -135,7 +135,7 @@ Click the **"Try Demo"** button on the landing page to load [demo-contacts.csv](
 
 ## 🔒 Privacy
 
-**Your contact data stays in your browser.** BirthdayVisualiser parses files locally using JavaScript. It does not upload contacts or use an external avatar service. Embedded photos are shown locally; external photo URLs in imported files are ignored. The demo uses fictional contacts and may load their sample photos from an external host. The chart and import libraries load when needed, so an initial internet connection is required for those views unless the resources are cached.
+**Your contact file stays in your browser.** BirthdayVisualiser parses files locally using JavaScript and does not upload them. Embedded photos are shown locally. When a contact has an HTTP or HTTPS photo URL, the browser requests that image from its host; inaccessible or broken images fall back to initials. The demo uses fictional contacts and loads sample photos from an external host. The chart and import libraries load when needed, so an initial internet connection is required for those views unless the resources are cached.
 
 ---
 

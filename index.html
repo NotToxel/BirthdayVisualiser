@@ -1089,6 +1089,11 @@
         }
         .list-item:hover { background: var(--surface-2); }
         .list-item:last-child { border-bottom: none; }
+        .list-item span { display: flex; flex-direction: column; min-width: 0; }
+        .list-item strong { color: var(--text); font-family: 'Outfit', 'Inter', sans-serif; font-size: .84rem; font-weight: 600; }
+        .list-item small { color: var(--text-muted); font-size: .7rem; }
+        .list-close { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
+        .list-close:hover { background: var(--surface-2); color: var(--text); }
 
         /* ── Calendar View ── */
         #calendar-view {
@@ -1149,15 +1154,6 @@
         }
         .cal-nav-btn:active {
             transform: translateY(0);
-        }
-        #cal-opt-mon, #cal-opt-sun {
-            cursor: pointer;
-            transition: all var(--transition);
-        }
-        #cal-opt-mon.active, #cal-opt-sun.active {
-            background: var(--primary) !important;
-            color: #ffffff !important;
-            font-weight: 600;
         }
         .cal-controls {
             display: flex;
@@ -1833,7 +1829,8 @@
         h1, h2, h3, .logo, .landing-brand, .preview-title { font-family: 'Outfit', 'Inter', sans-serif; }
         ::selection { background: var(--primary); color: var(--surface); }
         :focus-visible { outline: 3px solid var(--accent) !important; outline-offset: 3px; }
-        button, input, select { font: inherit; }
+        button, input, select, textarea { font: inherit; }
+        .vis-timeline, .vis-item, .vis-label, .vis-panel, .vis-time-axis { font-family: 'Inter', system-ui, sans-serif !important; }
         button, .tab, .sub-tab, .filter-btn, .mobile-nav-item, .drawer-item { touch-action: manipulation; }
         .landing-hero {
             min-height: min(820px, 100svh);
@@ -2011,7 +2008,7 @@
             #calendar-header .cal-controls { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; gap: 4px; }
             #calendar-header .cal-controls button { min-height: 40px; padding: 5px; font-size: .72rem; }
             #calendar-header #btn-quick-jump { grid-column: 1 / -1; }
-            #calendar-header .cal-settings { position: static; width: 100%; justify-content: flex-start !important; }
+            #calendar-header .cal-settings { width: 100%; flex-direction: row; justify-content: space-between; }
             #calendar-container { min-height: 560px; }
             #calendar-grid { min-height: 390px; }
             #calendar-weekdays { min-height: 26px; }
@@ -2079,8 +2076,14 @@
             cursor: pointer;
         }
         .view-action:hover { color: var(--primary); border-color: var(--primary); }
-        .timeline-heading { border-bottom: 1px solid var(--border); }
+        .timeline-heading { border-bottom: 1px solid var(--border); flex-wrap: wrap; }
         .timeline-heading p { max-width: 70ch; }
+        .timeline-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .timeline-group-toggle[aria-pressed="true"] { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
+        .timeline-toggle-track { display: inline-flex; align-items: center; width: 24px; height: 14px; padding: 2px; border-radius: 999px; background: var(--border); transition: background .2s ease; }
+        .timeline-toggle-track::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); box-shadow: var(--shadow-sm); transition: transform .2s ease; }
+        .timeline-group-toggle[aria-pressed="true"] .timeline-toggle-track { background: var(--primary); }
+        .timeline-group-toggle[aria-pressed="true"] .timeline-toggle-track::after { transform: translateX(10px); }
         #scrubber-container { --scrubber-h: 94px; }
         #timeline-wrapper { background: var(--bg); }
         #timeline-vis .vis-timeline { border: 0; }
@@ -2091,6 +2094,27 @@
         .contact-node:hover { transform: scale(1.16) translateZ(0); }
         .contact-node img { border: 3px solid var(--surface); box-shadow: 0 4px 14px rgba(25,45,33,.14); }
         body.dark .contact-node img { box-shadow: 0 4px 14px rgba(0,0,0,.28); }
+        .timeline-zoomed-out #timeline-vis .contact-node img { width: 28px; height: 28px; border-width: 2px; }
+        .timeline-fit-all #timeline-vis .contact-node img { width: 16px; height: 16px; border-width: 1px; }
+        .timeline-fit-all #timeline-vis .contact-node:hover { transform: scale(2); position: relative; z-index: 20; }
+        #timeline-vis .timeline-cluster-item { overflow: visible; }
+        .timeline-cluster { width: 132px; min-height: 75px; padding: 8px 10px; transform: translateX(calc(-25% + var(--cluster-shift, 0px))); border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-sm); color: var(--text); cursor: pointer; transition: border-color .2s ease, box-shadow .2s ease; }
+        .timeline-cluster.edge-end { transform: translateX(calc(-75% + var(--cluster-shift, 0px))); }
+        .timeline-cluster:hover, .timeline-cluster:focus-visible { border-color: var(--primary); box-shadow: var(--shadow); }
+        .timeline-cluster-top { display: flex; justify-content: space-between; align-items: baseline; gap: 5px; margin-bottom: 7px; }
+        .timeline-cluster-years { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Outfit', 'Inter', sans-serif; font-size: .78rem; font-weight: 700; }
+        .timeline-cluster-count { flex: none; color: var(--primary); font-size: .68rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+        .timeline-cluster-faces { display: flex; align-items: center; padding-left: 5px; }
+        .timeline-cluster-faces img { width: 28px; height: 28px; margin-left: -5px; border: 2px solid var(--surface); border-radius: 50%; object-fit: cover; background: var(--surface-2); }
+        .timeline-cluster-more { margin-left: 5px; color: var(--text-muted); font-size: .67rem; font-weight: 700; }
+        @media (max-width: 700px) {
+            .timeline-cluster { width: 112px; padding: 8px; }
+            .timeline-cluster-faces img { width: 24px; height: 24px; }
+            .timeline-zoomed-out #timeline-vis .contact-node img { width: 22px; height: 22px; }
+            .timeline-fit-all #timeline-vis .contact-node img { width: 12px; height: 12px; }
+            .timeline-fit-all #scrubber-container { --scrubber-h: 54px; }
+            .timeline-fit-all .timeline-roster { flex-basis: 94px; }
+        }
         #hover-card { padding: 10px 14px; border-radius: 10px; box-shadow: var(--shadow); }
         .timeline-roster { flex: 0 0 136px; min-height: 0; padding: 12px clamp(1rem,2.5vw,2.5rem); background: var(--surface); border-top: 1px solid var(--border); }
         .timeline-roster-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 9px; }
@@ -2191,20 +2215,22 @@
         .same-card { padding: 1.1rem 1.2rem; border-radius: var(--radius-lg); box-shadow: none; transition: border-color .2s ease, transform .28s cubic-bezier(.16,1,.3,1); }
         .same-card:hover { transform: translateY(-3px); }
         .same-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 8px; padding: 0 0 11px; border-bottom: 1px solid var(--border); color: var(--text); }
-        .same-date { font: 700 1.28rem/1.1 'Outfit', sans-serif; letter-spacing: -.025em; }
-        .same-people { color: var(--primary); background: var(--primary-bg); border-radius: 999px; padding: 4px 8px; font-size: .7rem; font-weight: 700; white-space: nowrap; }
+        .same-date { font: 700 1.28rem/1.1 'Outfit', 'Inter', sans-serif; letter-spacing: -.025em; }
+        .same-people { color: var(--primary); background: var(--primary-bg); border-radius: 999px; padding: 4px 8px; font-family: 'Outfit', 'Inter', sans-serif; font-size: .72rem; font-weight: 700; white-space: nowrap; }
         .same-row { width: 100%; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 5px 2px; border: 0; background: transparent; color: var(--text); text-align: left; font: inherit; font-size: .82rem; }
         .same-row img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-        .same-row span { flex: 1; min-width: 0; }
+        .same-row-copy { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 5px; flex: 1; min-width: 0; }
+        .same-row-name { color: var(--text); font-family: 'Outfit', 'Inter', sans-serif; font-size: .9rem; font-weight: 600; line-height: 1.2; }
+        .same-row-year { color: var(--text-muted); font-family: 'Inter', system-ui, sans-serif; font-size: .72rem; white-space: nowrap; }
         .same-row i { color: var(--text-muted); font-size: .7rem; opacity: 0; transition: opacity .2s ease, transform .2s ease; }
         .same-row:hover i, .same-row:focus-visible i { opacity: 1; transform: translateX(2px); }
         .view-empty { grid-column: 1 / -1; padding: 2rem; border: 1px dashed var(--border); border-radius: var(--radius-lg); background: var(--surface); color: var(--text-muted); font-size: .9rem; }
 
         #missing-view, #upcoming-view { background: var(--bg); }
         #missing-layout { flex: 1; min-height: 0; flex-direction: column; overflow-y: auto; }
-        #missing-sidebar { width: auto; min-height: 74px; padding: 14px clamp(1.25rem,2.5vw,2.5rem); border-right: 0; border-block: 1px solid var(--border); flex-direction: row; align-items: center; gap: 15px; overflow: visible; }
+        #missing-sidebar { position: relative; z-index: 2; width: auto; min-height: 74px; padding: 14px clamp(1.25rem,2.5vw,2.5rem); border-right: 0; border-block: 1px solid var(--border); flex-direction: row; align-items: center; gap: 15px; overflow: visible; }
         #missing-sidebar h3 { color: var(--text); font-size: .8rem; white-space: nowrap; letter-spacing: 0; text-transform: none; }
-        #dd-missing-tag { width: min(260px,50vw) !important; }
+        #dd-missing-tag { width: min(260px, 100%); flex: 0 1 260px; }
         #missing-main { flex: 1; overflow: visible; padding: 1.2rem clamp(1.25rem,2.5vw,2.5rem) 2rem; }
         .missing-summary { display: flex; gap: 1.3rem; flex-wrap: wrap; margin-bottom: 1rem; color: var(--text-muted); font-size: .82rem; }
         .missing-summary > span { display: inline-flex; align-items: center; gap: 5px; }
@@ -2227,21 +2253,31 @@
 
         #upcoming-layout { flex-direction: column; min-height: 0; overflow-y: auto; }
         #upcoming-sidebar { width: auto; padding: 1.1rem clamp(1.25rem,2.5vw,2.5rem) 1.2rem; border-right: 0; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: .75rem; overflow: visible; }
-        #upcoming-sidebar h3 { grid-column: 1 / -1; color: var(--text); letter-spacing: 0; text-transform: none; font-size: .87rem; }
+        #upcoming-sidebar h3 { grid-column: 1 / -1; color: var(--text); font-family: 'Outfit', 'Inter', sans-serif; letter-spacing: -.01em; text-transform: none; font-size: 1rem; }
         .upcoming-kpi-card { min-height: 100px; padding: 12px 14px; background: var(--surface); justify-content: space-between; gap: 5px; }
-        .upcoming-kpi-label { font-weight: 700; }
-        .upcoming-kpi-val { font-size: 1.15rem; line-height: 1.2; }
+        .upcoming-kpi-label { font-family: 'Inter', system-ui, sans-serif; font-weight: 700; }
+        .upcoming-kpi-val { font-family: 'Outfit', 'Inter', sans-serif; font-size: 1.22rem; letter-spacing: -.02em; line-height: 1.2; }
         #upcoming-main { overflow: visible; padding: 1.5rem clamp(1.25rem,2.5vw,2.5rem); }
         #upcoming-feed { max-width: 980px; }
         .upcoming-section { gap: 9px; }
-        .upcoming-sec-header { border-color: var(--border) !important; padding-bottom: 9px; margin-bottom: 2px; }
+        .upcoming-sec-header { border-color: var(--border) !important; padding-bottom: 9px; margin-bottom: 2px; font-family: 'Outfit', 'Inter', sans-serif; font-size: .9rem; letter-spacing: .04em; }
+        .upcoming-sec-header .sec-count { font-family: 'Inter', system-ui, sans-serif; }
         .upcoming-card { width: 100%; min-height: 76px; padding: .85rem 1rem; text-align: left; color: var(--text); font: inherit; transition: border-color .2s ease, transform .28s cubic-bezier(.16,1,.3,1), box-shadow .28s ease; }
         .upcoming-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
         .upcoming-avatar { width: 46px; height: 46px; }
-        .upcoming-name { font-size: .94rem; }
+        .upcoming-name { font-family: 'Outfit', 'Inter', sans-serif; font-size: 1rem; font-weight: 600; letter-spacing: -.01em; }
         .upcoming-date { font-size: .78rem; }
+        .upcoming-right span { font-family: 'Outfit', 'Inter', sans-serif; }
 
         #calendar-header h2 { font-size: 1.14rem; letter-spacing: -.025em; }
+        .cal-settings { display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-width: 0; }
+        .week-start-label { color: var(--text-muted); font-size: .72rem; font-weight: 700; white-space: nowrap; }
+        .week-start-options { display: inline-flex; align-items: center; gap: 3px; padding: 3px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface-2); }
+        .week-start-option { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 74px; min-height: 38px; padding: 6px 9px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; font-size: .75rem; font-weight: 650; line-height: 1; transition: background .2s ease, color .2s ease, box-shadow .2s ease; }
+        .week-start-option::before { content: ''; width: 6px; height: 6px; flex: none; border-radius: 50%; background: currentColor; opacity: 0; }
+        .week-start-option:hover { color: var(--text); }
+        .week-start-option.active { border-color: var(--border); background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+        .week-start-option.active::before { opacity: 1; }
         .cal-nav-btn { min-height: 40px; background: var(--surface); }
         .cal-nav-btn:hover { background: var(--primary-bg); }
         .cal-cell { transition: background .2s ease; }
@@ -2374,7 +2410,7 @@
             .cloud-person strong { font-size: .82rem; }
             .cloud-person span:last-child { font-size: .66rem; }
             .same-grid { grid-template-columns: minmax(0,1fr); padding: 0 1rem 1rem; }
-            #missing-sidebar { padding: 12px 1rem; }
+            #missing-sidebar { padding: 12px 1rem; flex-wrap: wrap; }
             #missing-main { padding: 1rem; }
             #upcoming-sidebar { grid-template-columns: repeat(2,minmax(0,1fr)); padding: 1rem; }
             #upcoming-main { padding: 1rem; }
@@ -2382,6 +2418,39 @@
         @media (prefers-reduced-motion: reduce) {
             .modal, .contact-node { animation: none !important; transition: none !important; }
         }
+
+        /* Shared controls and date selector */
+        .filter-btn { width: 100%; justify-content: space-between; gap: 18px; font-weight: 650; }
+        .filter-btn .fa-chevron-down { color: var(--text-muted); transition: transform var(--transition); }
+        .filter-btn[aria-expanded="true"] { border-color: var(--primary); background: var(--primary-bg); }
+        .filter-btn[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
+        .filter-menu { padding: 8px; border-radius: 12px; box-shadow: 0 12px 30px rgba(29, 59, 42, .14); }
+        .filter-menu-action { display: block; width: 100%; min-height: 36px; padding: 7px 10px; border: 0; border-radius: 7px; background: transparent; color: var(--primary); text-align: left; font-size: .76rem; font-weight: 700; cursor: pointer; }
+        .filter-menu-action:hover, .check-item:hover { background: var(--primary-bg); }
+        .check-item { min-height: 38px; font-family: 'Inter', system-ui, sans-serif; }
+        .check-item input { width: 16px; height: 16px; }
+        .month-tog { min-height: 46px; justify-content: center; background: var(--surface); font-family: 'Inter', system-ui, sans-serif; }
+        .month-tog.selected, body.dark .month-tog.selected { color: var(--surface); }
+        #dd-missing-tag .filter-menu { width: 100%; }
+
+        #cal-quick-jump-panel { width: min(360px, calc(100vw - 24px)); max-width: none; padding: 16px; border-radius: 16px; box-shadow: 0 16px 40px rgba(29, 59, 42, .18); }
+        .jump-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+        .jump-header span { color: var(--text); font-family: 'Outfit', 'Inter', sans-serif; font-size: 1rem; font-weight: 700; }
+        .jump-header span i { margin-right: 6px; color: var(--primary); }
+        .jump-close { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: var(--surface-2); color: var(--text-muted); cursor: pointer; }
+        .jump-close:hover { color: var(--text); background: var(--primary-bg); }
+        .jump-selects { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; margin-bottom: 14px; }
+        .jump-select-wrap { display: grid; gap: 5px; min-width: 0; color: var(--text-muted); font-size: .69rem; font-weight: 700; }
+        .jump-select-wrap select { width: 100%; min-height: 42px; padding: 0 30px 0 11px; appearance: none; border: 1px solid var(--border); border-radius: 9px; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%23647a6b' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 11px center; color: var(--text); font-family: 'Inter', system-ui, sans-serif; font-size: .84rem; font-weight: 600; cursor: pointer; }
+        .jump-select-wrap select:hover { border-color: var(--primary); }
+        .jump-select-wrap option { background: var(--surface); color: var(--text); }
+        .jump-weekdays, #jump-day-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+        .jump-weekdays { margin-bottom: 5px; color: var(--text-muted); text-align: center; font-size: .62rem; font-weight: 700; }
+        .jump-day-cell { width: 100%; min-height: 36px; border-radius: 8px; background: var(--surface-2); color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
+        .jump-day-cell.has-birthday { background: var(--primary-bg); color: var(--primary); border-color: var(--primary); }
+        .jump-day-cell:hover { border-color: var(--primary); background: var(--primary-bg); transform: none; }
+        .jump-day-count { margin-top: 0; color: inherit; font-variant-numeric: tabular-nums; }
+        #jump-preview-info { min-height: 1.3rem; margin-top: 12px; color: var(--text-muted); text-align: center; font-size: .74rem; font-weight: 500; }
 
     </style>
 </head>
@@ -2416,7 +2485,7 @@
                 </div>
 
                 <div class="landing-privacy">
-                    <i class="fa-solid fa-lock" aria-hidden="true"></i> Your contacts stay in your browser
+                    <i class="fa-solid fa-lock" aria-hidden="true"></i> Your contact file stays in your browser
                 </div>
             </div>
             <div class="landing-preview" aria-label="Illustrative calendar preview using sample names">
@@ -2463,8 +2532,8 @@
                 </div>
                 <div class="feature-card">
                     <span class="feature-icon">🔒</span>
-                    <h3>100% Private</h3>
-                    <p>Everything runs in your browser. No data is uploaded, stored, or shared with any server.</p>
+                    <h3>Local contact processing</h3>
+                    <p>Your file is processed in your browser. Photos linked by URL load from their image host.</p>
                 </div>
             </div>
         </div>
@@ -2538,7 +2607,7 @@
                     <i class="fa-brands fa-github"></i> View on GitHub
                 </a>
             </div>
-            <p>v2.0.0 · Licensed under <a href="https://github.com/NotToxel/BirthdayVisualiser/blob/main/LICENSE" target="_blank" rel="noopener">AGPL-3.0</a></p>
+            <p>v2.0.1 · Licensed under <a href="https://github.com/NotToxel/BirthdayVisualiser/blob/main/LICENSE" target="_blank" rel="noopener">AGPL-3.0</a></p>
             <p>Made with ❤️ by <a href="https://github.com/NotToxel" target="_blank" rel="noopener">NotToxel</a></p>
         </div>
     </div>
@@ -2552,7 +2621,7 @@
     <!-- App -->
     <div id="app-container" role="main">
         <nav>
-            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v2.0.0</span></div>
+            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v2.0.1</span></div>
             <div class="tabs">
                 <button type="button" class="tab active" onclick="setTab('timeline')">Timeline</button>
                 <button type="button" class="tab" onclick="setTab('calendar')">Calendar</button>
@@ -2569,21 +2638,21 @@
 
         <div id="filter-bar">
             <div class="filter-dropdown" id="dd-tag">
-                <div class="filter-btn" onclick="toggleDropdown('dd-tag')">
+                <button type="button" class="filter-btn" aria-expanded="false" aria-controls="tag-menu" onclick="toggleDropdown('dd-tag')">
                     <span><i class="fa-solid fa-tag"></i> Tags</span> <i class="fa-solid fa-chevron-down" style="font-size:0.625rem"></i>
-                </div>
-                <div class="filter-menu">
-                    <div style="padding:8px;border-bottom:1px solid var(--border);color:var(--text-muted);cursor:pointer;font-size:0.75rem;" onclick="clearTags()">Clear All Tags</div>
+                </button>
+                <div class="filter-menu" id="tag-menu">
+                    <button type="button" class="filter-menu-action" onclick="clearTags()">Clear all tags</button>
                     <div id="tag-list"></div>
                 </div>
             </div>
             <div class="filter-dropdown" id="dd-month">
-                <div class="filter-btn" onclick="toggleDropdown('dd-month')">
+                <button type="button" class="filter-btn" aria-expanded="false" aria-controls="month-menu" onclick="toggleDropdown('dd-month')">
                     <span><i class="fa-regular fa-calendar"></i> Months</span> <i class="fa-solid fa-chevron-down" style="font-size:0.625rem"></i>
-                </div>
-                <div class="filter-menu" style="width: 230px;">
+                </button>
+                <div class="filter-menu" id="month-menu" style="width: 260px;">
                     <div class="month-grid" id="month-grid"></div>
-                    <div style="text-align:right; margin-top:8px; font-size:0.75rem; cursor:pointer; color:var(--text-muted)" onclick="clearMonths()">Clear</div>
+                    <button type="button" class="filter-menu-action" onclick="clearMonths()">Clear months</button>
                 </div>
             </div>
             <div class="active-filters" id="active-badges"></div>
@@ -2598,7 +2667,10 @@
         <div id="timeline-view" class="view active">
             <div class="view-heading timeline-heading">
                 <div><h2>Birthday timeline</h2><p>Explore birth years. Drag to move through time; hold Ctrl while scrolling to zoom.</p></div>
-                <button type="button" class="view-action" onclick="timeline?.fit()"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Fit all</button>
+                <div class="timeline-actions">
+                    <button type="button" id="timeline-group-toggle" class="view-action timeline-group-toggle" aria-pressed="true" onclick="toggleTimelineGrouping()"><i class="fa-solid fa-layer-group" aria-hidden="true"></i> Group photos <span class="timeline-toggle-track" aria-hidden="true"></span></button>
+                    <button type="button" class="view-action" onclick="fitAllTimeline()"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Fit all</button>
+                </div>
             </div>
             <div id="scrubber-container">
                 <canvas id="scrubber-canvas"></canvas>
@@ -2704,16 +2776,17 @@
         <div id="calendar-view" class="view" style="position: relative;">
             <!-- Quick Jump Panel -->
             <div id="cal-quick-jump-panel">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
-                    <span style="font-weight: 600; font-size: 0.875rem;"><i class="fa-regular fa-calendar-days" style="color:var(--primary);"></i> Quick Date Selector</span>
-                    <i class="fa-solid fa-xmark" onclick="toggleQuickJump()" style="cursor: pointer; color: var(--text-muted); hover: color: var(--text)"></i>
+                <div class="jump-header">
+                    <span><i class="fa-regular fa-calendar-days" aria-hidden="true"></i> Select a date</span>
+                    <button type="button" class="jump-close" aria-label="Close date selector" onclick="toggleQuickJump()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
                 </div>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <select id="jump-year-select" onchange="renderJumpDayGrid()" style="flex: 1; padding: 6px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: inherit; font-size: 0.8125rem; font-weight: 500;"></select>
-                    <select id="jump-month-select" onchange="renderJumpDayGrid()" style="flex: 1; padding: 6px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: inherit; font-size: 0.8125rem; font-weight: 500;"></select>
+                <div class="jump-selects">
+                    <label class="jump-select-wrap"><span>Year</span><select id="jump-year-select" onchange="renderJumpDayGrid()"></select></label>
+                    <label class="jump-select-wrap"><span>Month</span><select id="jump-month-select" onchange="renderJumpDayGrid()"></select></label>
                 </div>
-                <div id="jump-day-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;"></div>
-                <div id="jump-preview-info" style="margin-top: 10px; font-size: 0.75rem; text-align: center; color: var(--text-muted); font-weight: 500; min-height: 1.25rem;">Select a date to jump to</div>
+                <div class="jump-weekdays" id="jump-weekdays" aria-hidden="true"></div>
+                <div id="jump-day-grid"></div>
+                <div id="jump-preview-info" aria-live="polite">Select a date to jump to</div>
             </div>
 
             <div id="calendar-container">
@@ -2723,13 +2796,13 @@
                         <button class="cal-nav-btn" onclick="navigateCalendar(-1)"><i class="fa-solid fa-chevron-left"></i> Prev</button>
                         <button class="cal-nav-btn" onclick="navigateCalendar(0)">Today</button>
                         <button class="cal-nav-btn" onclick="navigateCalendar(1)">Next <i class="fa-solid fa-chevron-right"></i></button>
-                        <button class="cal-nav-btn" id="btn-quick-jump" onclick="toggleQuickJump()"><i class="fa-regular fa-calendar-days"></i> Select Date</button>
+                        <button class="cal-nav-btn" id="btn-quick-jump" aria-expanded="false" aria-controls="cal-quick-jump-panel" onclick="toggleQuickJump()"><i class="fa-regular fa-calendar-days"></i> Select Date</button>
                     </div>
-                    <div class="cal-settings" style="display: flex; align-items: center; gap: 6px; justify-content: flex-end;">
-                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Week starts:</span>
-                        <div class="tabs" style="padding: 2px; border-radius: 6px; background: var(--surface-2); display: flex;">
-                            <div id="cal-opt-mon" class="tab active" onclick="toggleCalendarStartOfWeek('Monday')" style="padding: 3px 10px; font-size: 0.75rem; border-radius: 4px;">Mon</div>
-                            <div id="cal-opt-sun" class="tab" onclick="toggleCalendarStartOfWeek('Sunday')" style="padding: 3px 10px; font-size: 0.75rem; border-radius: 4px;">Sun</div>
+                    <div class="cal-settings">
+                        <span class="week-start-label" id="week-start-label">Week starts</span>
+                        <div class="week-start-options" role="group" aria-labelledby="week-start-label">
+                            <button type="button" id="cal-opt-mon" class="week-start-option active" aria-pressed="true" onclick="toggleCalendarStartOfWeek('Monday')">Monday</button>
+                            <button type="button" id="cal-opt-sun" class="week-start-option" aria-pressed="false" onclick="toggleCalendarStartOfWeek('Sunday')">Sunday</button>
                         </div>
                     </div>
                 </div>
@@ -2781,11 +2854,11 @@
             <div id="missing-layout">
                 <div id="missing-sidebar">
                     <h3>Filter by tag</h3>
-                    <div class="filter-dropdown" id="dd-missing-tag" style="width:100%">
-                        <div class="filter-btn" onclick="toggleDropdown('dd-missing-tag')">
+                    <div class="filter-dropdown" id="dd-missing-tag">
+                        <button type="button" class="filter-btn" aria-expanded="false" aria-controls="missing-menu-inner" onclick="toggleDropdown('dd-missing-tag')">
                             <span id="missing-lbl">All Tags</span> <i class="fa-solid fa-chevron-down" style="font-size:0.625rem"></i>
-                        </div>
-                        <div class="filter-menu" style="width:100%; position:static; display:none; margin-top:5px; box-shadow:none; border:1px solid var(--border); opacity:1; transform:none;" id="missing-menu-inner">
+                        </button>
+                        <div class="filter-menu" id="missing-menu-inner">
                             <div id="missing-tag-list"></div>
                         </div>
                     </div>
@@ -2870,10 +2943,10 @@
                 <section class="contact-section"><h3>Contact details</h3><div class="detail-box" id="m-details"></div></section>
             </div>
         </div>
-        <div class="modal" id="list-modal" style="display:none">
+        <div class="modal" id="list-modal" role="dialog" aria-modal="true" aria-labelledby="list-title" style="display:none">
             <div class="list-header">
                 <span id="list-title">List</span>
-                <i class="fa-solid fa-xmark" onclick="closeModal()" style="cursor:pointer"></i>
+                <button type="button" class="list-close" onclick="closeModal()" aria-label="Close contact list"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
             </div>
             <div class="list-body" id="list-body"></div>
         </div>
@@ -2916,7 +2989,7 @@
                     <div class="build-info-content">
                         <div class="build-info-line"><span class="build-info-label">Created</span><time class="build-info-value" id="build-generated-at">—</time></div>
                         <div class="build-info-line"><span class="build-info-label">Source</span><span class="build-info-value" id="build-data-source">—</span></div>
-                        <div class="build-info-line"><span class="build-info-label">Version</span><span class="build-info-value">v2.0.0</span></div>
+                        <div class="build-info-line"><span class="build-info-label">Version</span><span class="build-info-value">v2.0.1</span></div>
                         <div class="build-info-line"><span class="build-info-label">Build ID</span><span class="build-info-value build-hash" id="build-hash"></span></div>
                         <a class="build-project-link" href="https://github.com/NotToxel/BirthdayVisualiser" target="_blank" rel="noopener"><i class="fa-brands fa-github" aria-hidden="true"></i> View project <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
                     </div>
@@ -2930,6 +3003,9 @@
         let allContacts=[], filteredContacts=[], missingContacts=[], yearlessContacts=[];
         let timeline=null, chartInstances={}, activeTags=new Set(), activeMonths=new Set();
         let timelineViewInitialized = false;
+        let timelineGroupingEnabled = localStorage.getItem('timelineGroupingEnabled') !== 'false';
+        let timelineContactItems = [], timelineNeedleItems = [], timelineClusterSignature = '';
+        let timelineClusterContacts = new Map();
         let missingActiveTags = new Set();
         let lastModalOpenTime = 0;
         let contactModalReturnFocus = null;
@@ -2940,8 +3016,17 @@
         function avatarFor(name) {
             const initials = String(name || '?').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase();
             const safe = initials.replace(/[^A-Z0-9]/g, '') || '?';
-            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" rx="40" fill="#dcece1"/><text x="40" y="49" text-anchor="middle" font-family="Arial,sans-serif" font-size="27" font-weight="700" fill="#276c58">${safe}</text></svg>`;
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" rx="40" fill="#dcece1"/><text x="40" y="49" text-anchor="middle" font-family="Outfit,Inter,sans-serif" font-size="27" font-weight="700" fill="#276c58">${safe}</text></svg>`;
             return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+        }
+        function normalizePhoto(value) {
+            const photo = String(value || '').split(':::')[0].trim();
+            if (/^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=]+$/i.test(photo)) return photo;
+            try {
+                const url = new URL(photo);
+                if (url.protocol === 'https:' || url.protocol === 'http:') return url.href;
+            } catch (_) { /* Use initials when the URL is invalid. */ }
+            return '';
         }
         document.getElementById('m-img').onerror = function() { this.onerror = null; this.src = avatarFor(document.getElementById('m-name').innerText); };
         const SC_PAD = 50;
@@ -2961,6 +3046,9 @@
         }
         document.getElementById('cal-opt-mon').classList.toggle('active', calendarStartOfWeek === 'Monday');
         document.getElementById('cal-opt-sun').classList.toggle('active', calendarStartOfWeek === 'Sunday');
+        document.getElementById('cal-opt-mon').setAttribute('aria-pressed', String(calendarStartOfWeek === 'Monday'));
+        document.getElementById('cal-opt-sun').setAttribute('aria-pressed', String(calendarStartOfWeek === 'Sunday'));
+        document.getElementById('timeline-group-toggle').setAttribute('aria-pressed', String(timelineGroupingEnabled));
         document.getElementById('upload-input').addEventListener('change', parseFile);
         let searchTimer;
         document.getElementById('name-search').addEventListener('input', e => {
@@ -2991,12 +3079,17 @@
 
         document.addEventListener('click', e => {
             if(!e.target.closest('.filter-dropdown')) {
-                document.querySelectorAll('.filter-menu').forEach(m=>{if(m.id!=='missing-menu-inner')m.classList.remove('open')});
+                closeFilterMenus();
             }
         });
 
         // --- Escape key closes modal ---
         document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                closeFilterMenus();
+                const jumpPanel = document.getElementById('cal-quick-jump-panel');
+                if (jumpPanel.style.display === 'flex') toggleQuickJump();
+            }
             if (e.key === 'Escape') closeModal();
             if (e.key !== 'Tab') return;
             const contactModal = document.getElementById('contact-modal');
@@ -3465,9 +3558,7 @@
                         if (anyNameCol) name = r[anyNameCol].trim();
                     }
 
-                    let photo = r[kPhoto]||""; if(photo.includes(':::')) photo=photo.split(':::')[0].trim();
-                    // Imported URL photos would contact another server; embedded photos stay local.
-                    if (sourceName !== 'Demo Data (demo-contacts.csv)' && !/^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=]+$/i.test(photo)) photo = '';
+                    const photo = normalizePhoto(r[kPhoto]);
                     let tags = []; if(r[kLabel]) tags = r[kLabel].split(' ::: ').map(t=>t.replace(/\* /g,'').trim()).filter(t=>t && !['mycontacts','starred'].includes(t.toLowerCase()));
 
                     let y=0, m=0, d=0, hasYear=false;
@@ -3742,7 +3833,7 @@
         }
         function setTab(t) {
             document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+            document.querySelectorAll('nav .tab').forEach(e=>e.classList.remove('active'));
 
             // Mobile bottom navigation active class updates
             document.querySelectorAll('.mobile-nav-item').forEach(e => e.classList.remove('active'));
@@ -3773,7 +3864,7 @@
             fb.style.display = (t==='timeline'||t==='stats'||t==='same'||t==='calendar'||t==='upcoming')?'flex':'none';
 
             if(t==='timeline'&&timeline) { setTimeout(() => scheduleLayoutTimeline(!timelineViewInitialized), 50); }
-            if(t==='calendar') { renderCalendar(); } else { document.getElementById('cal-quick-jump-panel').style.display = 'none'; }
+            if(t==='calendar') { renderCalendar(); } else { document.getElementById('cal-quick-jump-panel').style.display = 'none'; document.getElementById('btn-quick-jump').setAttribute('aria-expanded', 'false'); }
             if(t==='upcoming') { renderUpcoming(); }
             if(t==='stats') {
                 setSubTab(activeSubTab);
@@ -3803,37 +3894,40 @@
             if (typeof drawBubbles === 'function' && typeof bubbles !== 'undefined' && bubbles.length) drawBubbles();
         }
         function newAnalysis() { if(confirm("Start a new analysis?")) location.reload(); }
+        function closeFilterMenus() {
+            document.querySelectorAll('.filter-menu').forEach(menu => menu.classList.remove('open'));
+            document.querySelectorAll('.filter-btn[aria-expanded]').forEach(button => button.setAttribute('aria-expanded', 'false'));
+        }
         function toggleDropdown(id) {
-            if(id==='dd-missing-tag') {
-                const m=document.getElementById('missing-menu-inner');
-                m.style.display=m.style.display==='block'?'none':'block';
-            } else {
-                document.querySelectorAll('.filter-menu').forEach(m=>{if(m.id!=='missing-menu-inner')m.classList.remove('open')});
-                document.querySelector(`#${id} .filter-menu`).classList.toggle('open');
-            }
+            const dropdown = document.getElementById(id);
+            const button = dropdown.querySelector('.filter-btn');
+            const menu = dropdown.querySelector('.filter-menu');
+            const opening = button.getAttribute('aria-expanded') !== 'true';
+            closeFilterMenus();
+            if (!opening) return;
+            button.setAttribute('aria-expanded', 'true');
+            menu.classList.add('open');
         }
 
         // --- Filters ---
         function buildFilters(tags) {
             const l = document.getElementById('tag-list'); l.innerHTML='';
             tags.forEach(t=>{
-                const d=document.createElement('div'); d.className='check-item';
+                const d=document.createElement('label'); d.className='check-item';
                 const badgeStyle = getTagBadgeStyle(t);
                 d.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><input type="checkbox"><span class="tag" style="${badgeStyle} padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">${t}</span></div><small id="cnt-${t}"></small>`;
-                d.onclick=()=>{ const cb=d.querySelector('input'); cb.checked=!cb.checked; if(cb.checked)activeTags.add(t); else activeTags.delete(t); applyFilters(); updateBadges(); };
+                d.querySelector('input').onchange=e=>{ if(e.target.checked)activeTags.add(t); else activeTags.delete(t); applyFilters(); updateBadges(); };
                 l.appendChild(d);
             });
 
             const ml = document.getElementById('missing-tag-list'); ml.innerHTML='';
             tags.forEach(t=>{
                 const c = [...missingContacts, ...yearlessContacts].filter(co=>co.tags.includes(t)).length;
-                const d=document.createElement('div'); d.className=`check-item ${c===0?'disabled':''}`;
+                const d=document.createElement('label'); d.className=`check-item ${c===0?'disabled':''}`;
                 const badgeStyle = getTagBadgeStyle(t);
                 d.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><input type="checkbox" ${c===0?'disabled':''}><span class="tag" style="${badgeStyle} padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; opacity: ${c===0?0.5:1}">${t}</span></div><small>(${c})</small>`;
-                d.onclick=()=>{
-                    if(c===0)return;
-                    const cb=d.querySelector('input'); cb.checked=!cb.checked;
-                    if(cb.checked)missingActiveTags.add(t); else missingActiveTags.delete(t);
+                d.querySelector('input').onchange=e=>{
+                    if(e.target.checked)missingActiveTags.add(t); else missingActiveTags.delete(t);
                     renderMissing(); updateMissingBadges();
                 };
                 ml.appendChild(d);
@@ -3841,15 +3935,17 @@
 
             const mg = document.getElementById('month-grid'); mg.innerHTML='';
             MONTHS.forEach((m,i)=>{
-                const d=document.createElement('div'); d.className='month-tog';
+                const d=document.createElement('button'); d.type='button'; d.className='month-tog';
                 d.id = `btn-month-${i+1}`;
                 d.innerHTML=`${m}<small style="display:block;font-size:0.6875rem;margin-top:1px;" id="cnt-m-${i}"></small>`;
                 d.onclick=()=>{
                     if(d.classList.contains('disabled')) return;
                     d.classList.toggle('selected'); const x=i+1;
+                    d.setAttribute('aria-pressed', String(d.classList.contains('selected')));
                     if(activeMonths.has(x))activeMonths.delete(x);else activeMonths.add(x);
                     applyFilters(); updateBadges();
                 };
+                d.setAttribute('aria-pressed', 'false');
                 mg.appendChild(d);
             });
         }
@@ -3860,8 +3956,9 @@
                 const count = tagFiltered.filter(c => c.m === i + 1).length;
                 const btn = document.getElementById(`btn-month-${i+1}`);
                 btn.querySelector('small').innerText = count;
-                if(count === 0) { btn.classList.add('disabled'); if(activeMonths.has(i+1)) { activeMonths.delete(i+1); btn.classList.remove('selected'); } }
-                else { btn.classList.remove('disabled'); }
+                btn.disabled = count === 0;
+                btn.classList.toggle('disabled', count === 0);
+                if(count === 0 && activeMonths.has(i+1)) { activeMonths.delete(i+1); btn.classList.remove('selected'); btn.setAttribute('aria-pressed', 'false'); }
             });
 
             const monthFiltered = allContacts.filter(c => activeMonths.size === 0 || activeMonths.has(c.m));
@@ -3869,7 +3966,8 @@
                 const t = el.querySelector('span').innerText;
                 const c = monthFiltered.filter(fc => fc.tags.includes(t)).length;
                 el.querySelector('small').innerText = `(${c})`;
-                if(c===0) el.classList.add('disabled'); else el.classList.remove('disabled');
+                el.classList.toggle('disabled', c === 0);
+                el.querySelector('input').disabled = c === 0;
             });
         }
 
@@ -3915,9 +4013,9 @@
             });
         }
         function removeTag(t){ activeTags.delete(t); applyFilters(); updateBadges(); document.querySelectorAll('#tag-list input').forEach(i=>{if(i.nextElementSibling.innerText==t)i.checked=false}); }
-        function removeMonth(m){ activeMonths.delete(m); applyFilters(); updateBadges(); document.getElementById(`btn-month-${m}`).classList.remove('selected'); }
+        function removeMonth(m){ activeMonths.delete(m); applyFilters(); updateBadges(); const button=document.getElementById(`btn-month-${m}`); button.classList.remove('selected'); button.setAttribute('aria-pressed', 'false'); }
         function removeMissingTag(t){ missingActiveTags.delete(t); renderMissing(); updateMissingBadges(); document.querySelectorAll('#missing-tag-list input').forEach(i=>{if(i.nextElementSibling.innerText==t)i.checked=false}); }
-        function clearMonths(){ activeMonths.clear(); document.querySelectorAll('.month-tog').forEach(e=>e.classList.remove('selected')); applyFilters(); updateBadges(); }
+        function clearMonths(){ activeMonths.clear(); document.querySelectorAll('.month-tog').forEach(e=>{e.classList.remove('selected');e.setAttribute('aria-pressed','false')}); applyFilters(); updateBadges(); }
         function clearTags(){ activeTags.clear(); document.querySelectorAll('#tag-list input').forEach(i=>i.checked=false); applyFilters(); updateBadges(); }
         
         function clearSearch() {
@@ -3983,25 +4081,137 @@
         }
 
         // --- Timeline ---
+        function escapeTimelineHtml(value) {
+            return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+        }
+        function toggleTimelineGrouping() {
+            timelineGroupingEnabled = !timelineGroupingEnabled;
+            localStorage.setItem('timelineGroupingEnabled', String(timelineGroupingEnabled));
+            document.getElementById('timeline-group-toggle').setAttribute('aria-pressed', String(timelineGroupingEnabled));
+            renderTimelineItems(true);
+            scheduleRepositionAll();
+        }
+        function layoutTimelineClusters() {
+            const host = document.getElementById('timeline-vis');
+            const bounds = host.getBoundingClientRect();
+            if (!bounds.width) return;
+            const left = bounds.left + 8;
+            const right = bounds.right - 8;
+            const cards = [...host.querySelectorAll('.timeline-cluster')].map(card => {
+                card.style.removeProperty('--cluster-shift');
+                return {card, rect:card.getBoundingClientRect(), year:Number(card.dataset.clusterId.split(':').pop())};
+            }).filter(item => item.rect.right > bounds.left && item.rect.left < bounds.right).sort((a, b) => a.year - b.year);
+            if (!cards.length) return;
+            const gap = 8;
+            cards.forEach((item, index) => {
+                const natural = item.rect.left;
+                const within = Math.min(Math.max(natural, left), right - item.rect.width);
+                item.target = index ? Math.max(within, cards[index - 1].target + cards[index - 1].rect.width + gap) : within;
+            });
+            if (cards[cards.length - 1].target + cards[cards.length - 1].rect.width > right) {
+                cards[cards.length - 1].target = right - cards[cards.length - 1].rect.width;
+                for (let i = cards.length - 2; i >= 0; i--) {
+                    cards[i].target = Math.min(cards[i].target, cards[i + 1].target - cards[i].rect.width - gap);
+                }
+            }
+            cards.forEach(item => item.card.style.setProperty('--cluster-shift', `${item.target - item.rect.left}px`));
+        }
+        function renderTimelineItems(force = false) {
+            if (!timeline) return;
+            const range = timeline.getWindow();
+            const spanYears = (range.end - range.start) / (365.25 * 24 * 60 * 60 * 1000);
+            const mobile = window.matchMedia('(max-width: 700px)').matches;
+            const grouped = timelineGroupingEnabled && filteredContacts.length > 1 && spanYears > (mobile ? 8 : 18);
+            const width = Math.max(document.getElementById('timeline-vis').clientWidth, 320);
+            const targetYears = spanYears * (mobile ? 120 : 150) / width;
+            const intervals = [1, 2, 5, 10, 20, 25, 50, 100, 200, 500];
+            const visibleYears = filteredContacts.filter(c => {
+                const date = new Date(c.hasYear ? c.y : 2000, c.m - 1, c.d);
+                return date >= range.start && date <= range.end;
+            }).map(c => c.hasYear ? c.y : 2000);
+            const maxGroups = Math.max(2, Math.floor(width / (mobile ? 120 : 140)));
+            const firstContactYear = Math.min(...filteredContacts.map(c => c.hasYear ? c.y : 2000));
+            const anchorFor = value => value >= 20 ? Math.floor(firstContactYear / 5) * 5 : 0;
+            const bucketYears = grouped ? (intervals.find(value => value >= targetYears && new Set(visibleYears.map(year => Math.floor((year - anchorFor(value)) / value))).size <= maxGroups) || 500) : 0;
+            const signature = grouped ? `group:${bucketYears}` : 'individual';
+            if (!force && signature === timelineClusterSignature) return;
+            timelineClusterSignature = signature;
+            timelineClusterContacts.clear();
+
+            let items = timelineContactItems;
+            if (grouped) {
+                const buckets = new Map();
+                const anchor = anchorFor(bucketYears);
+                filteredContacts.forEach(c => {
+                    const year = c.hasYear ? c.y : 2000;
+                    const firstYear = Math.floor((year - anchor) / bucketYears) * bucketYears + anchor;
+                    if (!buckets.has(firstYear)) buckets.set(firstYear, []);
+                    buckets.get(firstYear).push(c);
+                });
+                items = [...buckets].sort((a, b) => a[0] - b[0]).map(([firstYear, members]) => {
+                    members.sort((a, b) => (a.hasYear ? a.y : 2000) - (b.hasYear ? b.y : 2000) || a.m - b.m || a.d - b.d);
+                    const label = bucketYears === 1 ? `${firstYear}` : bucketYears === 10 ? `${firstYear}s` : `${firstYear}–${firstYear + bucketYears - 1}`;
+                    const id = `cluster:${bucketYears}:${firstYear}`;
+                    const middle = members[Math.floor(members.length / 2)];
+                    timelineClusterContacts.set(id, {label, members});
+                    return {
+                        id, start: new Date(middle.hasYear ? middle.y : 2000, middle.m - 1, middle.d),
+                        className: 'timeline-cluster-item', isCluster: true, label,
+                        count: members.length, previews: members.slice(0, 3).map(c => ({name:c.name, photo:c.photo || avatarFor(c.name)}))
+                    };
+                });
+                if (items.length) items[items.length - 1].edgeEnd = true;
+            }
+            timeline.setOptions({ stack: !grouped });
+            timeline.setItems([...items, ...timelineNeedleItems]);
+            timeline.redraw();
+        }
         function initTimeline() {
             if(timeline) timeline.destroy();
             timeline = new vis.Timeline(document.getElementById('timeline-vis'), new vis.DataSet([]), {
                 height: '100%', orientation: 'top', stack: true,
-                zoomMin: 1000*60*60*24*30, zoomMax: 1000*60*60*24*365*100,
+                zoomMin: 1000*60*60*24*30, zoomMax: 1000*60*60*24*365*300,
                 showCurrentTime: false, verticalScroll: true, zoomKey: 'ctrlKey', margin:{item:15},
                 autoResize: true,
                 template: (item) => {
                     if (item.type === 'background') return '';
-                    return `<div class="contact-node"><img width="48" height="48" src="${item.photo||avatarFor(item.name)}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=avatarFor('Contact')" alt=""></div>`;
+                    if (item.isCluster) {
+                        const faces = item.previews.map(person => `<img src="${escapeTimelineHtml(person.photo)}" data-fallback="${avatarFor(person.name)}" title="${escapeTimelineHtml(person.name)}" alt="" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=this.dataset.fallback">`).join('');
+                        return `<div class="timeline-cluster${item.edgeEnd ? ' edge-end' : ''}" role="button" tabindex="0" data-cluster-id="${item.id}" aria-label="${escapeTimelineHtml(item.label)}: ${item.count} ${item.count === 1 ? 'person' : 'people'}. Open contact list."><div class="timeline-cluster-top"><span class="timeline-cluster-years">${escapeTimelineHtml(item.label)}</span><span class="timeline-cluster-count">${item.count}</span></div><div class="timeline-cluster-faces">${faces}${item.count > 3 ? `<span class="timeline-cluster-more">+${item.count - 3}</span>` : ''}</div></div>`;
+                    }
+                    return `<div class="contact-node"><img width="48" height="48" src="${item.photo||avatarFor(item.name)}" data-fallback="${avatarFor(item.name)}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=this.dataset.fallback" alt=""></div>`;
                 }
             });
 
-            timeline.on('itemover', p => { const c=filteredContacts.find(x=>x.id==p.item); if(c){ const h=document.getElementById('hover-card'); h.style.display='block'; h.style.left=p.event.clientX+15+'px'; h.style.top=p.event.clientY+15+'px'; document.getElementById('hc-name').innerText=c.name; document.getElementById('hc-date').innerText=`${MONTHS[c.m-1]} ${c.d}, ${c.hasYear?c.y:''}`; } });
+            timeline.on('itemover', p => {
+                const cluster = timelineClusterContacts.get(p.item);
+                const c = cluster ? null : filteredContacts.find(x => x.id == p.item);
+                if (!cluster && !c) return;
+                const h = document.getElementById('hover-card');
+                h.style.display = 'block'; h.style.left = p.event.clientX + 15 + 'px'; h.style.top = p.event.clientY + 15 + 'px';
+                document.getElementById('hc-name').textContent = cluster ? `${cluster.label} · ${cluster.members.length} people` : c.name;
+                document.getElementById('hc-date').textContent = cluster ? `${cluster.members.slice(0, 3).map(person => person.name).join(', ')}${cluster.members.length > 3 ? ` +${cluster.members.length - 3} more` : ''}` : `${MONTHS[c.m-1]} ${c.d}, ${c.hasYear ? c.y : ''}`;
+            });
             timeline.on('itemout', () => document.getElementById('hover-card').style.display='none');
-            timeline.on('select', p=>{ if(p.items.length){ const c=filteredContacts.find(x=>x.id==p.items[0]); if(c)showModal(c); timeline.setSelection([],{fireEvent:false}); }});
+            timeline.on('select', p => {
+                if (!p.items.length) return;
+                const cluster = timelineClusterContacts.get(p.items[0]);
+                if (cluster) showListModal(cluster.label, 'Birth years', cluster.members);
+                else { const c = filteredContacts.find(x => x.id == p.items[0]); if (c) showModal(c); }
+                timeline.setSelection([], {fireEvent:false});
+            });
+            document.getElementById('timeline-vis').addEventListener('keydown', event => {
+                const cluster = event.target.closest('.timeline-cluster');
+                if (!cluster || (event.key !== 'Enter' && event.key !== ' ')) return;
+                event.preventDefault();
+                const data = timelineClusterContacts.get(cluster.dataset.clusterId);
+                if (data) showListModal(data.label, 'Birth years', data.members);
+            });
             timeline.on('rangechange', () => updateScrubberFromTimeline());
             timeline.on('rangechanged', () => {
                 updateScrubberFromTimeline();
+                updateTimelineAvatarSize();
+                renderTimelineItems();
                 scheduleRepositionAll();
                 renderTimelineRoster();
             });
@@ -4012,11 +4222,27 @@
             repositionTimer = setTimeout(() => {
                 repositionTimer = null;
                 repositionAllTimelineItems();
+                layoutTimelineClusters();
             }, 16);
         }
 
         let layoutTimelineTimer = null;
         let repositionTimer = null;
+        let fitAllRequested = false;
+        function updateTimelineAvatarSize() {
+            if (!timeline) return;
+            const range = timeline.getWindow();
+            const spanYears = (range.end - range.start) / (365.25 * 24 * 60 * 60 * 1000);
+            const mobile = window.matchMedia('(max-width: 700px)').matches;
+            const compact = spanYears > (mobile ? 18 : 36);
+            const medium = !compact && spanYears > (mobile ? 8 : 18);
+            const view = document.getElementById('timeline-view');
+            if (view.classList.contains('timeline-fit-all') === compact && view.classList.contains('timeline-zoomed-out') === medium) return;
+            view.classList.toggle('timeline-fit-all', compact);
+            view.classList.toggle('timeline-zoomed-out', medium);
+            timeline.setOptions({ margin: { item: compact ? 1 : medium ? 6 : 15 } });
+            timeline.redraw();
+        }
         function repositionAllTimelineItems() {
             if (!timeline?.itemSet?.items) return;
             Object.values(timeline.itemSet.items).forEach(item => {
@@ -4035,7 +4261,7 @@
                 }
                 return;
             }
-            if (fit) { focusTimelineOnContacts(); timelineViewInitialized = true; }
+            if (fit && !fitAllRequested) { focusTimelineOnContacts(); timelineViewInitialized = true; }
             timeline.redraw();
             const itemObjs = timeline.itemSet?.items ? Object.values(timeline.itemSet.items) : [];
             if (itemObjs.length === 0) {
@@ -4049,7 +4275,8 @@
             }
             if (!ready) return;
             repositionAllTimelineItems();
-            requestAnimationFrame(() => repositionAllTimelineItems());
+            layoutTimelineClusters();
+            requestAnimationFrame(() => { repositionAllTimelineItems(); layoutTimelineClusters(); });
             drawScrubber();
             renderTimelineRoster();
         }
@@ -4070,15 +4297,41 @@
             timeline.setWindow(new Date(middle - Math.floor(span / 2), 0, 1), new Date(middle + Math.ceil(span / 2), 0, 1), {animation: false});
         }
 
+        function fitAllTimeline() {
+            if (!timeline || !filteredContacts.length) return;
+            if (layoutTimelineTimer) clearTimeout(layoutTimelineTimer);
+            layoutTimelineTimer = null;
+            fitAllRequested = true;
+            timelineViewInitialized = true;
+            let first = Infinity;
+            let last = -Infinity;
+            filteredContacts.forEach(c => {
+                const date = new Date(c.hasYear ? c.y : 2000, c.m - 1, c.d).getTime();
+                first = Math.min(first, date);
+                last = Math.max(last, date);
+            });
+            const year = 365.25 * 24 * 60 * 60 * 1000;
+            const padding = Math.max((last - first) * 0.06, year / 2);
+            timeline.setWindow(new Date(first - padding), new Date(last + padding), { animation: false });
+            updateTimelineAvatarSize();
+            renderTimelineItems();
+            timeline.redraw();
+        }
+
         function updateTimelineData() {
             if (!timeline) return;
-            const items = filteredContacts.map(c => ({
+            fitAllRequested = false;
+            document.getElementById('timeline-view').classList.remove('timeline-fit-all');
+            document.getElementById('timeline-view').classList.remove('timeline-zoomed-out');
+            timeline.setOptions({ margin: { item: 15 } });
+            timelineContactItems = filteredContacts.map(c => ({
                 id: c.id,
                 start: `${c.hasYear?c.y:2000}-${String(c.m).padStart(2,'0')}-${String(c.d).padStart(2,'0')}`,
                 name: c.name, photo: c.photo
             }));
 
             // Add background needle for the current date (Month/Day) in each year
+            timelineNeedleItems = [];
             const years = allContacts.filter(c => c.hasYear).map(c => c.y);
             if (years.length > 0) {
                 const minY = Math.min(...years);
@@ -4090,7 +4343,7 @@
                 const dStr = String(td).padStart(2, '0');
                 
                 for (let y = minY; y <= maxY; y++) {
-                    items.push({
+                    timelineNeedleItems.push({
                         id: `today-needle-${y}`,
                         start: `${y}-${mStr}-${dStr} 00:00:00`,
                         end: `${y}-${mStr}-${dStr} 23:59:59`,
@@ -4100,9 +4353,8 @@
                 }
             }
 
-            timeline.setItems(items);
-            timeline.redraw();
-            scheduleLayoutTimeline(items.length > 0);
+            renderTimelineItems(true);
+            scheduleLayoutTimeline(timelineContactItems.length > 0);
             renderTimelineRoster();
         }
 
@@ -4247,7 +4499,7 @@
         }
 
         new ResizeObserver(() => drawScrubber()).observe(document.getElementById('scrubber-container'));
-        new ResizeObserver(() => { if (timeline) scheduleLayoutTimeline(); }).observe(document.getElementById('timeline-wrapper'));
+        new ResizeObserver(() => { if (timeline) { updateTimelineAvatarSize(); renderTimelineItems(); scheduleLayoutTimeline(); } }).observe(document.getElementById('timeline-wrapper'));
         new ResizeObserver(() => {
             if(document.getElementById('calendar-view').classList.contains('active')) {
                 renderCalendar();
@@ -4380,12 +4632,22 @@
                     img.alt = '';
                     img.referrerPolicy = 'no-referrer';
                     img.onerror = () => { img.onerror = null; img.src = avatarFor(c.name); };
+                    const copy = document.createElement('span');
+                    copy.className = 'same-row-copy';
                     const name = document.createElement('span');
-                    name.textContent = `${c.name}${c.hasYear ? ` · born ${c.y}` : ''}`;
+                    name.className = 'same-row-name';
+                    name.textContent = c.name;
+                    copy.appendChild(name);
+                    if (c.hasYear) {
+                        const year = document.createElement('span');
+                        year.className = 'same-row-year';
+                        year.textContent = `· born ${c.y}`;
+                        copy.appendChild(year);
+                    }
                     const arrow = document.createElement('i');
                     arrow.className = 'fa-solid fa-arrow-right';
                     arrow.setAttribute('aria-hidden', 'true');
-                    row.append(img, name, arrow);
+                    row.append(img, copy, arrow);
                     card.appendChild(row);
                 });
                 g.appendChild(card);
@@ -4476,6 +4738,8 @@
                     img: (() => {
                         const img = new Image();
                         img.onload = () => { if (activeSubTab === 'cloud') drawBubbles(); };
+                        img.onerror = () => { img.onerror = null; img.src = avatarFor(c.name); };
+                        img.referrerPolicy = 'no-referrer';
                         img.src = c.photo || avatarFor(c.name);
                         return img;
                     })(),
@@ -4886,7 +5150,7 @@
                             display: type === 'doughnut',
                             labels: {
                                 color: textColor,
-                                font: { family: "'Outfit', 'Inter', sans-serif", size: 12, weight: '500' },
+                                font: { family: "'Inter', sans-serif", size: 12, weight: '500' },
                                 padding: 16,
                                 usePointStyle: true,
                                 pointStyle: 'circle',
@@ -4896,11 +5160,11 @@
                     scales: type === 'doughnut' ? {} : {
                         x: {
                             grid: { color: gridColor, drawBorder: false },
-                            ticks: { color: textColor, font: { family: "'Outfit', 'Inter', sans-serif", size: 11 } }
+                            ticks: { color: textColor, font: { family: "'Inter', sans-serif", size: 11 } }
                         },
                         y: {
                             grid: { color: gridColor, drawBorder: false },
-                            ticks: { color: textColor, font: { family: "'Outfit', 'Inter', sans-serif", size: 11 }, precision: 0 }
+                            ticks: { color: textColor, font: { family: "'Inter', sans-serif", size: 11 }, precision: 0 }
                         }
                     },
                     onClick:(e,el)=>{
@@ -4921,7 +5185,7 @@
         }
 
         function showListModal(crit, cat, src) {
-            document.getElementById('list-title').innerText=`${cat}: ${crit}`; const b=document.getElementById('list-body'); b.innerHTML='';
+            const b=document.getElementById('list-body'); b.replaceChildren();
             const matches=src||filteredContacts.filter(c=>{
                 if(cat==='Months')return MONTHS[c.m-1]===crit; if(cat==='Years')return c.y==crit;
                 if(cat==='Season')return ((c.m>=3&&c.m<=5)?'Spring':(c.m>=6&&c.m<=8)?'Summer':(c.m>=9&&c.m<=11)?'Autumn':'Winter')===crit;
@@ -4934,10 +5198,23 @@
                 if(cat==='Generations')return c.hasYear && getGeneration(c.y)===crit;
                 return false;
             });
+            document.getElementById('list-title').textContent = cat === 'Birth years' ? `${crit} · ${matches.length} ${matches.length === 1 ? 'person' : 'people'}` : `${cat}: ${crit}`;
             matches.forEach(c=>{
                 const d=document.createElement('div'); d.className='list-item';
-                d.innerHTML=`<img src="${c.photo||avatarFor(c.name)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" alt="" onerror="this.onerror=null; this.src=avatarFor('Contact')">`+
-                    `<span>${c.name}</span>`;
+                const img = document.createElement('img');
+                img.src = c.photo || avatarFor(c.name);
+                img.style.cssText = 'width:28px;height:28px;border-radius:50%;object-fit:cover;';
+                img.referrerPolicy = 'no-referrer'; img.alt = '';
+                img.onerror = () => { img.onerror = null; img.src = avatarFor(c.name); };
+                const info = document.createElement('span');
+                const name = document.createElement('strong'); name.textContent = c.name;
+                info.appendChild(name);
+                if (cat === 'Birth years') {
+                    const date = document.createElement('small');
+                    date.textContent = `${MONTHS[c.m - 1]} ${c.d}${c.hasYear ? `, ${c.y}` : ' · year unknown'}`;
+                    info.appendChild(date);
+                }
+                d.append(img, info);
                 d.onclick=()=>{showModal(c);document.getElementById('list-modal').style.display='none'}; b.appendChild(d);
             });
             document.getElementById('list-modal').style.display='flex';
@@ -4945,6 +5222,7 @@
             document.getElementById('settings-modal').style.display='none'; 
             lastModalOpenTime = Date.now();
             document.getElementById('modal-backdrop').style.display='flex';
+            document.querySelector('#list-modal .list-close').focus({ preventScroll: true });
         }
 
         function toggleQuickJump() {
@@ -4952,6 +5230,7 @@
             if (!panel) return;
             const isShowing = panel.style.display === 'flex';
             panel.style.display = isShowing ? 'none' : 'flex';
+            document.getElementById('btn-quick-jump').setAttribute('aria-expanded', String(!isShowing));
             if (!isShowing) {
                 // Populate Year Select
                 const yrSel = document.getElementById('jump-year-select');
@@ -4986,6 +5265,9 @@
                 if (mSel) mSel.value = calendarMonth;
 
                 renderJumpDayGrid();
+                yrSel.focus();
+            } else {
+                document.getElementById('btn-quick-jump').focus();
             }
         }
 
@@ -5001,6 +5283,21 @@
             grid.innerHTML = '';
             info.innerText = 'Select a date to jump to';
 
+            const mondayFirst = calendarStartOfWeek === 'Monday';
+            const weekdays = mondayFirst ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            document.getElementById('jump-weekdays').replaceChildren(...weekdays.map(day => {
+                const label = document.createElement('span');
+                label.textContent = day;
+                return label;
+            }));
+            const firstDay = new Date(y, m - 1, 1).getDay();
+            const firstWeekday = mondayFirst ? (firstDay + 6) % 7 : firstDay;
+            for (let i = 0; i < firstWeekday; i++) {
+                const spacer = document.createElement('span');
+                spacer.className = 'jump-day-spacer';
+                grid.appendChild(spacer);
+            }
+
             const numDays = new Date(y, m, 0).getDate();
             const dayCounts = Array(numDays + 1).fill(0);
             const dayContacts = Array(numDays + 1).fill(null).map(() => []);
@@ -5013,22 +5310,12 @@
                 }
             });
 
-            const maxCount = Math.max(...dayCounts, 1);
-            const isDark = document.body.classList.contains('dark');
-
             for (let d = 1; d <= numDays; d++) {
                 const count = dayCounts[d];
-                const cell = document.createElement('div');
-                cell.className = 'jump-day-cell';
-                
-                if (count === 0) {
-                    cell.style.background = isDark ? '#1c1c24' : '#f4f4f5';
-                    cell.style.color = isDark ? '#a1a1aa' : '#71717a';
-                } else {
-                    const pct = count / maxCount;
-                    cell.style.background = `rgba(99, 102, 241, ${0.15 + pct * 0.85})`;
-                    cell.style.color = '#ffffff';
-                }
+                const cell = document.createElement('button');
+                cell.type = 'button';
+                cell.className = 'jump-day-cell' + (count ? ' has-birthday' : '');
+                cell.setAttribute('aria-label', `${MONTHS[m - 1]} ${d}, ${y}: ${count} ${count === 1 ? 'birthday' : 'birthdays'}`);
 
                 cell.innerHTML = `<div>${d}</div><div class="jump-day-count">${count > 0 ? count : ''}</div>`;
 
@@ -5044,10 +5331,10 @@
                     calendarYear = y;
                     renderCalendar();
 
+                    toggleQuickJump();
                     if (count > 0) {
                         showListModal(`${MONTHS[m - 1]} ${d}, ${y}`, "Birthdays", dayContacts[d]);
                     }
-                    toggleQuickJump();
                 };
 
                 grid.appendChild(cell);
@@ -5106,8 +5393,11 @@
             
             document.getElementById('cal-opt-mon').classList.toggle('active', startDay === 'Monday');
             document.getElementById('cal-opt-sun').classList.toggle('active', startDay === 'Sunday');
+            document.getElementById('cal-opt-mon').setAttribute('aria-pressed', String(startDay === 'Monday'));
+            document.getElementById('cal-opt-sun').setAttribute('aria-pressed', String(startDay === 'Sunday'));
             
             renderCalendar();
+            if (document.getElementById('cal-quick-jump-panel').style.display === 'flex') renderJumpDayGrid();
         }
 
         function navigateCalendar(dir) {
@@ -5359,7 +5649,7 @@
 
                     card.innerHTML = `
                         <div class="upcoming-left">
-                            <img class="upcoming-avatar" src="${c.photo || avatarFor(c.name)}" loading="lazy" referrerpolicy="no-referrer" alt="" onerror="this.onerror=null; this.src=avatarFor('Contact')">
+                            <img class="upcoming-avatar" src="${c.photo || avatarFor(c.name)}" data-fallback="${avatarFor(c.name)}" loading="lazy" referrerpolicy="no-referrer" alt="" onerror="this.onerror=null; this.src=this.dataset.fallback">
                             <div class="upcoming-info">
                                 <span class="upcoming-name">${c.name}</span>
                                 <span class="upcoming-date">${MONTHS[c.m - 1]} ${c.d}${ageInfo}</span>
