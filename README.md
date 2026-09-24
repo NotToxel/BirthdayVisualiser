@@ -2,7 +2,7 @@
 
 **Explore your contacts' birthdays through interactive timelines, statistics, and insights.**
 
-[![Version](https://img.shields.io/badge/version-v1.2.5-6366f1)](https://github.com/NotToxel/BirthdayVisualiser)
+[![Version](https://img.shields.io/badge/version-v2.0.0-276c58)](https://github.com/NotToxel/BirthdayVisualiser)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://nottoxel.github.io/BirthdayVisualiser/)
 
@@ -135,7 +135,7 @@ Click the **"Try Demo"** button on the landing page to load [demo-contacts.csv](
 
 ## 🔒 Privacy
 
-**Your data never leaves your browser.** BirthdayVisualiser processes everything client-side using JavaScript. No contact data is uploaded to any server, stored in any database, or shared with any third party. The application works entirely offline after the initial page load.
+**Your contact data stays in your browser.** BirthdayVisualiser parses files locally using JavaScript. It does not upload contacts or use an external avatar service. Embedded photos are shown locally; external photo URLs in imported files are ignored. The demo uses fictional contacts and may load their sample photos from an external host. The chart and import libraries load when needed, so an initial internet connection is required for those views unless the resources are cached.
 
 ---
 

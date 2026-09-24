@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BirthdayVisualiser v1.2.5</title>
+    <title>BirthdayVisualiser — Find the days worth remembering</title>
     <meta name="description" content="Visualise your contact birthdays through timelines, statistics, and insights.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
 
@@ -11,10 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -193,7 +190,7 @@
             background: var(--primary);
             color: #fff;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 12px rgba(27, 48, 36, .12);
         }
         .landing-privacy {
             display: inline-flex;
@@ -224,12 +221,7 @@
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            animation: bounce-down 2s ease-in-out infinite;
             opacity: 0.6;
-        }
-        @keyframes bounce-down {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(6px); }
         }
 
         /* Landing Sections */
@@ -1808,6 +1800,589 @@
             background: var(--surface-2);
             color: #818cf8;
         }
+        /* 2026 visual system: a warm, readable birthday book */
+        :root {
+            --primary: #276c58;
+            --primary-bg: #e9f1eb;
+            --accent: #d96142;
+            --bg: #f8f6f0;
+            --surface: #fffefb;
+            --surface-2: #f0eee7;
+            --text: #24352e;
+            --text-muted: #5e6b63;
+            --border: #dedfd5;
+            --shadow-sm: 0 2px 8px rgba(27, 48, 36, .05);
+            --shadow: 0 12px 36px rgba(27, 48, 36, .09);
+            --radius: 12px;
+            --radius-lg: 16px;
+        }
+        body.dark {
+            --primary: #9dd4b5;
+            --primary-bg: #263d34;
+            --accent: #ef9678;
+            --bg: #17251f;
+            --surface: #20322a;
+            --surface-2: #2a3d33;
+            --text: #f3f4ec;
+            --text-muted: #c3cec3;
+            --border: #3f5145;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, .12);
+            --shadow: 0 12px 36px rgba(0, 0, 0, .22);
+        }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        h1, h2, h3, .logo, .landing-brand, .preview-title { font-family: 'Outfit', 'Inter', sans-serif; }
+        ::selection { background: var(--primary); color: var(--surface); }
+        :focus-visible { outline: 3px solid var(--accent) !important; outline-offset: 3px; }
+        button, input, select { font: inherit; }
+        button, .tab, .sub-tab, .filter-btn, .mobile-nav-item, .drawer-item { touch-action: manipulation; }
+        .landing-hero {
+            min-height: min(820px, 100svh);
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(360px, .92fr);
+            align-items: center;
+            text-align: left;
+            gap: clamp(2rem, 6vw, 7rem);
+            max-width: 1480px;
+            margin: auto;
+            width: 100%;
+            padding: clamp(6rem, 8vw, 8rem) clamp(1.5rem, 6vw, 7rem) 4rem;
+        }
+        #landing-screen {
+            background: radial-gradient(circle at 78% 30%, rgba(224, 232, 212, .5), transparent 36%), var(--bg);
+        }
+        body.dark #landing-screen { background: var(--bg); }
+        #landing-screen > .btn-icon {
+            background: var(--surface);
+            width: 42px;
+            height: 42px;
+            border: 1px solid var(--border);
+        }
+        .landing-content { max-width: 610px; }
+        .landing-brand { display: inline-flex; align-items: center; gap: 10px; font-size: 1rem; font-weight: 700; margin-bottom: 3.5rem; letter-spacing: -.03em; color: var(--text); }
+        .brand-mark { width: 30px; height: 30px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; transform: rotate(-8deg); }
+        .brand-mark span { background: var(--primary); border-radius: 2px 9px 2px 9px; }
+        .brand-mark span:nth-child(2), .brand-mark span:nth-child(3) { background: var(--accent); }
+        .landing-title {
+            color: var(--text);
+            background: none;
+            -webkit-text-fill-color: currentColor;
+            font-size: clamp(3.4rem, 5.8vw, 6rem);
+            font-weight: 700;
+            line-height: .98;
+            letter-spacing: -.04em;
+            margin: 0 0 1.5rem;
+            text-wrap: balance;
+        }
+        .landing-title em { color: var(--primary); font-family: Georgia, serif; font-weight: 400; letter-spacing: -.055em; }
+        .landing-subtitle { font-size: clamp(1rem, 1.5vw, 1.2rem); line-height: 1.65; max-width: 49ch; margin-bottom: 2rem; }
+        .drop-zone {
+            max-width: 490px;
+            flex-direction: row;
+            text-align: left;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0 16px;
+            padding: 1.15rem 1.3rem;
+            border: 1.5px dashed var(--primary);
+            background: var(--surface);
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--radius-lg);
+        }
+        .drop-zone:hover, .drop-zone:focus-within { background: var(--primary-bg); border-color: var(--primary); }
+        .drop-zone-icon { width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center; background: var(--primary-bg); color: var(--primary); border-radius: 10px; font-size: 1rem; grid-row: span 2; }
+        .drop-zone-text { flex: 1 1 calc(100% - 60px); font-size: .96rem; }
+        .drop-zone-hint { margin-left: 60px; margin-top: -8px; font-size: .78rem; }
+        .drop-zone input { z-index: 1; }
+        .landing-actions { justify-content: flex-start; gap: 14px; margin-top: 1rem; }
+        .demo-btn { background: var(--primary); color: #fff; border: none; min-height: 46px; border-radius: 10px; padding: 10px 20px; font-size: .88rem; box-shadow: var(--shadow-sm); }
+        .demo-btn:hover { background: #205a49; transform: translateY(-2px); box-shadow: var(--shadow); }
+        body.dark .demo-btn { color: #17251f; }
+        .landing-format-hint { color: var(--text-muted); font-size: .78rem; }
+        .landing-privacy { display: inline-flex; gap: 8px; align-items: center; margin-top: 2rem; border: 0; background: transparent; padding: 0; border-radius: 0; font-size: .8rem; color: var(--text-muted); }
+        .landing-privacy i { color: var(--primary); }
+        .landing-preview {
+            min-width: 0;
+            background: #e7eadc;
+            color: #24352e;
+            border-radius: 28px;
+            padding: clamp(1.5rem, 3vw, 2.8rem);
+            box-shadow: 0 30px 70px rgba(36, 53, 46, .14);
+            transform: rotate(2deg);
+            position: relative;
+            overflow: hidden;
+        }
+        .landing-preview::before { content: ''; position: absolute; width: 240px; height: 240px; border: 40px solid rgba(39,108,88,.08); border-radius: 50%; top: -140px; right: -100px; }
+        .preview-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; position: relative; }
+        .preview-mark { font-family: Georgia, serif; font-style: italic; font-size: .92rem; }
+        .preview-date { font-size: .66rem; font-weight: 800; letter-spacing: .14em; }
+        .preview-title { font-weight: 700; font-size: clamp(2.1rem, 3vw, 3.5rem); letter-spacing: -.05em; line-height: 1; margin: 2rem 0; position: relative; }
+        .preview-title span { color: var(--accent); }
+        .preview-calendar { background: #fffefb; border-radius: 17px; padding: 1.3rem; position: relative; box-shadow: 0 12px 28px rgba(29, 59, 42, .08); }
+        .preview-weekdays, .preview-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; }
+        .preview-weekdays { font-size: .66rem; font-weight: 800; color: #7a887d; margin-bottom: .6rem; }
+        .preview-days { row-gap: .25rem; }
+        .preview-days span { min-height: clamp(30px, 3.2vw, 45px); display: grid; place-items: center; position: relative; font-size: .78rem; font-weight: 600; }
+        .preview-days .muted { color: #b7bdb4; }
+        .preview-days .marked { background: #dcece1; border-radius: 10px; color: #205a49; }
+        .preview-days .marked.accent { background: #f8e4da; color: #a1472d; }
+        .preview-days i { width: 4px; height: 4px; background: currentColor; border-radius: 50%; position: absolute; bottom: 4px; }
+        .preview-upcoming { display: flex; align-items: center; gap: 12px; padding: 1.3rem .1rem .15rem; font-size: .74rem; }
+        .preview-upcoming > div { display: flex; flex-direction: column; flex: 1; }
+        .preview-upcoming strong { font-size: .86rem; }
+        .preview-spark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: #d96142; color: #fff; font-size: 1.2rem; }
+        .landing-section { max-width: 1280px; margin: 0 auto; padding: 5rem clamp(1.5rem, 6vw, 7rem); }
+        .landing-section-title { font-size: clamp(2rem, 3vw, 3rem); letter-spacing: -.04em; text-align: left; }
+        .landing-section-desc { text-align: left; max-width: 60ch; }
+        .features-grid { grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--border); }
+        .feature-card { border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; box-shadow: none; padding: 1.7rem 1.5rem 1.7rem 0; }
+        .feature-card:hover { transform: none; background: transparent; box-shadow: none; }
+        .feature-icon { font-size: 1.45rem; }
+        .feature-card h3 { font-size: 1.05rem; }
+        .export-card { background: var(--surface); border: 1px solid var(--border); box-shadow: none; border-radius: var(--radius-lg); }
+        nav { height: 70px; padding: 0 clamp(1rem, 2.5vw, 2.5rem); background: var(--surface); border-bottom: 1px solid var(--border); }
+        nav .logo { font-size: 1.08rem; letter-spacing: -.035em; color: var(--text); }
+        nav .logo::before { content: ''; display: inline-block; width: 17px; height: 17px; margin-right: 9px; background: var(--accent); clip-path: polygon(45% 0,55% 0,55% 35%,85% 15%,91% 24%,60% 45%,100% 45%,100% 55%,60% 55%,91% 76%,85% 85%,55% 65%,55% 100%,45% 100%,45% 65%,15% 85%,9% 76%,40% 55%,0 55%,0 45%,40% 45%,9% 24%,15% 15%,45% 35%); vertical-align: middle; }
+        nav .logo span { display: none; }
+        nav .tabs { background: transparent; gap: 3px; padding: 0; }
+        nav .tab { border: 0; background: transparent; border-radius: 8px; padding: 9px 13px; font-weight: 600; }
+        nav .tab.active { background: var(--primary-bg); color: var(--primary); box-shadow: none; }
+        #filter-bar { background: var(--surface); border-bottom: 1px solid var(--border); gap: 9px; padding: 12px clamp(1rem, 2.5vw, 2.5rem); }
+        .filter-btn, .search-wrap input { border-radius: 9px; min-height: 40px; }
+        .filter-chip.tag-chip, body.dark .filter-chip.tag-chip { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
+        .filter-chip.month-chip, body.dark .filter-chip.month-chip { background: var(--surface-2); border-color: var(--accent); color: var(--text); }
+        .filter-btn { background: var(--surface); }
+        .search-wrap input { background: var(--surface-2); border-color: transparent; width: min(280px, 25vw); }
+        .search-wrap input:focus { background: var(--surface); }
+        #count-display { font-variant-numeric: tabular-nums; }
+        #scrubber-container { background: var(--surface); border-bottom: 1px solid var(--border); }
+        #timeline-wrapper { background: var(--bg); }
+        .card, .kpi-card, .upcoming-kpi-card { border: 1px solid var(--border); background: var(--surface); box-shadow: none; border-radius: var(--radius-lg); }
+        .sub-tabs { background: transparent; }
+        .sub-tab { font-weight: 600; border: 0; background: transparent; }
+        .sub-tab.active { color: var(--primary); border-color: var(--primary); }
+        .cal-cell.today { background: var(--primary-bg); }
+        .cal-cell.today .cal-date-num { background: var(--primary); color: var(--surface); }
+        .btn-new { border-radius: 9px; }
+        @media (max-width: 900px) {
+            body { height: 100dvh; }
+            .landing-hero { display: flex; flex-direction: column; align-items: stretch; min-height: auto; padding: 5rem 1.5rem 3rem; gap: 3rem; }
+            .landing-content { max-width: 650px; }
+            .landing-brand { margin-bottom: 2rem; }
+            .landing-preview { width: 100%; max-width: 580px; align-self: center; transform: rotate(1deg); }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            #app-container { height: 100dvh !important; padding-bottom: calc(68px + env(safe-area-inset-bottom)) !important; }
+            nav { height: 62px !important; }
+            #mobile-nav-bar { height: calc(68px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); }
+            .mobile-nav-item { min-width: 56px; min-height: 52px; border-radius: 10px; }
+            .mobile-nav-item { border: 0; background: transparent; font-family: inherit; cursor: pointer; }
+            .mobile-nav-item.active { background: var(--primary-bg); color: var(--primary); }
+            .drawer-item { width: 100%; border: 0; background: transparent; text-align: left; font-family: inherit; }
+            .drawer-close { border: 0; background: transparent; color: var(--text); width: 40px; height: 40px; cursor: pointer; }
+            #filter-bar { gap: 8px; }
+            .search-wrap input { width: 100%; }
+            #upcoming-sidebar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            #upcoming-sidebar h3 { grid-column: 1 / -1; }
+            #upcoming-sidebar .upcoming-kpi-card { min-width: 0; }
+            #calendar-view { overflow-y: auto !important; }
+            #calendar-container { min-height: 530px; }
+            #calendar-grid { min-height: 390px; }
+            .cal-cell { min-height: 64px; }
+        }
+        @media (max-width: 600px) {
+            .landing-hero { padding: 4.7rem 1.1rem 3rem; gap: 2.4rem; }
+            .landing-title { font-size: clamp(3rem, 13vw, 4.8rem); }
+            .landing-subtitle { font-size: 1rem; }
+            .landing-actions { align-items: flex-start; flex-direction: column; gap: 8px; }
+            .landing-preview { padding: 1.3rem; border-radius: 20px; transform: none; }
+            .preview-title { font-size: 2.5rem; margin: 1.4rem 0; }
+            .landing-section { padding: 3.5rem 1.2rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .feature-card { padding: 1.3rem 0; }
+            nav .logo { font-size: .94rem; }
+            nav .btn-new { min-height: 40px; }
+            #filter-bar { padding: 8px 12px; }
+            .filter-btn { min-height: 42px; }
+            #upcoming-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px; }
+            #upcoming-sidebar .upcoming-kpi-card { flex: auto; }
+            #upcoming-main { padding: 12px; }
+            #calendar-view { padding: 8px !important; }
+            #calendar-header { display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; }
+            #calendar-header h2 { text-align: left; width: 100%; font-size: 1.15rem; }
+            #calendar-header .cal-controls { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; gap: 4px; }
+            #calendar-header .cal-controls button { min-height: 40px; padding: 5px; font-size: .72rem; }
+            #calendar-header #btn-quick-jump { grid-column: 1 / -1; }
+            #calendar-header .cal-settings { position: static; width: 100%; justify-content: flex-start !important; }
+            #calendar-container { min-height: 560px; }
+            #calendar-grid { min-height: 390px; }
+            #calendar-weekdays { min-height: 26px; }
+            .cal-cell { min-height: 60px; padding: 3px; }
+            .modal { width: calc(100vw - 20px); max-height: calc(100dvh - 35px); }
+            .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-width: 100%; }
+            .kpi-card { padding: 12px; min-width: 0; }
+            .kpi-card:first-child { grid-column: 1 / -1; }
+            .kpi-label { font-size: .62rem; }
+            .kpi-val { font-size: 1.12rem; overflow-wrap: anywhere; }
+            .stats-grid { grid-template-columns: minmax(0, 1fr); max-width: 100%; }
+            .stats-grid > .card, #card-zodiac-western, #card-zodiac-chinese { grid-column: 1 !important; min-width: 0; }
+            #stats-content { overflow-x: hidden; }
+            .search-wrap { width: calc(100% - 62px); flex: 1 1 calc(100% - 62px); }
+            #count-display { order: 2 !important; margin-left: 0; align-self: center; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
+
+        /* Exploration views */
+        .view-heading {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1.5rem;
+            padding: 1.45rem clamp(1.25rem, 2.5vw, 2.5rem) 1.25rem;
+            background: var(--bg);
+            flex-shrink: 0;
+        }
+        .view-heading h2 {
+            margin: 0;
+            color: var(--text);
+            font-size: clamp(1.55rem, 2.2vw, 2.15rem);
+            line-height: 1.08;
+            letter-spacing: -.035em;
+        }
+        .view-heading p {
+            margin: .45rem 0 0;
+            color: var(--text-muted);
+            font-size: .88rem;
+            line-height: 1.5;
+        }
+        .view-count {
+            flex: 0 0 auto;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: var(--primary-bg);
+            color: var(--primary);
+            font-size: .78rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .view-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 8px 13px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--surface);
+            color: var(--text);
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .view-action:hover { color: var(--primary); border-color: var(--primary); }
+        .timeline-heading { border-bottom: 1px solid var(--border); }
+        .timeline-heading p { max-width: 70ch; }
+        #scrubber-container { --scrubber-h: 94px; }
+        #timeline-wrapper { background: var(--bg); }
+        #timeline-vis .vis-timeline { border: 0; }
+        #timeline-vis .vis-time-axis .vis-text { font-weight: 700; color: var(--text-muted) !important; }
+        #timeline-vis .vis-panel.vis-center { background: var(--surface); }
+        #timeline-vis .vis-grid.vis-vertical { border-color: var(--border); }
+        .contact-node { transition: transform .28s cubic-bezier(.16,1,.3,1); }
+        .contact-node:hover { transform: scale(1.16) translateZ(0); }
+        .contact-node img { border: 3px solid var(--surface); box-shadow: 0 4px 14px rgba(25,45,33,.14); }
+        body.dark .contact-node img { box-shadow: 0 4px 14px rgba(0,0,0,.28); }
+        #hover-card { padding: 10px 14px; border-radius: 10px; box-shadow: var(--shadow); }
+        .timeline-roster { flex: 0 0 136px; min-height: 0; padding: 12px clamp(1rem,2.5vw,2.5rem); background: var(--surface); border-top: 1px solid var(--border); }
+        .timeline-roster-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 9px; }
+        .timeline-roster-heading strong { font-size: .87rem; }
+        .timeline-roster-heading span { color: var(--text-muted); font-size: .72rem; font-variant-numeric: tabular-nums; }
+        #timeline-roster-list { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
+        .timeline-person { display: flex; align-items: center; gap: 9px; flex: 0 0 185px; min-width: 0; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); text-align: left; cursor: pointer; font: inherit; transition: background .2s ease, border-color .2s ease; }
+        .timeline-person:hover { background: var(--primary-bg); border-color: var(--primary); }
+        .timeline-person img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex: 0 0 36px; }
+        .timeline-person span { min-width: 0; }
+        .timeline-person strong { display: block; font-size: .72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .timeline-person small { display: block; color: var(--text-muted); font-size: .64rem; }
+        .timeline-roster-empty { color: var(--text-muted); font-size: .8rem; padding: 9px 0; }
+
+        #stats-content { padding: 0 clamp(1.25rem, 2.5vw, 2.5rem) 3rem; }
+        #stats-content > .view-heading { padding-left: 0; padding-right: 0; }
+        .section-heading {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 1.8rem 0 1rem;
+        }
+        .section-heading h3 { margin: 0; font-size: 1.35rem; letter-spacing: -.03em; line-height: 1.2; }
+        .section-heading p { margin: .25rem 0 0; color: var(--text-muted); font-size: .82rem; }
+        .sub-tabs {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            margin: 0 0 1rem;
+            width: fit-content;
+            max-width: 100%;
+            background: var(--surface);
+            border-radius: 11px;
+            box-shadow: var(--shadow-sm);
+        }
+        .sub-tab { min-height: 40px; padding: 8px 17px; border-radius: 8px; }
+        .sub-tab.active { background: var(--primary) !important; color: #fff !important; border: 0; }
+        body.dark .sub-tab.active { color: #17251f !important; }
+        .kpi-grid { max-width: 100%; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .75rem; }
+        .kpi-card { min-width: 0; min-height: 120px; padding: 1.1rem 1.2rem; display: flex; flex-direction: column; justify-content: space-between; }
+        .kpi-card:first-child { background: #276c58; border-color: #276c58; }
+        .kpi-card:first-child .kpi-label { color: #dcece1; }
+        .kpi-card:first-child .kpi-val { color: #fff; }
+        .kpi-label { font-size: .69rem; font-weight: 700; line-height: 1.4; }
+        .kpi-val { font-size: clamp(1.3rem, 1.65vw, 1.8rem); line-height: 1.1; overflow-wrap: anywhere; }
+        .stats-grid { max-width: 100%; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .9rem; }
+        .stats-grid > .card { grid-column: span 2; min-width: 0; min-height: 285px; padding: 1.2rem; }
+        .stats-grid > #card-zodiac-western, .stats-grid > #card-zodiac-chinese { grid-column: span 3 !important; }
+        .card h3 { color: var(--text); font-size: .83rem; letter-spacing: 0; text-transform: none; margin-bottom: .85rem; }
+        .card canvas { max-width: 100%; }
+        #sub-view-temporal .stats-grid > .card-heatmap { grid-column: span 4 !important; min-height: 445px; height: auto !important; }
+        #sub-view-temporal .stats-grid > .card:nth-child(2) { grid-column: span 2; }
+        #sub-view-temporal .stats-grid > .card:nth-child(n+3) { grid-column: span 2; }
+        .chart-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+        .chart-heading span { color: var(--text-muted); font-size: .72rem; }
+        .heatmap-scroll { overflow-x: auto; overflow-y: hidden; min-width: 0; flex: 1; border-radius: 11px; background: var(--surface-2); }
+        .heatmap-stage { width: 100%; min-width: 760px; height: 330px; }
+        #heatmap-canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+        .heatmap-footer { display: flex; justify-content: space-between; gap: 1rem; padding-top: .8rem; font-size: .72rem; color: var(--text-muted); }
+        .heatmap-scale { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .heatmap-scale i, .heatmap-scale b { display: inline-block; width: 14px; height: 14px; border-radius: 3px; }
+        .heatmap-scale i { background: var(--surface-2); }
+        .heatmap-scale b { background: var(--primary); }
+        #sub-view-cloud .section-heading { margin-top: 1.8rem; }
+        .card-cloud { min-height: 610px !important; height: min(680px, 72vh) !important; padding: 10px !important; grid-column: 1 / -1 !important; grid-row: auto; }
+        .card-cloud .bubble-wrapper {
+            min-height: 0;
+            background: #e5ebe2;
+            border-radius: 11px;
+            overflow: hidden;
+        }
+        body.dark .card-cloud .bubble-wrapper { background: #273b30; }
+        #bubble-canvas { cursor: pointer; }
+        .cloud-person {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 46px;
+            padding: 5px 10px 12px;
+        }
+        .cloud-person-label { color: var(--primary); text-transform: uppercase; font-size: .6rem; font-weight: 800; letter-spacing: .1em; }
+        .cloud-person strong { font-size: .92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cloud-person span:last-child { color: var(--text-muted); font-size: .72rem; }
+        .cloud-person #cloud-person-date { margin-left: auto; }
+        .cloud-directory { margin-top: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+        .cloud-directory summary { cursor: pointer; padding: 14px 17px; font-weight: 700; }
+        .cloud-directory summary:hover { color: var(--primary); }
+        .cloud-contact-list { display: grid; grid-template-columns: repeat(auto-fill,minmax(225px,1fr)); gap: 6px; padding: 0 12px 12px; max-height: 350px; overflow-y: auto; }
+        .cloud-contact-list button { display: flex; align-items: center; gap: 9px; text-align: left; padding: 7px; border: 0; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; }
+        .cloud-contact-list button:hover { background: var(--primary-bg); }
+        .cloud-contact-list img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+        .cloud-contact-list small { display: block; color: var(--text-muted); }
+
+        #same-bday-view { padding: 0 0 2rem; background: var(--bg); }
+        #same-bday-view .view-heading { padding-bottom: 1.6rem; }
+        .same-grid { padding: 0 clamp(1.25rem,2.5vw,2.5rem); grid-template-columns: repeat(3,minmax(0,1fr)); gap: .9rem; align-items: start; }
+        .same-card { padding: 1.1rem 1.2rem; border-radius: var(--radius-lg); box-shadow: none; transition: border-color .2s ease, transform .28s cubic-bezier(.16,1,.3,1); }
+        .same-card:hover { transform: translateY(-3px); }
+        .same-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 8px; padding: 0 0 11px; border-bottom: 1px solid var(--border); color: var(--text); }
+        .same-date { font: 700 1.28rem/1.1 'Outfit', sans-serif; letter-spacing: -.025em; }
+        .same-people { color: var(--primary); background: var(--primary-bg); border-radius: 999px; padding: 4px 8px; font-size: .7rem; font-weight: 700; white-space: nowrap; }
+        .same-row { width: 100%; display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 5px 2px; border: 0; background: transparent; color: var(--text); text-align: left; font: inherit; font-size: .82rem; }
+        .same-row img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+        .same-row span { flex: 1; min-width: 0; }
+        .same-row i { color: var(--text-muted); font-size: .7rem; opacity: 0; transition: opacity .2s ease, transform .2s ease; }
+        .same-row:hover i, .same-row:focus-visible i { opacity: 1; transform: translateX(2px); }
+        .view-empty { grid-column: 1 / -1; padding: 2rem; border: 1px dashed var(--border); border-radius: var(--radius-lg); background: var(--surface); color: var(--text-muted); font-size: .9rem; }
+
+        #missing-view, #upcoming-view { background: var(--bg); }
+        #missing-layout { flex: 1; min-height: 0; flex-direction: column; overflow-y: auto; }
+        #missing-sidebar { width: auto; min-height: 74px; padding: 14px clamp(1.25rem,2.5vw,2.5rem); border-right: 0; border-block: 1px solid var(--border); flex-direction: row; align-items: center; gap: 15px; overflow: visible; }
+        #missing-sidebar h3 { color: var(--text); font-size: .8rem; white-space: nowrap; letter-spacing: 0; text-transform: none; }
+        #dd-missing-tag { width: min(260px,50vw) !important; }
+        #missing-main { flex: 1; overflow: visible; padding: 1.2rem clamp(1.25rem,2.5vw,2.5rem) 2rem; }
+        .missing-summary { display: flex; gap: 1.3rem; flex-wrap: wrap; margin-bottom: 1rem; color: var(--text-muted); font-size: .82rem; }
+        .missing-summary > span { display: inline-flex; align-items: center; gap: 5px; }
+        .missing-summary strong { color: var(--text); font-variant-numeric: tabular-nums; }
+        .missing-key { width: 8px; height: 8px; border-radius: 50%; margin-right: 3px; }
+        .missing-key.no-date { background: var(--accent); }
+        .missing-key.no-year { background: #c69b52; }
+        .missing-grid { grid-template-columns: repeat(auto-fill,minmax(265px,1fr)); gap: .75rem; align-items: start; }
+        .missing-card { width: 100%; min-height: 72px; padding: 11px 13px; border-radius: 12px; text-align: left; font: inherit; background: var(--surface); color: var(--text); transition: border-color .2s ease, transform .28s cubic-bezier(.16,1,.3,1); }
+        .missing-card:hover { transform: translateY(-2px); }
+        .missing-card img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+        .missing-card .missing-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+        .missing-card .missing-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .missing-card > i { color: var(--text-muted); }
+        .badge { width: fit-content; padding: 3px 7px; border-radius: 6px; font-size: .61rem; letter-spacing: .03em; }
+        .badge-red { background: #fbe8df; color: #9d422a; }
+        .badge-yellow { background: #f7ecd5; color: #795821; }
+        body.dark .badge-red { background: #57382e; color: #ffd4c4; }
+        body.dark .badge-yellow { background: #564730; color: #f7dfab; }
+
+        #upcoming-layout { flex-direction: column; min-height: 0; overflow-y: auto; }
+        #upcoming-sidebar { width: auto; padding: 1.1rem clamp(1.25rem,2.5vw,2.5rem) 1.2rem; border-right: 0; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: .75rem; overflow: visible; }
+        #upcoming-sidebar h3 { grid-column: 1 / -1; color: var(--text); letter-spacing: 0; text-transform: none; font-size: .87rem; }
+        .upcoming-kpi-card { min-height: 100px; padding: 12px 14px; background: var(--surface); justify-content: space-between; gap: 5px; }
+        .upcoming-kpi-label { font-weight: 700; }
+        .upcoming-kpi-val { font-size: 1.15rem; line-height: 1.2; }
+        #upcoming-main { overflow: visible; padding: 1.5rem clamp(1.25rem,2.5vw,2.5rem); }
+        #upcoming-feed { max-width: 980px; }
+        .upcoming-section { gap: 9px; }
+        .upcoming-sec-header { border-color: var(--border) !important; padding-bottom: 9px; margin-bottom: 2px; }
+        .upcoming-card { width: 100%; min-height: 76px; padding: .85rem 1rem; text-align: left; color: var(--text); font: inherit; transition: border-color .2s ease, transform .28s cubic-bezier(.16,1,.3,1), box-shadow .28s ease; }
+        .upcoming-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .upcoming-avatar { width: 46px; height: 46px; }
+        .upcoming-name { font-size: .94rem; }
+        .upcoming-date { font-size: .78rem; }
+
+        #calendar-header h2 { font-size: 1.14rem; letter-spacing: -.025em; }
+        .cal-nav-btn { min-height: 40px; background: var(--surface); }
+        .cal-nav-btn:hover { background: var(--primary-bg); }
+        .cal-cell { transition: background .2s ease; }
+        .cal-cell.other-month { opacity: 1; background: var(--surface-2); }
+        .cal-date-num { font-variant-numeric: tabular-nums; }
+        .modal { box-shadow: 0 18px 60px rgba(0,0,0,.2); animation: modalIn .26s cubic-bezier(.16,1,.3,1); }
+        .modal-close { width: 36px; height: 36px; border: 0; font: inherit; }
+        #modal-backdrop { padding: 16px; background: rgba(20, 35, 28, .55); }
+        #contact-modal { width: min(520px, 100%); max-width: 100%; max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: 18px; }
+        .contact-hero { position: relative; padding: 32px 30px 26px; background: linear-gradient(145deg, var(--primary-bg), var(--surface) 68%); border-bottom: 1px solid var(--border); }
+        .contact-overline { display: block; margin-bottom: 18px; color: var(--primary); font-size: .65rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+        #contact-modal .modal-close { z-index: 1; top: 20px; right: 20px; width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--text); }
+        #contact-modal .modal-close:hover { background: var(--primary-bg); color: var(--primary); }
+        #contact-modal .modal-top { padding: 0; align-items: center; gap: 18px; }
+        #contact-modal .modal-avatar { width: 88px; height: 88px; border: 4px solid var(--surface); box-shadow: 0 4px 16px rgba(27,48,36,.13); }
+        #contact-modal .modal-name { font-family: 'Outfit', 'Inter', sans-serif; font-size: clamp(1.35rem, 4vw, 1.8rem); line-height: 1.1; white-space: normal; overflow-wrap: anywhere; }
+        #contact-modal .modal-meta { margin-top: 8px; font-size: .9rem; color: var(--text-muted); }
+        .contact-milestones { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 25px; }
+        .contact-milestones.single { grid-template-columns: minmax(0,1fr); }
+        .contact-milestone { display: flex; flex-direction: column; justify-content: center; gap: 5px; min-width: 0; min-height: 80px; padding: 15px 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+        #contact-modal [hidden] { display: none !important; }
+        .contact-milestone:first-child { border-color: var(--primary); background: var(--primary-bg); }
+        .contact-milestone-label { color: var(--text-muted); font-size: .64rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+        .contact-milestone strong { color: var(--text); font-family: 'Outfit', 'Inter', sans-serif; font-size: 1.3rem; line-height: 1.1; }
+        .contact-milestone small { color: var(--text-muted); font-size: .71rem; }
+        #contact-modal .modal-body { display: grid; gap: 22px; padding: 24px 30px 30px; }
+        .contact-section h3 { margin: 0 0 10px; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: .67rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+        #contact-modal .modal-badges, #contact-modal .tag-cloud { margin: 0; gap: 7px; }
+        #contact-modal .modal-badge, #contact-modal .tag { padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--text); font-size: .76rem; font-weight: 600; }
+        #contact-modal .modal-badge-primary { border-color: var(--primary-bg); background: var(--primary-bg); color: var(--primary); }
+        #contact-modal .tag { background: transparent; color: var(--text-muted); }
+        #contact-modal .detail-box { display: grid; gap: 0; padding: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+        #contact-modal .detail-row { display: grid; grid-template-columns: 22px minmax(0,1fr); align-items: center; gap: 12px; min-height: 53px; margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: .82rem; overflow-wrap: anywhere; }
+        #contact-modal .detail-row:last-child { border-bottom: 0; }
+        #contact-modal .detail-row i { color: var(--primary); font-size: .85rem; }
+        #contact-modal .detail-row a { color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
+        #contact-modal .detail-row a:hover { color: var(--primary); text-decoration: underline; }
+        #contact-modal .contact-empty { padding: 16px; color: var(--text-muted); font-size: .8rem; }
+        #settings-modal { width: min(560px, 100%); max-width: 100%; max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: 18px; }
+        .settings-header { display: flex; justify-content: space-between; gap: 18px; padding: 30px 30px 24px; border-bottom: 1px solid var(--border); background: linear-gradient(145deg, var(--primary-bg), var(--surface) 72%); }
+        .settings-overline { display: block; margin-bottom: 7px; color: var(--primary); font-size: .65rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+        .settings-header h2 { margin: 0; color: var(--text); font-size: 1.7rem; line-height: 1.1; }
+        .settings-header p { margin: 9px 0 0; color: var(--text-muted); font-size: .82rem; line-height: 1.5; }
+        .settings-close { flex: 0 0 40px; width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--text); cursor: pointer; }
+        .settings-close:hover { background: var(--primary-bg); color: var(--primary); }
+        .settings-content { padding: 24px 30px 28px; }
+        .settings-section + .settings-section { margin-top: 25px; }
+        .settings-section h3 { margin: 0 0 10px; color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: .67rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+        #settings-modal .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 76px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+        #settings-modal .settings-row:last-child { border-bottom: 0; }
+        .settings-copy { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .settings-copy strong { display: block; color: var(--text); font-size: .86rem; }
+        .settings-copy small { display: block; margin-top: 3px; color: var(--text-muted); font-size: .72rem; line-height: 1.4; }
+        .settings-icon { flex: 0 0 36px; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--primary-bg); color: var(--primary); }
+        #settings-modal .segmented-control { flex: 0 0 auto; border-radius: 10px; padding: 3px; }
+        #settings-modal .segmented-control button { min-width: 66px; min-height: 36px; border-radius: 7px; font-size: .76rem; }
+        #settings-modal .segmented-control button.active, body.dark #settings-modal .segmented-control button.active { background: var(--primary); color: #fff; box-shadow: none; }
+        body.dark #settings-modal .segmented-control button.active { color: #17251f; }
+        .settings-storage { display: flex; align-items: center; gap: 8px; margin: 22px 0 0; color: var(--text-muted); font-size: .73rem; }
+        .settings-storage i { color: var(--primary); }
+        #settings-modal .build-info { margin-top: 22px; padding: 0; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font-size: .77rem; }
+        #settings-modal .build-info summary { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; color: var(--text); font-weight: 700; cursor: pointer; list-style: none; }
+        #settings-modal .build-info summary::-webkit-details-marker { display: none; }
+        #settings-modal .build-info summary i { color: var(--text-muted); transition: transform .2s ease; }
+        #settings-modal .build-info[open] summary i { transform: rotate(180deg); }
+        #settings-modal .build-info-content { padding: 4px 16px 16px; border-top: 1px solid var(--border); }
+        #settings-modal .build-info-line { display: grid; grid-template-columns: 90px minmax(0,1fr); align-items: start; gap: 12px; padding: 9px 0; line-height: 1.4; }
+        #settings-modal .build-info-label { opacity: 1; color: var(--text-muted); }
+        #settings-modal .build-info-value { text-align: right; overflow-wrap: anywhere; }
+        #settings-modal .build-hash { justify-self: end; width: fit-content; padding: 0; border: 0; background: transparent; }
+        .build-project-link { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; color: var(--primary); font-weight: 700; text-decoration: none; }
+        .build-project-link:hover { text-decoration: underline; }
+        @media (max-width: 600px) {
+            #modal-backdrop { padding: 12px; }
+            #contact-modal { max-height: calc(100dvh - 24px); }
+            .contact-hero { padding: 24px 20px 20px; }
+            .contact-overline { margin-bottom: 16px; }
+            #contact-modal .modal-top { gap: 14px; }
+            #contact-modal .modal-avatar { width: 72px; height: 72px; }
+            #contact-modal .modal-name { font-size: 1.4rem; }
+            .contact-milestones { gap: 8px; margin-top: 20px; }
+            .contact-milestone { min-height: 72px; padding: 12px; }
+            .contact-milestone strong { font-size: 1.1rem; }
+            #contact-modal .modal-body { gap: 18px; padding: 20px; }
+            #settings-modal { max-height: calc(100dvh - 24px); }
+            .settings-header { padding: 24px 20px 20px; }
+            .settings-header h2 { font-size: 1.5rem; }
+            .settings-content { padding: 18px 20px 22px; }
+            #settings-modal .settings-row { align-items: stretch; flex-direction: column; gap: 12px; }
+            #settings-modal .segmented-control { width: 100%; }
+            #settings-modal .segmented-control button { flex: 1; min-height: 42px; }
+        }
+        @media (max-width: 1050px) {
+            .kpi-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+            .stats-grid > .card { grid-column: span 3; }
+            .stats-grid > #card-zodiac-western, .stats-grid > #card-zodiac-chinese { grid-column: span 3 !important; }
+            #sub-view-temporal .stats-grid > .card-heatmap { grid-column: 1 / -1 !important; }
+            #sub-view-temporal .stats-grid > .card:nth-child(2) { grid-column: span 3; }
+            #sub-view-temporal .stats-grid > .card:nth-child(n+3) { grid-column: span 3; }
+            .same-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+        }
+        @media (max-width: 700px) {
+            .view-heading { align-items: flex-start; padding: 1.2rem 1rem 1rem; }
+            .view-heading h2 { font-size: 1.55rem; }
+            .view-heading p { font-size: .78rem; }
+            .view-count { font-size: .69rem; padding: 6px 9px; }
+            .timeline-heading { align-items: center; }
+            .timeline-heading p { display: none; }
+            .view-action { flex: 0 0 auto; }
+            .timeline-roster { flex-basis: 132px; padding: 11px 1rem; }
+            .timeline-roster-heading span { font-size: .65rem; }
+            .timeline-person { flex-basis: 160px; }
+            #stats-content { padding: 0 1rem 2rem; }
+            .section-heading { margin: 1.35rem 0 .8rem; }
+            .section-heading h3 { font-size: 1.2rem; }
+            .sub-tabs { width: 100%; }
+            .sub-tab { flex: 1; padding: 8px 10px; }
+            .kpi-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: .6rem; }
+            .kpi-card { min-height: 108px; padding: .85rem; }
+            .kpi-card:first-child { grid-column: 1 / -1; min-height: 90px; }
+            .kpi-val { font-size: 1.15rem; }
+            .stats-grid { display: grid; grid-template-columns: minmax(0,1fr); }
+            .stats-grid > .card, .stats-grid > #card-zodiac-western, .stats-grid > #card-zodiac-chinese, #sub-view-temporal .stats-grid > .card-heatmap, #sub-view-temporal .stats-grid > .card:nth-child(n+2) { grid-column: 1 !important; }
+            .stats-grid > .card { min-height: 275px; }
+            .heatmap-stage { min-width: 780px; }
+            .heatmap-footer { flex-direction: column; gap: .4rem; }
+            .card-cloud { height: 490px !important; min-height: 490px !important; }
+            .cloud-person { gap: 8px; padding: 5px 5px 10px; }
+            .cloud-person-label { display: none; }
+            .cloud-person strong { font-size: .82rem; }
+            .cloud-person span:last-child { font-size: .66rem; }
+            .same-grid { grid-template-columns: minmax(0,1fr); padding: 0 1rem 1rem; }
+            #missing-sidebar { padding: 12px 1rem; }
+            #missing-main { padding: 1rem; }
+            #upcoming-sidebar { grid-template-columns: repeat(2,minmax(0,1fr)); padding: 1rem; }
+            #upcoming-main { padding: 1rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .modal, .contact-node { animation: none !important; transition: none !important; }
+        }
+
     </style>
 </head>
 <body>
@@ -1821,32 +2396,37 @@
         <!-- Hero -->
         <div class="landing-hero">
             <div class="landing-content">
-                <h1 class="landing-title">BirthdayVisualiser</h1>
-                <p class="landing-subtitle">Explore your contacts' birthdays through interactive timelines, rich statistics, calendar views, and beautiful visualisations — all privately in your browser.</p>
+                <div class="landing-brand"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span> BirthdayVisualiser</div>
+                <h1 class="landing-title">Every birthday<br><em>has a place.</em></h1>
+                <p class="landing-subtitle">Turn a contact export into a birthday calendar you can explore. Find the next celebration, spot patterns, and keep every date in view.</p>
 
                 <label class="drop-zone" id="drop-zone">
-                    <i class="fa-solid fa-arrow-up-from-bracket drop-zone-icon"></i>
-                    <span class="drop-zone-text">Drop your contacts CSV or VCF here</span>
-                    <span class="drop-zone-hint">or click to browse</span>
+                    <i class="fa-solid fa-arrow-up-from-bracket drop-zone-icon" aria-hidden="true"></i>
+                    <span class="drop-zone-text">Choose your contacts file</span>
+                    <span class="drop-zone-hint">CSV or VCF · you can also drop it here</span>
                     <span class="drop-zone-file" id="drop-zone-file"></span>
-                    <input type="file" id="upload-input" accept=".csv,.vcf,.vcard">
+                    <input type="file" id="upload-input" accept=".csv,.vcf,.vcard" aria-label="Choose a CSV or VCF contacts file">
                 </label>
 
                 <div class="landing-actions">
                     <button class="demo-btn" onclick="loadDemo()">
-                        <i class="fa-solid fa-play"></i> Try Demo
+                        <i class="fa-solid fa-play" aria-hidden="true"></i> Explore the demo
                     </button>
-                    <p class="landing-format-hint" style="margin: 0;">Supports Google Contacts CSV &amp; vCard VCF</p>
+                    <p class="landing-format-hint" style="margin: 0;">No file ready? Start with sample contacts.</p>
                 </div>
 
                 <div class="landing-privacy">
-                    <i class="fa-solid fa-lock"></i> Your data never leaves your browser
+                    <i class="fa-solid fa-lock" aria-hidden="true"></i> Your contacts stay in your browser
                 </div>
             </div>
-
-            <div class="landing-scroll-hint">
-                <span>Learn more</span>
-                <i class="fa-solid fa-chevron-down"></i>
+            <div class="landing-preview" aria-label="Illustrative calendar preview using sample names">
+                <div class="preview-top"><span class="preview-mark">A little more to celebrate.</span><span class="preview-date">SEPTEMBER / SAMPLE</span></div>
+                <div class="preview-title">Your people,<br>all in one place<span>.</span></div>
+                <div class="preview-calendar" aria-hidden="true">
+                    <div class="preview-weekdays"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+                    <div class="preview-days"><span class="muted">31</span><span>1</span><span>2</span><span>3</span><span class="marked">4<i></i></span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span class="marked accent">10<i></i></span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span class="marked">18<i></i></span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span class="marked accent">26<i></i></span><span>27</span></div>
+                </div>
+                <div class="preview-upcoming"><span class="preview-spark"><i class="fa-solid fa-gift" aria-hidden="true"></i></span><div><strong>Next up</strong><span>Sample birthday · 4 September</span></div><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></div>
             </div>
         </div>
 
@@ -1958,7 +2538,7 @@
                     <i class="fa-brands fa-github"></i> View on GitHub
                 </a>
             </div>
-            <p>v1.2.5 · Licensed under <a href="https://github.com/NotToxel/BirthdayVisualiser/blob/main/LICENSE" target="_blank" rel="noopener">AGPL-3.0</a></p>
+            <p>v2.0.0 · Licensed under <a href="https://github.com/NotToxel/BirthdayVisualiser/blob/main/LICENSE" target="_blank" rel="noopener">AGPL-3.0</a></p>
             <p>Made with ❤️ by <a href="https://github.com/NotToxel" target="_blank" rel="noopener">NotToxel</a></p>
         </div>
     </div>
@@ -1970,19 +2550,19 @@
     </div>
 
     <!-- App -->
-    <div id="app-container">
+    <div id="app-container" role="main">
         <nav>
-            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v1.2.5</span></div>
+            <div class="logo">BirthdayVisualiser <span style="font-size: 0.6875rem; font-weight: 500; opacity: 0.6; margin-left: 3px;">v2.0.0</span></div>
             <div class="tabs">
-                <div class="tab active" onclick="setTab('timeline')">Timeline</div>
-                <div class="tab" onclick="setTab('calendar')">Calendar</div>
-                <div class="tab" onclick="setTab('upcoming')">Upcoming</div>
-                <div class="tab" onclick="setTab('stats')">Statistics</div>
-                <div class="tab" onclick="setTab('same')">Same Birthday</div>
-                <div class="tab" onclick="setTab('missing')">Missing Data</div>
+                <button type="button" class="tab active" onclick="setTab('timeline')">Timeline</button>
+                <button type="button" class="tab" onclick="setTab('calendar')">Calendar</button>
+                <button type="button" class="tab" onclick="setTab('upcoming')">Upcoming</button>
+                <button type="button" class="tab" onclick="setTab('stats')">Statistics</button>
+                <button type="button" class="tab" onclick="setTab('same')">Same Birthday</button>
+                <button type="button" class="tab" onclick="setTab('missing')">Missing Data</button>
             </div>
             <div class="nav-actions">
-                <div class="btn-icon" onclick="openSettingsModal()" title="Settings"><i class="fa-solid fa-gear"></i></div>
+                <button type="button" class="btn-icon" onclick="openSettingsModal()" aria-label="Open settings" title="Settings"><i class="fa-solid fa-gear" aria-hidden="true"></i></button>
                 <button class="btn-new" onclick="newAnalysis()"><i class="fa-solid fa-arrow-rotate-right"></i> New</button>
             </div>
         </nav>
@@ -2016,6 +2596,10 @@
         </div>
 
         <div id="timeline-view" class="view active">
+            <div class="view-heading timeline-heading">
+                <div><h2>Birthday timeline</h2><p>Explore birth years. Drag to move through time; hold Ctrl while scrolling to zoom.</p></div>
+                <button type="button" class="view-action" onclick="timeline?.fit()"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Fit all</button>
+            </div>
             <div id="scrubber-container">
                 <canvas id="scrubber-canvas"></canvas>
                 <div id="scrubber-needle"></div>
@@ -2031,6 +2615,7 @@
                     <div class="no-results-desc">Try adjusting your tag, month, or search filters.</div>
                 </div>
             </div>
+            <div class="timeline-roster"><div class="timeline-roster-heading"><strong>In this window</strong><span id="timeline-window-label">Move the timeline to explore</span></div><div id="timeline-roster-list" aria-label="Contacts in the visible timeline range"></div></div>
         </div>
 
         <div id="stats-view" class="view">
@@ -2040,14 +2625,16 @@
                 <div class="no-results-desc">No data matches the selected filters to compute statistics.</div>
             </div>
             <div id="stats-content">
+                <div class="view-heading stats-heading"><div><h2>By the numbers</h2><p>Patterns and curious details across your filtered contacts.</p></div><span class="view-count" id="stats-view-count">0 people</span></div>
                 <div class="sub-tabs">
-                    <div class="sub-tab active" onclick="setSubTab('overview')">Overview</div>
-                    <div class="sub-tab" onclick="setSubTab('temporal')">Temporal</div>
-                    <div class="sub-tab" onclick="setSubTab('cloud')">Cloud</div>
+                    <button type="button" class="sub-tab active" onclick="setSubTab('overview')">Overview</button>
+                    <button type="button" class="sub-tab" onclick="setSubTab('temporal')">Temporal</button>
+                    <button type="button" class="sub-tab" onclick="setSubTab('cloud')">Cloud</button>
                 </div>
 
                 <!-- Overview -->
                 <div id="sub-view-overview" class="sub-view active">
+                    <div class="section-heading"><div><h3>At a glance</h3><p>A quick portrait of this group.</p></div></div>
                     <div class="kpi-grid">
                         <div class="kpi-card">
                             <div class="kpi-label">Average Age</div>
@@ -2071,6 +2658,7 @@
                         </div>
                     </div>
 
+                    <div class="section-heading"><div><h3>Explore the details</h3><p>Select a chart bar or segment to see the people behind it.</p></div></div>
                     <div class="stats-grid">
                         <div class="card"><h3>Birth Year</h3><canvas id="chart-years"></canvas></div>
                         <div class="card"><h3>Decade of Birth</h3><canvas id="chart-decades"></canvas></div>
@@ -2082,10 +2670,12 @@
 
                 <!-- Temporal -->
                 <div id="sub-view-temporal" class="sub-view">
+                    <div class="section-heading"><div><h3>Across the years</h3><p>See when birthdays cluster by birth year, month, and season.</p></div></div>
                     <div class="stats-grid">
                         <div class="card card-heatmap" style="grid-column: span 2;">
-                            <h3>Density Heatmap</h3>
-                            <div class="bubble-wrapper" style="height:350px"><canvas id="heatmap-canvas"></canvas></div>
+                            <div class="chart-heading"><h3>Birth year &amp; month</h3><span>Tap a filled cell to see contacts</span></div>
+                            <div class="heatmap-scroll"><div class="heatmap-stage"><canvas id="heatmap-canvas" role="img" aria-label="Birthday density by birth year and month"></canvas></div></div>
+                            <div class="heatmap-footer"><span id="heatmap-readout">Move over the chart to inspect a month.</span><span class="heatmap-scale"><i></i> Fewer <b></b> More</span></div>
                         </div>
                         <div class="card"><h3>Birth Month</h3><canvas id="chart-months"></canvas></div>
                         <div class="card"><h3>Season</h3><canvas id="chart-season"></canvas></div>
@@ -2096,15 +2686,18 @@
 
                 <!-- Cloud -->
                 <div id="sub-view-cloud" class="sub-view">
+                    <div class="section-heading"><div><h3>People, all together</h3><p>Explore the contact cloud. Select a face to open its details.</p></div><span class="view-count" id="cloud-view-count">0 people</span></div>
                     <div class="card card-cloud" style="width: 100%; box-sizing: border-box;">
-                        <h3>Contact Cloud</h3>
-                        <div class="bubble-wrapper"><canvas id="bubble-canvas"></canvas></div>
+                        <div class="cloud-person" id="cloud-person" aria-live="polite"><span class="cloud-person-label">Explore a face</span><strong id="cloud-person-name">Choose a contact</strong><span id="cloud-person-date">Select to open details</span></div>
+                        <div class="bubble-wrapper"><canvas id="bubble-canvas" aria-label="Interactive contact cloud"></canvas></div>
                     </div>
+                    <details class="cloud-directory"><summary>Browse contacts as a list</summary><div id="cloud-contact-list" class="cloud-contact-list"></div></details>
                 </div>
             </div>
         </div>
 
         <div id="same-bday-view" class="view">
+            <div class="view-heading"><div><h2>Shared birthdays</h2><p>Find the dates your contacts celebrate together.</p></div><span class="view-count" id="same-view-count">0 shared dates</span></div>
             <div class="same-grid" id="same-grid"></div>
         </div>
 
@@ -2149,6 +2742,7 @@
         </div>
 
         <div id="upcoming-view" class="view">
+            <div class="view-heading"><div><h2>Coming up</h2><p>The next celebrations, from today onward.</p></div><span class="view-count" id="upcoming-view-count">0 birthdays</span></div>
             <div id="upcoming-layout">
                 <div id="upcoming-sidebar">
                     <h3>Upcoming Insights</h3>
@@ -2183,9 +2777,10 @@
         </div>
 
         <div id="missing-view" class="view">
+            <div class="view-heading"><div><h2>Missing details</h2><p>Contacts with no birthday date or no birth year.</p></div><span class="view-count" id="missing-view-count">0 contacts</span></div>
             <div id="missing-layout">
                 <div id="missing-sidebar">
-                    <h3>Audit Filters</h3>
+                    <h3>Filter by tag</h3>
                     <div class="filter-dropdown" id="dd-missing-tag" style="width:100%">
                         <div class="filter-btn" onclick="toggleDropdown('dd-missing-tag')">
                             <span id="missing-lbl">All Tags</span> <i class="fa-solid fa-chevron-down" style="font-size:0.625rem"></i>
@@ -2195,55 +2790,55 @@
                         </div>
                     </div>
                 </div>
-                <div id="missing-main"><div class="missing-grid" id="missing-grid"></div></div>
+                <div id="missing-main"><div class="missing-summary"><span><i class="missing-key no-date"></i><strong id="missing-no-date-count">0</strong> no date</span><span><i class="missing-key no-year"></i><strong id="missing-no-year-count">0</strong> no year</span></div><div class="missing-grid" id="missing-grid"></div></div>
             </div>
         </div>
     </div>
 
     <!-- Mobile Bottom Navigation Bar -->
     <div id="mobile-nav-bar">
-        <div class="mobile-nav-item active" onclick="setTab('timeline')">
+        <button type="button" class="mobile-nav-item active" onclick="setTab('timeline')">
             <i class="fa-solid fa-timeline"></i>
             <span>Timeline</span>
-        </div>
-        <div class="mobile-nav-item" onclick="setTab('calendar')">
+        </button>
+        <button type="button" class="mobile-nav-item" onclick="setTab('calendar')">
             <i class="fa-solid fa-calendar-days"></i>
             <span>Calendar</span>
-        </div>
-        <div class="mobile-nav-item" onclick="setTab('upcoming')">
+        </button>
+        <button type="button" class="mobile-nav-item" onclick="setTab('upcoming')">
             <i class="fa-solid fa-cake-candles"></i>
             <span>Upcoming</span>
-        </div>
-        <div class="mobile-nav-item" onclick="setTab('stats')">
+        </button>
+        <button type="button" class="mobile-nav-item" onclick="setTab('stats')">
             <i class="fa-solid fa-chart-simple"></i>
             <span>Stats</span>
-        </div>
-        <div class="mobile-nav-item" onclick="toggleMobileMoreMenu()">
+        </button>
+        <button type="button" class="mobile-nav-item" onclick="toggleMobileMoreMenu()" aria-expanded="false" aria-controls="mobile-more-menu">
             <i class="fa-solid fa-ellipsis"></i>
             <span>More</span>
-        </div>
+        </button>
     </div>
 
     <!-- Mobile More Drawer -->
-    <div id="mobile-more-menu" class="mobile-drawer">
+    <div id="mobile-more-menu" class="mobile-drawer" role="dialog" aria-label="More options" aria-modal="true" aria-hidden="true" inert>
         <div class="drawer-header">
             <span>More Options</span>
-            <i class="fa-solid fa-xmark" onclick="toggleMobileMoreMenu()"></i>
+            <button type="button" class="drawer-close" onclick="toggleMobileMoreMenu()" aria-label="Close more menu"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="drawer-body">
-            <div class="drawer-item" onclick="selectDrawerTab('same')">
+            <button type="button" class="drawer-item" onclick="selectDrawerTab('same')">
                 <i class="fa-solid fa-people-group"></i>
                 <span>Same Birthday</span>
-            </div>
-            <div class="drawer-item" onclick="selectDrawerTab('missing')">
+            </button>
+            <button type="button" class="drawer-item" onclick="selectDrawerTab('missing')">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 <span>Missing Data</span>
-            </div>
+            </button>
             <div class="drawer-divider"></div>
-            <div class="drawer-item" onclick="openSettingsModalFromDrawer()">
+            <button type="button" class="drawer-item" onclick="openSettingsModalFromDrawer()">
                 <i class="fa-solid fa-gear"></i>
                 <span>Settings</span>
-            </div>
+            </button>
         </div>
     </div>
     <div id="mobile-drawer-backdrop" onclick="toggleMobileMoreMenu()"></div>
@@ -2253,19 +2848,26 @@
 
     <!-- Modals -->
     <div id="modal-backdrop">
-        <div class="modal" id="contact-modal" style="display:none">
-            <div class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></div>
-            <div class="modal-top">
-                <img id="m-img" class="modal-avatar" src="" referrerpolicy="no-referrer" onerror="if(!this.src.includes('ui-avatars.com')) this.src='https://ui-avatars.com/api/?name='+encodeURIComponent(document.getElementById('m-name').innerText);">
-                <div class="modal-identity">
-                    <div class="modal-name" id="m-name"></div>
-                    <div class="modal-meta" id="m-meta"></div>
+        <div class="modal" id="contact-modal" role="dialog" aria-modal="true" aria-labelledby="m-name" style="display:none">
+            <button type="button" class="modal-close" onclick="closeModal()" aria-label="Close contact details"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            <div class="contact-hero">
+                <span class="contact-overline">Contact book</span>
+                <div class="modal-top">
+                    <img id="m-img" class="modal-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' rx='40' fill='%23dcece1'/%3E%3C/svg%3E" alt="" referrerpolicy="no-referrer">
+                    <div class="modal-identity">
+                        <h2 class="modal-name" id="m-name"></h2>
+                        <div class="modal-meta" id="m-meta"></div>
+                    </div>
+                </div>
+                <div class="contact-milestones" id="m-milestones">
+                    <div class="contact-milestone"><span class="contact-milestone-label" id="m-next-label">Next birthday</span><strong id="m-next">—</strong><small id="m-next-note"></small></div>
+                    <div class="contact-milestone" id="m-age-tile"><span class="contact-milestone-label">Age</span><strong id="m-age">—</strong><small id="m-age-note"></small></div>
                 </div>
             </div>
             <div class="modal-body">
-                <div class="modal-badges" id="m-badges"></div>
-                <div class="tag-cloud" id="m-tags"></div>
-                <div class="detail-box" id="m-details"></div>
+                <section class="contact-section" id="m-badges-section"><h3>At a glance</h3><div class="modal-badges" id="m-badges"></div></section>
+                <section class="contact-section" id="m-tags-section"><h3>Groups</h3><div class="tag-cloud" id="m-tags"></div></section>
+                <section class="contact-section"><h3>Contact details</h3><div class="detail-box" id="m-details"></div></section>
             </div>
         </div>
         <div class="modal" id="list-modal" style="display:none">
@@ -2275,59 +2877,50 @@
             </div>
             <div class="list-body" id="list-body"></div>
         </div>
-        <div class="modal" id="settings-modal" style="display:none; width: 350px;">
-            <div class="list-header">
-                <span><i class="fa-solid fa-gear"></i> Settings</span>
-                <i class="fa-solid fa-xmark" onclick="closeSettingsModal()" style="cursor:pointer"></i>
+        <div class="modal" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" aria-describedby="settings-description" style="display:none">
+            <div class="settings-header">
+                <div><span class="settings-overline">Preferences</span><h2 id="settings-title">Settings</h2><p id="settings-description">Choose how birthdays appear. Changes apply right away.</p></div>
+                <button type="button" class="settings-close" onclick="closeSettingsModal()" aria-label="Close settings"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
             </div>
-            <div class="list-body" style="padding: 1rem 0;">
-                <div class="settings-row">
-                    <span class="settings-label"><i class="fa-solid fa-star-and-crescent"></i> Western Zodiac</span>
-                    <div class="segmented-control">
-                        <button id="opt-west-show" onclick="setWesternZodiacOpt(true)">Show</button>
-                        <button id="opt-west-hide" onclick="setWesternZodiacOpt(false)">Hide</button>
+            <div class="settings-content">
+                <section class="settings-section">
+                    <h3>Appearance</h3>
+                    <div class="settings-row">
+                        <div class="settings-copy"><span class="settings-icon"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i></span><div><strong>Theme</strong><small>Pick a comfortable reading mode.</small></div></div>
+                        <div class="segmented-control" role="group" aria-label="Theme">
+                            <button type="button" id="opt-theme-light" onclick="setThemeOpt('light')">Light</button>
+                            <button type="button" id="opt-theme-dark" onclick="setThemeOpt('dark')">Dark</button>
+                        </div>
                     </div>
-                </div>
-
-                <div class="settings-row">
-                    <span class="settings-label"><i class="fa-solid fa-dragon"></i> Chinese Zodiac</span>
-                    <div class="segmented-control">
-                        <button id="opt-chinese-show" onclick="setChineseZodiacOpt(true)">Show</button>
-                        <button id="opt-chinese-hide" onclick="setChineseZodiacOpt(false)">Hide</button>
+                </section>
+                <section class="settings-section">
+                    <h3>Birthday details</h3>
+                    <div class="settings-row">
+                        <div class="settings-copy"><span class="settings-icon"><i class="fa-solid fa-star-and-crescent" aria-hidden="true"></i></span><div><strong>Western zodiac</strong><small>Show each person’s star sign.</small></div></div>
+                        <div class="segmented-control" role="group" aria-label="Western zodiac">
+                            <button type="button" id="opt-west-show" onclick="setWesternZodiacOpt(true)">Show</button>
+                            <button type="button" id="opt-west-hide" onclick="setWesternZodiacOpt(false)">Hide</button>
+                        </div>
                     </div>
-                </div>
-
-                <div class="settings-row">
-                    <span class="settings-label"><i class="fa-solid fa-circle-half-stroke"></i> Theme Mode</span>
-                    <div class="segmented-control">
-                        <button id="opt-theme-light" onclick="setThemeOpt('light')">Light</button>
-                        <button id="opt-theme-dark" onclick="setThemeOpt('dark')">Dark</button>
+                    <div class="settings-row">
+                        <div class="settings-copy"><span class="settings-icon"><i class="fa-solid fa-dragon" aria-hidden="true"></i></span><div><strong>Chinese zodiac</strong><small>Show signs when a birth year is known.</small></div></div>
+                        <div class="segmented-control" role="group" aria-label="Chinese zodiac">
+                            <button type="button" id="opt-chinese-show" onclick="setChineseZodiacOpt(true)">Show</button>
+                            <button type="button" id="opt-chinese-hide" onclick="setChineseZodiacOpt(false)">Hide</button>
+                        </div>
                     </div>
-                </div>
-
-            </div>
-            <div class="build-info" id="build-info" style="display: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg);">
-                <div class="build-info-line">
-                    <span class="build-info-label">Report generated at:</span>
-                    <span class="build-info-value" id="build-generated-at">—</span>
-                </div>
-                <div class="build-info-line">
-                    <span class="build-info-label">Data source:</span>
-                    <span class="build-info-value" id="build-data-source">—</span>
-                </div>
-                <div class="build-info-line">
-                    <span class="build-info-label">Build version:</span>
-                    <span class="build-info-value">v1.2.5</span>
-                </div>
-                <div class="build-info-footer">
-                    <span>Generated with BirthdayVisualiser</span>
-                    <span>•</span>
-                    <a href="https://github.com/NotToxel/BirthdayVisualiser" target="_blank" rel="noopener" style="color: var(--text-muted); text-decoration: none;">
-                        <i class="fa-brands fa-github"></i>
-                    </a>
-                    <span>•</span>
-                    <span class="build-hash" id="build-hash"></span>
-                </div>
+                </section>
+                <p class="settings-storage"><i class="fa-solid fa-lock" aria-hidden="true"></i> Preferences stay in this browser.</p>
+                <details class="build-info" id="build-info" style="display:none">
+                    <summary>About this report <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary>
+                    <div class="build-info-content">
+                        <div class="build-info-line"><span class="build-info-label">Created</span><time class="build-info-value" id="build-generated-at">—</time></div>
+                        <div class="build-info-line"><span class="build-info-label">Source</span><span class="build-info-value" id="build-data-source">—</span></div>
+                        <div class="build-info-line"><span class="build-info-label">Version</span><span class="build-info-value">v2.0.0</span></div>
+                        <div class="build-info-line"><span class="build-info-label">Build ID</span><span class="build-info-value build-hash" id="build-hash"></span></div>
+                        <a class="build-project-link" href="https://github.com/NotToxel/BirthdayVisualiser" target="_blank" rel="noopener"><i class="fa-brands fa-github" aria-hidden="true"></i> View project <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                    </div>
+                </details>
             </div>
         </div>
     </div>
@@ -2336,11 +2929,21 @@
         // --- Globals ---
         let allContacts=[], filteredContacts=[], missingContacts=[], yearlessContacts=[];
         let timeline=null, chartInstances={}, activeTags=new Set(), activeMonths=new Set();
+        let timelineViewInitialized = false;
         let missingActiveTags = new Set();
         let lastModalOpenTime = 0;
+        let contactModalReturnFocus = null;
+        let settingsModalReturnFocus = null;
         let showWesternZodiac = localStorage.getItem('showWesternZodiac') !== 'false';
         let showChineseZodiac = localStorage.getItem('showChineseZodiac') !== 'false';
         const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        function avatarFor(name) {
+            const initials = String(name || '?').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase();
+            const safe = initials.replace(/[^A-Z0-9]/g, '') || '?';
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" rx="40" fill="#dcece1"/><text x="40" y="49" text-anchor="middle" font-family="Arial,sans-serif" font-size="27" font-weight="700" fill="#276c58">${safe}</text></svg>`;
+            return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+        }
+        document.getElementById('m-img').onerror = function() { this.onerror = null; this.src = avatarFor(document.getElementById('m-name').innerText); };
         const SC_PAD = 50;
         let calendarMonth = new Date().getMonth() + 1;
         let calendarYear = new Date().getFullYear();
@@ -2359,10 +2962,12 @@
         document.getElementById('cal-opt-mon').classList.toggle('active', calendarStartOfWeek === 'Monday');
         document.getElementById('cal-opt-sun').classList.toggle('active', calendarStartOfWeek === 'Sunday');
         document.getElementById('upload-input').addEventListener('change', parseFile);
+        let searchTimer;
         document.getElementById('name-search').addEventListener('input', e => {
             const clearBtn = document.getElementById('search-clear');
             if (clearBtn) clearBtn.style.display = e.target.value ? 'block' : 'none';
-            applyFilters();
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(applyFilters, 120);
         });
 
         let lastCalScrollTime = 0;
@@ -2393,6 +2998,16 @@
         // --- Escape key closes modal ---
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') closeModal();
+            if (e.key !== 'Tab') return;
+            const contactModal = document.getElementById('contact-modal');
+            const settingsModal = document.getElementById('settings-modal');
+            const modal = contactModal.style.display === 'flex' ? contactModal : settingsModal.style.display === 'block' ? settingsModal : null;
+            if (!modal) return;
+            const focusables = [...modal.querySelectorAll('button, a[href], summary')].filter(el => el.getClientRects().length);
+            if (!focusables.length) return;
+            const first = focusables[0], last = focusables[focusables.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         });
 
         // --- Drag and Drop ---
@@ -2453,6 +3068,24 @@
         });
 
         // --- Parsing ---
+        let coreLibrariesPromise;
+        function ensureCoreLibraries() {
+            if (window.Papa && window.vis) return Promise.resolve();
+            if (!coreLibrariesPromise) {
+                const loadScript = src => new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('A required library could not load. Check your connection and try again.'));
+                    document.head.appendChild(script);
+                });
+                coreLibrariesPromise = Promise.all([
+                    loadScript('https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js'),
+                    loadScript('https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js')
+                ]).catch(error => { coreLibrariesPromise = null; throw error; });
+            }
+            return coreLibrariesPromise;
+        }
         function parseFile(e) {
             const file = e.target.files[0]; if(!file) return;
             processUploadedFile(file);
@@ -2469,7 +3102,7 @@
             document.getElementById('upload-input').value = "";
         }
 
-        function processUploadedFile(file) {
+        async function processUploadedFile(file) {
             const fileLabel = document.getElementById('drop-zone-file');
             fileLabel.textContent = file.name;
             fileLabel.style.display = 'block';
@@ -2478,6 +3111,7 @@
             document.getElementById('loading-text').textContent = `Processing ${file.name}…`;
             document.getElementById('landing-screen').classList.add('hidden');
             document.getElementById('loading').style.display = 'flex';
+            try { await ensureCoreLibraries(); } catch (error) { showUploadError(error.message); return; }
 
             const ext = file.name.toLowerCase();
             if (ext.endsWith('.vcf') || ext.endsWith('.vcard')) {
@@ -2510,9 +3144,13 @@
             }
         }
 
-        function processPastedText(text) {
+        async function processPastedText(text) {
             const fileLabel = document.getElementById('drop-zone-file');
             const trimmed = text.trim();
+            document.getElementById('loading-text').textContent = 'Preparing contact data…';
+            document.getElementById('landing-screen').classList.add('hidden');
+            document.getElementById('loading').style.display = 'flex';
+            try { await ensureCoreLibraries(); } catch (error) { showUploadError(error.message); return; }
             if (trimmed.toUpperCase().startsWith("BEGIN:VCARD")) {
                 fileLabel.textContent = "Pasted VCF text data";
                 fileLabel.style.display = 'block';
@@ -2562,6 +3200,7 @@
             document.getElementById('landing-screen').classList.add('hidden');
             document.getElementById('loading').style.display = 'flex';
             try {
+                await ensureCoreLibraries();
                 const resp = await fetch('demo-contacts.csv');
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 const text = await resp.text();
@@ -2694,7 +3333,9 @@
             }
             const genAtSpan = document.getElementById('build-generated-at');
             if (genAtSpan && reportGeneratedAt) {
-                genAtSpan.textContent = reportGeneratedAt;
+                const created = new Date(reportGeneratedAt);
+                genAtSpan.textContent = Number.isNaN(created.getTime()) ? reportGeneratedAt : created.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+                genAtSpan.dateTime = reportGeneratedAt;
             }
             const sourceSpan = document.getElementById('build-data-source');
             if (sourceSpan && reportSource) {
@@ -2708,7 +3349,7 @@
             const hashHex = Math.abs(hash).toString(16).substring(0, 7).padStart(7, '0');
             const hashSpan = document.getElementById('build-hash');
             if (hashSpan) {
-                hashSpan.textContent = `build ${hashHex}`;
+                hashSpan.textContent = hashHex;
             }
         }
 
@@ -2750,7 +3391,7 @@
                 reportSource = sourceName;
 
                 // Successfully validated contacts data format, call main process function
-                processData(rows);
+                processData(rows, sourceName);
             } catch (err) {
                 showUploadError(`An error occurred while validating the CSV data: ${err.message || err}`);
                 console.error("Validation error:", err);
@@ -2787,7 +3428,7 @@
             return 'MD';
         }
 
-        function processData(rows) {
+        function processData(rows, sourceName = '') {
             try {
                 const v=[], inv=[], yl=[];
                 // Find first non-null row to extract headers safely
@@ -2825,6 +3466,8 @@
                     }
 
                     let photo = r[kPhoto]||""; if(photo.includes(':::')) photo=photo.split(':::')[0].trim();
+                    // Imported URL photos would contact another server; embedded photos stay local.
+                    if (sourceName !== 'Demo Data (demo-contacts.csv)' && !/^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=]+$/i.test(photo)) photo = '';
                     let tags = []; if(r[kLabel]) tags = r[kLabel].split(' ::: ').map(t=>t.replace(/\* /g,'').trim()).filter(t=>t && !['mycontacts','starred'].includes(t.toLowerCase()));
 
                     let y=0, m=0, d=0, hasYear=false;
@@ -2881,6 +3524,7 @@
                 renderMissing();
                 applyFilters();
                 setTimeout(() => layoutTimeline(true), 400);
+                if (window.matchMedia('(max-width: 900px)').matches) setTimeout(() => setTab('calendar'), 100);
                 setTimeout(() => document.getElementById('app-container').classList.add('visible'), 50);
             });
         }
@@ -2897,9 +3541,8 @@
             const view = document.getElementById(`sub-view-${tab}`);
             if (view) view.classList.add('active');
 
-            if (tab === 'cloud') { startBubbleLoop(); }
-            else { stopBubbleLoop(); }
-            if (tab === 'temporal') { drawHeatmap(); }
+            if (tab !== 'cloud') stopBubbleLoop();
+            if (window.Chart) requestAnimationFrame(updateStats);
         }
 
         function getZodiacSign(m, d) {
@@ -2932,10 +3575,13 @@
         }
 
         function openSettingsModal() {
+            const opener = document.activeElement?.matches('button, a[href], [tabindex]') ? document.activeElement : null;
             closeModal();
+            settingsModalReturnFocus = opener;
             document.getElementById('modal-backdrop').style.display = 'flex';
             document.getElementById('settings-modal').style.display = 'block';
             updateSettingsModalUI();
+            document.querySelector('#settings-modal .settings-close').focus({ preventScroll: true });
         }
 
         function openSettingsModalFromDrawer() {
@@ -2977,21 +3623,26 @@
 
         function updateSettingsModalUI() {
             const isDark = document.body.classList.contains('dark');
+            const markActive = (button, active) => {
+                if (!button) return;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-pressed', String(active));
+            };
             
             const btnLight = document.getElementById('opt-theme-light');
             const btnDark = document.getElementById('opt-theme-dark');
-            if (btnLight) btnLight.classList.toggle('active', !isDark);
-            if (btnDark) btnDark.classList.toggle('active', isDark);
+            markActive(btnLight, !isDark);
+            markActive(btnDark, isDark);
 
             const btnWestShow = document.getElementById('opt-west-show');
             const btnWestHide = document.getElementById('opt-west-hide');
-            if (btnWestShow) btnWestShow.classList.toggle('active', showWesternZodiac);
-            if (btnWestHide) btnWestHide.classList.toggle('active', !showWesternZodiac);
+            markActive(btnWestShow, showWesternZodiac);
+            markActive(btnWestHide, !showWesternZodiac);
 
             const btnChinShow = document.getElementById('opt-chinese-show');
             const btnChinHide = document.getElementById('opt-chinese-hide');
-            if (btnChinShow) btnChinShow.classList.toggle('active', showChineseZodiac);
-            if (btnChinHide) btnChinHide.classList.toggle('active', !showChineseZodiac);
+            markActive(btnChinShow, showChineseZodiac);
+            markActive(btnChinHide, !showChineseZodiac);
 
         }
 
@@ -2999,20 +3650,33 @@
             const drawer = document.getElementById('mobile-more-menu');
             const backdrop = document.getElementById('mobile-drawer-backdrop');
             if (!drawer || !backdrop) return;
+            const moreButton = document.querySelector('.mobile-nav-item[aria-controls="mobile-more-menu"]');
             
-            const isOpen = drawer.classList.contains('open');
+            const isOpen = drawer.getAttribute('aria-hidden') === 'false';
             if (isOpen) {
                 drawer.classList.remove('open');
+                drawer.setAttribute('aria-hidden', 'true');
+                drawer.inert = true;
+                moreButton?.setAttribute('aria-expanded', 'false');
                 backdrop.style.opacity = '0';
                 setTimeout(() => backdrop.style.display = 'none', 200);
+                moreButton?.focus();
             } else {
                 backdrop.style.display = 'block';
+                drawer.setAttribute('aria-hidden', 'false');
+                drawer.inert = false;
+                moreButton?.setAttribute('aria-expanded', 'true');
                 requestAnimationFrame(() => {
+                    if (drawer.getAttribute('aria-hidden') !== 'false') return;
                     backdrop.style.opacity = '1';
                     drawer.classList.add('open');
+                    drawer.querySelector('.drawer-close')?.focus();
                 });
             }
         }
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && document.getElementById('mobile-more-menu').classList.contains('open')) toggleMobileMoreMenu();
+        });
 
         function selectDrawerTab(t) {
             setTab(t);
@@ -3062,6 +3726,20 @@
             return age;
         }
 
+        let chartLibraryPromise;
+        function ensureChartLibrary() {
+            if (window.Chart) return Promise.resolve();
+            if (!chartLibraryPromise) {
+                chartLibraryPromise = new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => { chartLibraryPromise = null; reject(new Error('Charts could not load. Check your connection and try Statistics again.')); };
+                    document.head.appendChild(script);
+                });
+            }
+            return chartLibraryPromise;
+        }
         function setTab(t) {
             document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
@@ -3094,10 +3772,19 @@
             const fb = document.getElementById('filter-bar');
             fb.style.display = (t==='timeline'||t==='stats'||t==='same'||t==='calendar'||t==='upcoming')?'flex':'none';
 
-            if(t==='timeline'&&timeline) { setTimeout(() => scheduleLayoutTimeline(), 50); }
+            if(t==='timeline'&&timeline) { setTimeout(() => scheduleLayoutTimeline(!timelineViewInitialized), 50); }
             if(t==='calendar') { renderCalendar(); } else { document.getElementById('cal-quick-jump-panel').style.display = 'none'; }
             if(t==='upcoming') { renderUpcoming(); }
-            if(t==='stats') { setSubTab(activeSubTab); } else { stopBubbleLoop(); }
+            if(t==='stats') {
+                setSubTab(activeSubTab);
+                ensureChartLibrary().then(() => {
+                    if (document.getElementById('stats-view').classList.contains('active')) updateStats();
+                }).catch(error => {
+                    document.getElementById('stats-no-results').style.display = 'flex';
+                    document.getElementById('stats-no-results').querySelector('.no-results-desc').textContent = error.message;
+                    document.getElementById('stats-content').style.display = 'none';
+                });
+            } else { stopBubbleLoop(); }
             if(t==='same') { setTimeout(() => renderSame(), 50); }
         }
 
@@ -3112,7 +3799,7 @@
             if (landingIcon) landingIcon.className = cls;
             updateSettingsModalUI();
             drawHeatmap(); drawScrubber();
-            if (allContacts.length > 0) updateStats();
+            if (allContacts.length > 0 && window.Chart && document.getElementById('stats-view').classList.contains('active')) updateStats();
             if (typeof drawBubbles === 'function' && typeof bubbles !== 'undefined' && bubbles.length) drawBubbles();
         }
         function newAnalysis() { if(confirm("Start a new analysis?")) location.reload(); }
@@ -3234,6 +3921,7 @@
         function clearTags(){ activeTags.clear(); document.querySelectorAll('#tag-list input').forEach(i=>i.checked=false); applyFilters(); updateBadges(); }
         
         function clearSearch() {
+            clearTimeout(searchTimer);
             const inp = document.getElementById('name-search');
             if (inp) inp.value = '';
             const clearBtn = document.getElementById('search-clear');
@@ -3250,6 +3938,8 @@
                 return true;
             });
             document.getElementById('count-display').innerText = filteredContacts.length;
+            document.getElementById('stats-view-count').textContent = `${filteredContacts.length} ${filteredContacts.length === 1 ? 'person' : 'people'}`;
+            document.getElementById('cloud-view-count').textContent = `${filteredContacts.length} ${filteredContacts.length === 1 ? 'person' : 'people'}`;
             updateFilterCounts();
 
             const noResults = filteredContacts.length === 0;
@@ -3280,7 +3970,8 @@
                 calBanner.style.display = noResults ? 'block' : 'none';
             }
 
-            updateTimelineData(); updateStats();
+            updateTimelineData();
+            if (window.Chart && document.getElementById('stats-view').classList.contains('active')) updateStats();
             if(document.getElementById('same-bday-view').classList.contains('active')) renderSame();
             if(document.getElementById('calendar-view').classList.contains('active')) {
                 renderCalendar();
@@ -3296,12 +3987,12 @@
             if(timeline) timeline.destroy();
             timeline = new vis.Timeline(document.getElementById('timeline-vis'), new vis.DataSet([]), {
                 height: '100%', orientation: 'top', stack: true,
-                zoomMin: 1000*60*60*24*30, zoomMax: 1000*60*60*24*365*10,
+                zoomMin: 1000*60*60*24*30, zoomMax: 1000*60*60*24*365*100,
                 showCurrentTime: false, verticalScroll: true, zoomKey: 'ctrlKey', margin:{item:15},
                 autoResize: true,
                 template: (item) => {
                     if (item.type === 'background') return '';
-                    return `<div class="contact-node"><img width="48" height="48" src="${item.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(item.name)}" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}'"></div>`;
+                    return `<div class="contact-node"><img width="48" height="48" src="${item.photo||avatarFor(item.name)}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=avatarFor('Contact')" alt=""></div>`;
                 }
             });
 
@@ -3312,6 +4003,7 @@
             timeline.on('rangechanged', () => {
                 updateScrubberFromTimeline();
                 scheduleRepositionAll();
+                renderTimelineRoster();
             });
         }
 
@@ -3328,6 +4020,7 @@
         function repositionAllTimelineItems() {
             if (!timeline?.itemSet?.items) return;
             Object.values(timeline.itemSet.items).forEach(item => {
+                if (!item.displayed || !item.dom?.box) return;
                 if (typeof item.repositionX === 'function') item.repositionX();
                 if (typeof item.repositionY === 'function') item.repositionY();
             });
@@ -3337,10 +4030,12 @@
             if (!timeline) return;
             const el = document.getElementById('timeline-vis');
             if (!el || el.offsetWidth === 0 || el.offsetHeight === 0) {
-                requestAnimationFrame(() => layoutTimeline(fit, attempt));
+                if (document.getElementById('timeline-view').classList.contains('active') && attempt < 15) {
+                    setTimeout(() => layoutTimeline(fit, attempt + 1), 100);
+                }
                 return;
             }
-            if (fit) timeline.fit();
+            if (fit) { focusTimelineOnContacts(); timelineViewInitialized = true; }
             timeline.redraw();
             const itemObjs = timeline.itemSet?.items ? Object.values(timeline.itemSet.items) : [];
             if (itemObjs.length === 0) {
@@ -3356,6 +4051,7 @@
             repositionAllTimelineItems();
             requestAnimationFrame(() => repositionAllTimelineItems());
             drawScrubber();
+            renderTimelineRoster();
         }
 
         function scheduleLayoutTimeline(fit = false) {
@@ -3364,6 +4060,14 @@
                 layoutTimelineTimer = null;
                 layoutTimeline(fit);
             }, 250);
+        }
+
+        function focusTimelineOnContacts() {
+            if (!timeline || !filteredContacts.length) return;
+            const years = filteredContacts.map(c => c.hasYear ? c.y : 2000).sort((a, b) => a - b);
+            const middle = years[Math.floor(years.length / 2)];
+            const span = window.matchMedia('(max-width: 700px)').matches ? 8 : 12;
+            timeline.setWindow(new Date(middle - Math.floor(span / 2), 0, 1), new Date(middle + Math.ceil(span / 2), 0, 1), {animation: false});
         }
 
         function updateTimelineData() {
@@ -3399,6 +4103,46 @@
             timeline.setItems(items);
             timeline.redraw();
             scheduleLayoutTimeline(items.length > 0);
+            renderTimelineRoster();
+        }
+
+        function renderTimelineRoster() {
+            const list = document.getElementById('timeline-roster-list');
+            if (!timeline || !list) return;
+            const {start, end} = timeline.getWindow();
+            document.getElementById('timeline-window-label').textContent = `${start.getFullYear()}–${end.getFullYear()}`;
+            list.replaceChildren();
+            const visible = filteredContacts.filter(c => {
+                const date = new Date(c.hasYear ? c.y : 2000, c.m - 1, c.d);
+                return date >= start && date <= end;
+            }).sort((a, b) => (a.hasYear ? a.y : 2000) - (b.hasYear ? b.y : 2000) || a.m - b.m || a.d - b.d);
+            if (!visible.length) {
+                const empty = document.createElement('div');
+                empty.className = 'timeline-roster-empty';
+                empty.textContent = 'No contacts in this part of the timeline. Drag to another year.';
+                list.appendChild(empty);
+                return;
+            }
+            visible.forEach(c => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'timeline-person';
+                button.onclick = () => showModal(c);
+                const img = document.createElement('img');
+                img.src = c.photo || avatarFor(c.name);
+                img.loading = 'lazy';
+                img.alt = '';
+                img.referrerPolicy = 'no-referrer';
+                img.onerror = () => { img.onerror = null; img.src = avatarFor(c.name); };
+                const info = document.createElement('span');
+                const name = document.createElement('strong');
+                name.textContent = c.name;
+                const date = document.createElement('small');
+                date.textContent = `${MONTHS[c.m-1]} ${c.d}${c.hasYear ? `, ${c.y}` : ''}`;
+                info.append(name, date);
+                button.append(img, info);
+                list.appendChild(button);
+            });
         }
 
         // --- Scrubber ---
@@ -3450,7 +4194,7 @@
             const minBarWidth = 2;
             const actualBarWidth = Math.max(monthWidth * 0.95, minBarWidth);
 
-            ctx.fillStyle = isDark ? '#818cf8' : '#6366f1';
+            ctx.fillStyle = isDark ? '#9dd4b5' : '#276c58';
             ctx.textAlign = "center";
             ctx.font = "9px Outfit, Inter, sans-serif";
 
@@ -3487,10 +4231,10 @@
                     const showMonthLabel = showMidYear && m === 7;
 
                     if(showYearLabel || showMonthLabel) {
-                        ctx.fillStyle = isDark ? '#a1a1aa' : '#71717a';
+                        ctx.fillStyle = isDark ? '#c3cec3' : '#5e6b63';
                         const label = m === 1 ? `${y}` : MONTHS[m-1];
                         ctx.fillText(label, x, rect.height - 6);
-                        ctx.fillStyle = isDark ? '#818cf8' : '#6366f1';
+                        ctx.fillStyle = isDark ? '#9dd4b5' : '#276c58';
                     }
 
                     monthIndex++;
@@ -3585,15 +4329,8 @@
         function renderSame() {
             const g = document.getElementById('same-grid');
             if (!g) return;
-            g.innerHTML = '';
-
+            g.replaceChildren();
             const contacts = filteredContacts || [];
-
-            if (!contacts || contacts.length === 0) {
-                g.innerHTML = '<div style="color:var(--text-muted); padding:2rem; text-align:center;">No matching contacts.</div>';
-                return;
-            }
-
             const grp = {};
             contacts.forEach(c => {
                 if (c && c.m && c.d && c.m >= 1 && c.m <= 12 && c.d >= 1 && c.d <= 31) {
@@ -3609,21 +4346,49 @@
                 return ma !== mb ? ma - mb : da - db;
             });
 
+            document.getElementById('same-view-count').textContent = `${keys.length} shared ${keys.length === 1 ? 'date' : 'dates'}`;
             if (!keys.length) {
-                g.innerHTML = '<div style="color:var(--text-muted); padding:2rem; text-align:center;">No matching contacts share the same birthday.</div>';
+                const empty = document.createElement('div');
+                empty.className = 'view-empty';
+                empty.textContent = contacts.length ? 'No birthdays are shared within the current filters.' : 'No contacts match the current filters.';
+                g.appendChild(empty);
                 return;
             }
 
             keys.forEach(k => {
                 const [m, d] = k.split('-').map(Number);
-                const div = document.createElement('div');
-                div.className = 'same-card';
-                let h = `<div class="same-header">${MONTHS[m-1]} ${d} (${grp[k].length} contacts)</div>`;
+                const card = document.createElement('section');
+                card.className = 'same-card';
+                const header = document.createElement('div');
+                header.className = 'same-header';
+                const date = document.createElement('span');
+                date.className = 'same-date';
+                date.textContent = `${MONTHS[m-1]} ${d}`;
+                const count = document.createElement('span');
+                count.className = 'same-people';
+                count.textContent = `${grp[k].length} people`;
+                header.append(date, count);
+                card.appendChild(header);
                 grp[k].sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
-                    h += `<div class="same-row" onclick="showModalById(${c.id})"><img src="${c.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${c.name.replace(/'/g, "\\'")}')"><span>${c.name}${c.hasYear ? ` (${c.y})` : ''}</span></div>`;
+                    const row = document.createElement('button');
+                    row.type = 'button';
+                    row.className = 'same-row';
+                    row.onclick = () => showModal(c);
+                    const img = document.createElement('img');
+                    img.src = c.photo || avatarFor(c.name);
+                    img.loading = 'lazy';
+                    img.alt = '';
+                    img.referrerPolicy = 'no-referrer';
+                    img.onerror = () => { img.onerror = null; img.src = avatarFor(c.name); };
+                    const name = document.createElement('span');
+                    name.textContent = `${c.name}${c.hasYear ? ` · born ${c.y}` : ''}`;
+                    const arrow = document.createElement('i');
+                    arrow.className = 'fa-solid fa-arrow-right';
+                    arrow.setAttribute('aria-hidden', 'true');
+                    row.append(img, name, arrow);
+                    card.appendChild(row);
                 });
-                div.innerHTML = h;
-                g.appendChild(div);
+                g.appendChild(card);
             });
         }
         window.showModalById = (id) => {
@@ -3654,7 +4419,7 @@
                 .slice()
                 .sort((a, b) => a._daysUntil - b._daysUntil);
 
-            const count = displayed.length; if(!count){bubbles=[]; bCtx.clearRect(0,0,r.width,r.height); return;}
+            const count = displayed.length; if(!count){bubbles=[]; bCtx.clearRect(0,0,r.width,r.height); document.getElementById('cloud-contact-list').replaceChildren(); return;}
 
             const area = r.width * r.height;
             let pxPerItem = area / count;
@@ -3710,31 +4475,64 @@
                     origTy: ty,
                     img: (() => {
                         const img = new Image();
-                        img.src = c.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
+                        img.onload = () => { if (activeSubTab === 'cloud') drawBubbles(); };
+                        img.src = c.photo || avatarFor(c.name);
                         return img;
                     })(),
                     data: c
                 };
             });
 
-            activeFrames = 60; // Run layout lerp for at least 60 frames to bloom nicely
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reducedMotion) bubbles.forEach(b => { b.x = b.origTx; b.y = b.origTy; b.scale = 1; });
+            activeFrames = reducedMotion ? 0 : 60;
             drawBubbles();
+            if(activeFrames && !animId) loopBubbles();
 
-            if(!animId) loopBubbles();
+            const directory = document.getElementById('cloud-contact-list');
+            directory.replaceChildren();
+            displayed.forEach(c => {
+                const row = document.createElement('button');
+                row.type = 'button';
+                row.onclick = () => showModal(c);
+                const img = document.createElement('img');
+                img.src = c.photo || avatarFor(c.name);
+                img.loading = 'lazy';
+                img.alt = '';
+                img.referrerPolicy = 'no-referrer';
+                img.onerror = () => { img.onerror = null; img.src = avatarFor(c.name); };
+                const info = document.createElement('span');
+                const name = document.createElement('strong');
+                name.textContent = c.name;
+                const date = document.createElement('small');
+                date.textContent = `${MONTHS[c.m-1]} ${c.d}`;
+                info.append(name, date);
+                row.append(img, info);
+                directory.appendChild(row);
+            });
 
-            bubbleCanvas.onmousemove = e => {
+            const hitAt = (x, y) => bubbles.filter(b => Math.hypot(x - b.x, y - b.y) < b.r * b.scale)
+                .sort((a, b) => b.scale - a.scale)[0];
+            bubbleCanvas.onpointermove = e => {
                 const rc = bubbleCanvas.getBoundingClientRect();
                 mouse.x = e.clientX - rc.left;
                 mouse.y = e.clientY - rc.top;
-                activeFrames = Math.max(activeFrames, 30);
+                const hit = hitAt(mouse.x, mouse.y);
+                document.getElementById('cloud-person-name').textContent = hit?.data.name || 'Choose a contact';
+                document.getElementById('cloud-person-date').textContent = hit ? `${MONTHS[hit.data.m-1]} ${hit.data.d} · select to open` : 'Select to open details';
+                activeFrames = Math.max(activeFrames, 18);
+                if (!animId && !reducedMotion) loopBubbles();
             };
-            bubbleCanvas.onmouseleave = () => {
+            bubbleCanvas.onpointerleave = () => {
                 mouse.x = -999; mouse.y = -999;
-                activeFrames = Math.max(activeFrames, 30);
+                document.getElementById('cloud-person-name').textContent = 'Choose a contact';
+                document.getElementById('cloud-person-date').textContent = 'Select to open details';
+                activeFrames = Math.max(activeFrames, 18);
+                if (!animId && !reducedMotion) loopBubbles();
             };
-            bubbleCanvas.onclick = () => {
-                const hit = bubbles.filter(b => Math.sqrt((mouse.x - b.x)**2 + (mouse.y - b.y)**2) < b.r * b.scale)
-                                   .sort((a, b) => b.scale - a.scale)[0];
+            bubbleCanvas.onclick = e => {
+                const rc = bubbleCanvas.getBoundingClientRect();
+                const hit = hitAt(e.clientX - rc.left, e.clientY - rc.top);
                 if (hit) showModal(hit.data);
             };
         }
@@ -3817,7 +4615,7 @@
                     if (b.img.complete && b.img.naturalWidth !== 0) {
                         bCtx.drawImage(b.img, b.x-s, b.y-s, s*2, s*2);
                     } else {
-                        bCtx.fillStyle = '#6366f1';
+                        bCtx.fillStyle = '#276c58';
                         bCtx.fillRect(b.x-s, b.y-s, s*2, s*2);
                         bCtx.fillStyle = '#ffffff';
                         bCtx.font = `bold ${Math.max(11, Math.round(s * 0.45))}px Outfit, Inter, sans-serif`;
@@ -3836,7 +4634,7 @@
                         bCtx.fillText(initials, b.x, b.y);
                     }
                 } catch(e) {
-                    bCtx.fillStyle = '#6366f1';
+                    bCtx.fillStyle = '#276c58';
                     bCtx.fillRect(b.x-s, b.y-s, s*2, s*2);
                 }
 
@@ -3853,38 +4651,54 @@
                 updatePhysics();
                 activeFrames--;
                 drawBubbles();
+                animId = requestAnimationFrame(loopBubbles);
+            } else {
+                animId = null;
             }
-            animId = requestAnimationFrame(loopBubbles);
         }
 
         // --- Heatmap ---
         function drawHeatmap() {
-            const cvs=document.getElementById('heatmap-canvas'); if(!filteredContacts.length||!cvs)return;
+            const cvs=document.getElementById('heatmap-canvas'); if(!cvs)return;
             const ctx=cvs.getContext('2d'); const r=cvs.parentElement.getBoundingClientRect();
+            if (!r.width || !r.height) return;
             const dpr=window.devicePixelRatio||1; cvs.width=r.width*dpr; cvs.height=r.height*dpr; ctx.scale(dpr,dpr);
             const years = filteredContacts.filter(c=>c.hasYear).map(c=>c.y);
-            if(!years.length)return;
+            const readout = document.getElementById('heatmap-readout');
+            if(!years.length) { readout.textContent = 'No birth years in this selection.'; cvs.onclick = null; return; }
             const minY=Math.min(...years), maxY=Math.max(...years), range=maxY-minY+1;
-            const xPad=40, yPad=20, cellW=(r.width-xPad)/range, cellH=(r.height-yPad)/12;
+            const xPad=46, yPad=24, cellW=(r.width-xPad)/range, cellH=(r.height-yPad)/12;
             const counts={}; filteredContacts.filter(c=>c.hasYear).forEach(c=>{counts[`${c.y}-${c.m}`]=(counts[`${c.y}-${c.m}`]||0)+1});
             const maxC=Math.max(...Object.values(counts),1);
 
             const isDark = document.body.classList.contains('dark');
-            ctx.font="10px Outfit, Inter, sans-serif"; ctx.textAlign="right"; ctx.textBaseline="middle";
-            ctx.fillStyle = isDark ? '#a1a1aa' : '#71717a';
+            ctx.font="600 11px Inter, sans-serif"; ctx.textAlign="right"; ctx.textBaseline="middle";
+            ctx.fillStyle = isDark ? '#c3cec3' : '#5e6b63';
             for(let m=1;m<=12;m++) ctx.fillText(MONTHS[m-1], xPad-5, (m-1)*cellH+cellH/2);
+            let lastYearLabelX = -Infinity;
             for(let y=minY; y<=maxY; y++){
                 for(let m=1; m<=12; m++){
                     const c=counts[`${y}-${m}`]||0;
-                    ctx.fillStyle=c>0?`rgba(99, 102, 241, ${(c/maxC)*0.85+0.15})`:(isDark?'#1c1c24':'#f4f4f5');
-                    ctx.fillRect(xPad+(y-minY)*cellW, (m-1)*cellH, cellW-1, cellH-1);
+                    ctx.fillStyle=c>0?`rgba(${isDark ? '157, 212, 181' : '39, 108, 88'}, ${(c/maxC)*0.72+0.24})`:(isDark?'#2a3d33':'#f0eee7');
+                    ctx.fillRect(xPad+(y-minY)*cellW, (m-1)*cellH, Math.max(cellW-2,1), cellH-2);
                 }
-                if(y===minY||y===maxY||y%5===0){
-                    ctx.fillStyle = isDark ? '#a1a1aa' : '#71717a';
+                const labelX = xPad+(y-minY)*cellW+cellW/2;
+                if((y===minY||y===maxY||y%5===0) && labelX-lastYearLabelX>=48){
+                    ctx.fillStyle = isDark ? '#c3cec3' : '#5e6b63';
                     ctx.textAlign="center";
-                    ctx.fillText(y, xPad+(y-minY)*cellW+cellW/2, r.height-8);
+                    ctx.fillText(y, labelX, r.height-8);
+                    lastYearLabelX = labelX;
                 }
             }
+            readout.textContent = `${range} birth ${range === 1 ? 'year' : 'years'} represented. Tap a filled cell to see contacts.`;
+            cvs.onpointermove = e => {
+                const x=e.offsetX-xPad, y=e.offsetY;
+                const yI=Math.floor(x/cellW), mI=Math.floor(y/cellH);
+                if (yI < 0 || yI >= range || mI < 0 || mI >= 12) return;
+                const count = counts[`${minY+yI}-${mI+1}`] || 0;
+                readout.textContent = `${MONTHS[mI]} ${minY+yI} · ${count} ${count === 1 ? 'contact' : 'contacts'}`;
+            };
+            cvs.onpointerleave = () => { readout.textContent = `${range} birth ${range === 1 ? 'year' : 'years'} represented. Tap a filled cell to see contacts.`; };
             cvs.onclick=e=>{
                 const x=e.offsetX-xPad, y=e.offsetY; if(x<0)return;
                 const yI=Math.floor(x/cellW), mI=Math.floor(y/cellH);
@@ -3903,6 +4717,7 @@
 
         // --- Stats ---
         function updateStats() {
+            if (!window.Chart) return;
             if(document.getElementById('stats-view').classList.contains('active')) {
                 if (activeSubTab === 'cloud') startBubbleLoop();
                 if (activeSubTab === 'temporal') drawHeatmap();
@@ -4039,13 +4854,15 @@
         }
 
         function upChart(id,type,l,d,t){
-            const ctx=document.getElementById(id).getContext('2d'); if(chartInstances[id])chartInstances[id].destroy();
+            const canvas = document.getElementById(id);
+            if (!canvas.closest('.sub-view.active')) return;
+            const ctx=canvas.getContext('2d'); if(chartInstances[id])chartInstances[id].destroy();
             const isDark = document.body.classList.contains('dark');
-            const textColor = isDark ? '#f4f4f5' : '#18181b';
-            const gridColor = isDark ? '#2e2e38' : '#e4e4e7';
+            const textColor = isDark ? '#f3f4ec' : '#24352e';
+            const gridColor = isDark ? '#3f5145' : '#dedfd5';
 
-            const palette = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#94a3b8', '#64748b'];
-            const bgColor = type === 'doughnut' ? palette.slice(0, l.length) : '#6366f1';
+            const palette = ['#276c58', '#d96142', '#92b49b', '#e3b971', '#6d897a', '#b88068'];
+            const bgColor = type === 'doughnut' ? Array.from({length:l.length}, (_, i) => palette[i % palette.length]) : (isDark ? '#9dd4b5' : '#276c58');
 
             chartInstances[id]=new Chart(ctx,{
                 type:type,
@@ -4056,7 +4873,7 @@
                         data:d,
                         backgroundColor:bgColor,
                         borderWidth: type === 'doughnut' ? 2 : 0,
-                        borderColor: isDark ? '#1c1c24' : '#ffffff',
+                        borderColor: isDark ? '#20322a' : '#fffefb',
                         borderRadius: type === 'bar' ? 3 : 0,
                     }]
                 },
@@ -4119,7 +4936,7 @@
             });
             matches.forEach(c=>{
                 const d=document.createElement('div'); d.className='list-item';
-                d.innerHTML=`<img src="${c.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${c.name.replace(/'/g, "\\'")}')">`+
+                d.innerHTML=`<img src="${c.photo||avatarFor(c.name)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" alt="" onerror="this.onerror=null; this.src=avatarFor('Contact')">`+
                     `<span>${c.name}</span>`;
                 d.onclick=()=>{showModal(c);document.getElementById('list-modal').style.display='none'}; b.appendChild(d);
             });
@@ -4238,13 +5055,47 @@
         }
 
         function renderMissing() {
-            const g=document.getElementById('missing-grid'); g.innerHTML='';
-            [...missingContacts,...yearlessContacts].filter(c=>missingActiveTags.size===0||c.tags.some(t=>missingActiveTags.has(t))).forEach(c=>{
-                const d=document.createElement('div'); d.className='missing-card';
-                const t=missingContacts.includes(c)?'<span class="badge badge-red">No Date</span>':'<span class="badge badge-yellow">No Year</span>';
-                d.innerHTML=`<img src="${c.photo||'https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${c.name.replace(/'/g, "\\'")}')">`+
-                    `<div><div style="font-weight:600">${c.name}</div>${t}</div>`;
-                d.onclick=()=>showModal(c); g.appendChild(d);
+            const grid = document.getElementById('missing-grid');
+            grid.replaceChildren();
+            const visible = [...missingContacts, ...yearlessContacts]
+                .filter(c => missingActiveTags.size === 0 || c.tags.some(t => missingActiveTags.has(t)))
+                .sort((a, b) => a.name.localeCompare(b.name));
+            const noDate = visible.filter(c => missingContacts.includes(c)).length;
+            document.getElementById('missing-view-count').textContent = `${visible.length} ${visible.length === 1 ? 'contact' : 'contacts'}`;
+            document.getElementById('missing-no-date-count').textContent = noDate;
+            document.getElementById('missing-no-year-count').textContent = visible.length - noDate;
+            if (!visible.length) {
+                const empty = document.createElement('div');
+                empty.className = 'view-empty';
+                empty.textContent = 'No missing birthday details match this tag filter.';
+                grid.appendChild(empty);
+                return;
+            }
+            visible.forEach(c => {
+                const row = document.createElement('button');
+                row.type = 'button';
+                row.className = 'missing-card';
+                row.onclick = () => showModal(c);
+                const img = document.createElement('img');
+                img.src = c.photo || avatarFor(c.name);
+                img.loading = 'lazy';
+                img.alt = '';
+                img.referrerPolicy = 'no-referrer';
+                img.onerror = () => { img.onerror = null; img.src = avatarFor(c.name); };
+                const info = document.createElement('span');
+                info.className = 'missing-info';
+                const name = document.createElement('span');
+                name.className = 'missing-name';
+                name.textContent = c.name;
+                const badge = document.createElement('span');
+                badge.className = `badge ${missingContacts.includes(c) ? 'badge-red' : 'badge-yellow'}`;
+                badge.textContent = missingContacts.includes(c) ? 'No date' : 'No year';
+                info.append(name, badge);
+                const arrow = document.createElement('i');
+                arrow.className = 'fa-solid fa-arrow-right';
+                arrow.setAttribute('aria-hidden', 'true');
+                row.append(img, info, arrow);
+                grid.appendChild(row);
             });
         }
 
@@ -4382,14 +5233,14 @@
                 matches.forEach(c => {
                     const img = document.createElement('img');
                     img.className = 'cal-avatar';
-                    img.src = c.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
+                    img.src = c.photo || avatarFor(c.name);
                     img.style.width = `${photoSize}px`;
                     img.style.height = `${photoSize}px`;
                     img.title = `${c.name} (${c.hasYear ? (calendarYear - c.y) : 'Age unknown'})`;
                     
                     img.onerror = () => {
                         img.onerror = null;
-                        img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
+                        img.src = avatarFor(c.name);
                     };
 
                     img.onclick = (e) => {
@@ -4411,6 +5262,7 @@
             feed.innerHTML = '';
 
             const contacts = [...filteredContacts];
+            document.getElementById('upcoming-view-count').textContent = `${contacts.length} ${contacts.length === 1 ? 'birthday' : 'birthdays'}`;
             if (contacts.length === 0) {
                 feed.innerHTML = '<div style="color:var(--text-muted); padding:3rem; text-align:center; background:var(--surface); border-radius:var(--radius-lg); border:1px solid var(--border);">No upcoming birthdays match the current filters.</div>';
                 
@@ -4466,7 +5318,8 @@
                 sec.appendChild(header);
 
                 bucket.items.forEach(c => {
-                    const card = document.createElement('div');
+                    const card = document.createElement('button');
+                    card.type = 'button';
                     card.className = 'upcoming-card';
                     card.onclick = () => showModal(c);
 
@@ -4506,7 +5359,7 @@
 
                     card.innerHTML = `
                         <div class="upcoming-left">
-                            <img class="upcoming-avatar" src="${c.photo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(c.name)}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name='+encodeURIComponent('${c.name.replace(/'/g, "\\'")}')">
+                            <img class="upcoming-avatar" src="${c.photo || avatarFor(c.name)}" loading="lazy" referrerpolicy="no-referrer" alt="" onerror="this.onerror=null; this.src=avatarFor('Contact')">
                             <div class="upcoming-info">
                                 <span class="upcoming-name">${c.name}</span>
                                 <span class="upcoming-date">${MONTHS[c.m - 1]} ${c.d}${ageInfo}</span>
@@ -4543,7 +5396,10 @@
 
             if (maxCount > 0 && busiestDayKey) {
                 const [m, d] = busiestDayKey.split('-').map(Number);
-                document.getElementById('up-kpi-busy-day').innerText = `${MONTHS[m - 1]} ${d}`;
+                const matching = contacts.find(c => c.m === m && c.d === d);
+                const nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + matching._daysUntil);
+                document.getElementById('up-kpi-busy-day').innerText = `${MONTHS[m - 1]} ${d}${nextDate.getFullYear() !== new Date().getFullYear() ? `, ${nextDate.getFullYear()}` : ''}`;
                 document.getElementById('up-kpi-busy-count').innerText = `${maxCount} ${maxCount === 1 ? 'person' : 'people'}`;
             } else {
                 document.getElementById('up-kpi-busy-day').innerText = '--';
@@ -4551,12 +5407,15 @@
             }
 
             // Calculate Next Busiest Week (rolling 7-day window)
-            let maxWeekCount = 0;
+            const dailyCounts = Array(367).fill(0);
+            contacts.forEach(c => { if (c._daysUntil >= 0 && c._daysUntil < dailyCounts.length) dailyCounts[c._daysUntil]++; });
+            let maxWeekCount = dailyCounts.slice(0, 7).reduce((sum, count) => sum + count, 0);
             let busiestWeekStart = 0;
-            for (let d = 0; d <= 365 - 7; d++) {
-                const count = contacts.filter(c => c._daysUntil >= d && c._daysUntil < d + 7).length;
-                if (count > maxWeekCount) {
-                    maxWeekCount = count;
+            let rollingCount = maxWeekCount;
+            for (let d = 1; d <= 360; d++) {
+                rollingCount += dailyCounts[d + 6] - dailyCounts[d - 1];
+                if (rollingCount > maxWeekCount) {
+                    maxWeekCount = rollingCount;
                     busiestWeekStart = d;
                 }
             }
@@ -4567,8 +5426,9 @@
                 const endBday = new Date();
                 endBday.setDate(endBday.getDate() + busiestWeekStart + 6);
                 
+                const yearSuffix = endBday.getFullYear() !== new Date().getFullYear() ? `, ${endBday.getFullYear()}` : '';
                 const startStr = `${MONTHS[startBday.getMonth()]} ${startBday.getDate()}`;
-                const endStr = `${MONTHS[endBday.getMonth()]} ${endBday.getDate()}`;
+                const endStr = `${MONTHS[endBday.getMonth()]} ${endBday.getDate()}${yearSuffix}`;
                 document.getElementById('up-kpi-busy-week').innerText = `${startStr} - ${endStr}`;
                 document.getElementById('up-kpi-busy-week-count').innerText = `${maxWeekCount} ${maxWeekCount === 1 ? 'birthday' : 'birthdays'}`;
             } else {
@@ -4601,85 +5461,95 @@
 
         function showModal(c) {
             const hasBday = (c.m >= 1 && c.m <= 12 && c.d >= 1 && c.d <= 31);
-            document.getElementById('m-name').innerText=c.name;
-            document.getElementById('m-meta').innerText=hasBday ? `${MONTHS[c.m-1]} ${c.d}, ${c.hasYear?c.y:'????'}` : '';
-            document.getElementById('m-img').src=c.photo||`https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}`;
-            document.getElementById('m-tags').innerHTML=c.tags.map(t=>`<span class="tag" style="${getTagBadgeStyle(t)}">${t}</span>`).join('');
-
-            // Badges: zodiac + countdown
-            let badgesHtml = "";
-            if (hasBday) {
-                if (showWesternZodiac) {
-                    const wName = getZodiacSign(c.m, c.d);
-                    const wEmoji = getZodiacEmoji(wName);
-                    badgesHtml += `<span class="modal-badge modal-badge-primary">${wEmoji} ${wName}</span>`;
-                }
-                if (showChineseZodiac && c.hasYear) {
-                    const cName = getChineseZodiac(c.y);
-                    const cEmoji = getChineseZodiacEmoji(cName);
-                    badgesHtml += `<span class="modal-badge modal-badge-primary">${cEmoji} ${cName}</span>`;
-                }
-                const daysUntil = daysUntilBirthday(c.m, c.d);
-                const countdownText = daysUntil === 0 ? "Today!" : daysUntil === 1 ? "Tomorrow" : `${daysUntil} days`;
-                let countdownStyle = "font-weight:600;";
-                if (daysUntil === 0) {
-                    countdownStyle += "background: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; border: 1px solid rgba(239, 68, 68, 0.25) !important;";
-                } else if (daysUntil === 1) {
-                    countdownStyle += "background: rgba(249, 115, 22, 0.15) !important; color: #f97316 !important; border: 1px solid rgba(249, 115, 22, 0.25) !important;";
-                } else if (daysUntil <= 3) {
-                    countdownStyle += "background: rgba(245, 158, 11, 0.15) !important; color: #f59e0b !important; border: 1px solid rgba(245, 158, 11, 0.25) !important;";
-                } else if (daysUntil <= 7) {
-                    countdownStyle += "background: rgba(132, 204, 22, 0.15) !important; color: #84cc16 !important; border: 1px solid rgba(132, 204, 22, 0.25) !important;";
-                } else if (daysUntil <= 30) {
-                    countdownStyle += "background: rgba(16, 185, 129, 0.15) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.25) !important;";
-                } else if (daysUntil <= 60) {
-                    countdownStyle += "background: rgba(59, 130, 246, 0.15) !important; color: #3b82f6 !important; border: 1px solid rgba(59, 130, 246, 0.25) !important;";
-                } else {
-                    countdownStyle += "background: var(--surface-2); color: var(--text-muted);";
-                }
-                badgesHtml += `<span class="modal-badge" style="${countdownStyle}">${daysUntil === 0 ? '🎂 ' : ''}${countdownText}</span>`;
-            } else if (showChineseZodiac && c.hasYear) {
-                const cName = getChineseZodiac(c.y);
-                const cEmoji = getChineseZodiacEmoji(cName);
-                badgesHtml += `<span class="modal-badge modal-badge-primary">${cEmoji} ${cName}</span>`;
+            if (document.getElementById('contact-modal').style.display !== 'flex') {
+                contactModalReturnFocus = document.activeElement?.matches('button, a[href], [tabindex]') ? document.activeElement : null;
             }
+            document.getElementById('m-name').textContent = c.name;
+            document.getElementById('m-meta').textContent = hasBday ? `${MONTHS[c.m-1]} ${c.d}${c.hasYear ? `, ${c.y}` : ' · birth year unknown'}` : 'Birthday date unknown';
+            document.getElementById('m-img').src = c.photo || avatarFor(c.name);
+
+            const milestones = document.getElementById('m-milestones');
+            const ageTile = document.getElementById('m-age-tile');
+            ageTile.hidden = !c.hasYear;
+            milestones.classList.toggle('single', !c.hasYear);
+            document.getElementById('m-next-label').textContent = hasBday ? 'Next birthday' : 'Birthday';
+            const daysUntil = hasBday ? daysUntilBirthday(c.m, c.d) : null;
+            document.getElementById('m-next').textContent = !hasBday ? 'Date missing' : daysUntil === 0 ? 'Today!' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil} days`;
+            document.getElementById('m-next-note').textContent = hasBday ? `${MONTHS[c.m-1]} ${c.d}` : 'Add a birthday date to see a countdown';
             if (c.hasYear) {
-                const gen = getGeneration(c.y);
-                let genStyle = "";
-                let genIcon = '<i class="fa-solid fa-hourglass-half" style="font-size:0.7rem; margin-right: 4px;"></i> ';
-                if (gen === "Gen Alpha") {
-                    genStyle = "background: rgba(6, 182, 212, 0.1) !important; color: #06b6d4 !important; border: 1.5px solid rgba(6, 182, 212, 0.5) !important;";
-                } else if (gen === "Gen Z") {
-                    genStyle = "background: rgba(139, 92, 246, 0.1) !important; color: #8b5cf6 !important; border: 1.5px solid rgba(139, 92, 246, 0.5) !important;";
-                } else if (gen === "Millennials") {
-                    genStyle = "background: rgba(236, 72, 153, 0.1) !important; color: #ec4899 !important; border: 1.5px solid rgba(236, 72, 153, 0.5) !important;";
-                } else if (gen === "Gen X") {
-                    genStyle = "background: rgba(249, 115, 22, 0.1) !important; color: #f97316 !important; border: 1.5px solid rgba(249, 115, 22, 0.5) !important;";
-                } else if (gen === "Boomers") {
-                    genStyle = "background: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; border: 1.5px solid rgba(16, 185, 129, 0.5) !important;";
-                } else {
-                    genStyle = "background: rgba(100, 116, 139, 0.1) !important; color: #64748b !important; border: 1.5px solid rgba(100, 116, 139, 0.5) !important;";
-                }
-                badgesHtml += `<span class="modal-badge" style="${genStyle}">${genIcon}${gen}</span>`;
+                document.getElementById('m-age').textContent = `${getAgeAsOfToday(c)}`;
+                document.getElementById('m-age-note').textContent = hasBday ? 'years old' : 'approx. years old';
             }
-            document.getElementById('m-badges').innerHTML = badgesHtml;
 
-            let h='';
-            if(c.hasYear) h+=`<div class="detail-row"><i class="fa-solid fa-star"></i> Age: ${getAgeAsOfToday(c)}</div>`;
-            if(c.email) h+=`<div class="detail-row"><i class="fa-solid fa-envelope"></i> ${c.email}</div>`;
-            if(c.phone) h+=`<div class="detail-row"><i class="fa-solid fa-phone"></i> ${c.phone}</div>`;
-            document.getElementById('m-details').innerHTML=h||'<div style="color:var(--text-muted); font-size:0.8125rem;">No additional details.</div>';
+            const badges = document.getElementById('m-badges');
+            badges.replaceChildren();
+            const addBadge = (label, primary = false) => {
+                const badge = document.createElement('span');
+                badge.className = `modal-badge${primary ? ' modal-badge-primary' : ''}`;
+                badge.textContent = label;
+                badges.appendChild(badge);
+            };
+            if (hasBday && showWesternZodiac) {
+                const sign = getZodiacSign(c.m, c.d);
+                addBadge(`${getZodiacEmoji(sign)} ${sign}`, true);
+            }
+            if (c.hasYear && showChineseZodiac) {
+                const sign = getChineseZodiac(c.y);
+                addBadge(`${getChineseZodiacEmoji(sign)} ${sign}`, true);
+            }
+            if (c.hasYear) addBadge(getGeneration(c.y));
+            document.getElementById('m-badges-section').hidden = badges.children.length === 0;
+
+            const tags = document.getElementById('m-tags');
+            tags.replaceChildren();
+            (c.tags || []).forEach(tagName => {
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.textContent = tagName;
+                tags.appendChild(tag);
+            });
+            document.getElementById('m-tags-section').hidden = tags.children.length === 0;
+
+            const details = document.getElementById('m-details');
+            details.replaceChildren();
+            const addDetail = (icon, value, href) => {
+                const row = document.createElement('div');
+                row.className = 'detail-row';
+                const symbol = document.createElement('i');
+                symbol.className = `fa-solid ${icon}`;
+                symbol.setAttribute('aria-hidden', 'true');
+                const content = document.createElement(href ? 'a' : 'span');
+                content.textContent = value;
+                if (href) content.href = href;
+                row.append(symbol, content);
+                details.appendChild(row);
+            };
+            if (c.email) addDetail('fa-envelope', c.email, `mailto:${encodeURIComponent(c.email)}`);
+            if (c.phone) addDetail('fa-phone', c.phone, `tel:${c.phone.replace(/[^\d+]/g, '')}`);
+            if (!details.children.length) {
+                const empty = document.createElement('div');
+                empty.className = 'contact-empty';
+                empty.textContent = 'No email or phone number on file.';
+                details.appendChild(empty);
+            }
             document.getElementById('contact-modal').style.display='flex';
             document.getElementById('list-modal').style.display='none';
             document.getElementById('settings-modal').style.display='none';
             lastModalOpenTime = Date.now();
             document.getElementById('modal-backdrop').style.display='flex';
+            document.querySelector('#contact-modal .modal-close').focus({ preventScroll: true });
         }
         function closeModal(){
+            const wasContactOpen = document.getElementById('contact-modal').style.display === 'flex';
+            const wasSettingsOpen = document.getElementById('settings-modal').style.display === 'block';
             document.getElementById('modal-backdrop').style.display='none';
             document.getElementById('contact-modal').style.display='none';
             document.getElementById('list-modal').style.display='none';
             document.getElementById('settings-modal').style.display='none';
+            if (wasContactOpen && contactModalReturnFocus?.isConnected) contactModalReturnFocus.focus({ preventScroll: true });
+            if (wasContactOpen) contactModalReturnFocus = null;
+            if (wasSettingsOpen && settingsModalReturnFocus?.isConnected) settingsModalReturnFocus.focus({ preventScroll: true });
+            if (wasSettingsOpen) settingsModalReturnFocus = null;
         }
         document.getElementById('modal-backdrop').onclick=e=>{
             if(Date.now() - lastModalOpenTime < 350) return;
